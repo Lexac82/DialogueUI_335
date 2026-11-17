@@ -1,9 +1,5 @@
 local _, addon = ...;
 
--- Three-piece parchment background (top / middle / bottom) from the Brown theme atlas.
--- Atlas is 1024x2048; pieces are rows 0-256, 256-896, 896-1152 (see retail Code/Dialogue/DialogueUI.lua:350-358).
--- Play() grows the middle piece from a fraction of its height to full height and fades the frame in.
-
 local ThemeUtil = addon.ThemeUtil;
 
 local min = math.min;
@@ -20,6 +16,9 @@ local TOP_ROWS = { 0, 256 };
 local MID_ROWS = { 256, 896 };
 local BOTTOM_ROWS = { 896, 1152 };
 
+local DIVIDER_COLS = { 0, 672 };
+local DIVIDER_ROWS = { 1160, 1256 };
+
 local function RowsToHeight(rows)
     return (rows[2] - rows[1]) * SCALE;
 end
@@ -28,11 +27,22 @@ local function RowsToTexCoord(rows)
     return 0, 1, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
 end
 
+local function RectToTexCoord(cols, rows)
+    return cols[1] / ATLAS_WIDTH, cols[2] / ATLAS_WIDTH, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
+end
+
 local TOP_H = RowsToHeight(TOP_ROWS);
 local MID_H = RowsToHeight(MID_ROWS);
 local BOTTOM_H = RowsToHeight(BOTTOM_ROWS);
-local FULL_H = TOP_H + MID_H + BOTTOM_H;
-local START_H = TOP_H + BOTTOM_H + MID_H * START_MID_RATIO;
+
+local CAP_OVERHANG = (TOP_H + BOTTOM_H) / 2;
+local FULL_H = MID_H + CAP_OVERHANG;
+local START_H = CAP_OVERHANG + MID_H * START_MID_RATIO;
+
+local DIVIDER_W = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * SCALE;
+local DIVIDER_H = RowsToHeight(DIVIDER_ROWS);
+local HEADER_OFFSET_Y = -28;
+local PADDING_H = 26;
 
 local ParchmentBackground = {};
 ParchmentBackground.__index = ParchmentBackground;
@@ -65,7 +75,6 @@ function ParchmentBackground:Play(duration)
     frame:Show();
 end
 
--- Plays the animation only if it is not already visible, so repeated dialogue events don't restart it.
 function ParchmentBackground:Show(duration)
     if self.frame:IsShown() then
         return;
@@ -93,27 +102,44 @@ local function CreateParchmentBackground(parent)
     frame:Hide(); -- frames are shown by default in CreateFrame
     self.frame = frame;
 
-    -- Top and bottom keep a fixed height. The middle stretches between them,
-    -- so changing the frame height only changes the middle piece.
     local top = frame:CreateTexture(nil, "BACKGROUND");
     top:SetTexture(file);
     top:SetTexCoord(RowsToTexCoord(TOP_ROWS));
     top:SetWidth(FRAME_WIDTH);
     top:SetHeight(TOP_H);
-    top:SetPoint("TOP", frame, "TOP", 0, 0);
+    top:SetPoint("CENTER", frame, "TOP", 0, 0);
 
     local bottom = frame:CreateTexture(nil, "BACKGROUND");
     bottom:SetTexture(file);
     bottom:SetTexCoord(RowsToTexCoord(BOTTOM_ROWS));
     bottom:SetWidth(FRAME_WIDTH);
     bottom:SetHeight(BOTTOM_H);
-    bottom:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0);
+    bottom:SetPoint("CENTER", frame, "BOTTOM", 0, 0);
 
     local middle = frame:CreateTexture(nil, "BACKGROUND");
     middle:SetTexture(file);
     middle:SetTexCoord(RowsToTexCoord(MID_ROWS));
     middle:SetPoint("TOPLEFT", top, "BOTTOMLEFT", 0, 0);
     middle:SetPoint("BOTTOMRIGHT", bottom, "TOPRIGHT", 0, 0);
+
+    local frontFrame = CreateFrame("Frame", nil, frame);
+    frontFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING_H, 0);
+    frontFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PADDING_H, 0);
+    self.FrontFrame = frontFrame;
+
+    local header = CreateFrame("Frame", nil, frontFrame);
+    header:SetWidth(DIVIDER_W);
+    header:SetHeight(DIVIDER_H);
+    header:SetPoint("TOP", frontFrame, "TOP", 0, HEADER_OFFSET_Y);
+    frontFrame.Header = header;
+
+    local divider = header:CreateTexture(nil, "ARTWORK");
+    divider:SetTexture(file);
+    divider:SetTexCoord(RectToTexCoord(DIVIDER_COLS, DIVIDER_ROWS));
+    divider:SetWidth(DIVIDER_W);
+    divider:SetHeight(DIVIDER_H);
+    divider:SetPoint("TOP", header, "TOP", 0, 0);
+    header.Divider = divider;
 
     return self;
 end
