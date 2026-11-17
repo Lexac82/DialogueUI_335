@@ -23,15 +23,29 @@ local HIDE_EVENTS = {
     QUEST_FINISHED = true,
 };
 
+-- TEST ONLY: show the parchment shortly after the player loads. Remove when done testing.
+local TEST_SHOW_DELAY = 1; -- seconds after PLAYER_ENTERING_WORLD
+
 for event in pairs(SHOW_EVENTS) do
     eventFrame:RegisterEvent(event);
 end
 for event in pairs(HIDE_EVENTS) do
     eventFrame:RegisterEvent(event);
 end
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 
-eventFrame:SetScript("OnEvent", function(_, event)
-    if SHOW_EVENTS[event] then
+eventFrame:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_ENTERING_WORLD" then
+        -- TEST ONLY
+        local elapsed = 0;
+        self:SetScript("OnUpdate", function(_, dt)
+            elapsed = elapsed + dt;
+            if elapsed >= TEST_SHOW_DELAY then
+                self:SetScript("OnUpdate", nil);
+                parchment:Show();
+            end
+        end);
+    elseif SHOW_EVENTS[event] then
         parchment:Show();
     elseif HIDE_EVENTS[event] then
         parchment:Hide();

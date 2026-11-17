@@ -6,7 +6,8 @@ local min = math.min;
 
 local ATLAS_WIDTH = 1024;
 local ATLAS_HEIGHT = 2048;
-local FRAME_WIDTH = 546.13; -- same scale as the retail frame
+local FRAME_SIZE_MULTIPLIER = 1.1; -- retail default
+local FRAME_WIDTH = 546.13 * FRAME_SIZE_MULTIPLIER;
 local SCALE = FRAME_WIDTH / ATLAS_WIDTH;
 
 local DEFAULT_DURATION = 0.5; -- seconds for both height and fade
@@ -41,8 +42,14 @@ local START_H = CAP_OVERHANG + MID_H * START_MID_RATIO;
 
 local DIVIDER_W = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * SCALE;
 local DIVIDER_H = RowsToHeight(DIVIDER_ROWS);
-local HEADER_OFFSET_Y = -28;
-local PADDING_H = 26;
+local HEADER_OFFSET_Y = -28 * FRAME_SIZE_MULTIPLIER;
+local PADDING_H = 26 * FRAME_SIZE_MULTIPLIER;
+
+local FOOTER_COLS = { 0, 736 };
+local FOOTER_ROWS = { 1408, 1472 };
+local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
+local FOOTER_H = RowsToHeight(FOOTER_ROWS);
+local FOOTER_OFFSET_Y = 96; -- retail default; depends on button height once buttons exist
 
 local ParchmentBackground = {};
 ParchmentBackground.__index = ParchmentBackground;
@@ -85,6 +92,12 @@ end
 function ParchmentBackground:Hide()
     self.frame:SetScript("OnUpdate", nil);
     self.frame:Hide();
+end
+
+function ParchmentBackground:SetFooterOffset(y)
+    local divider = self.FrontFrame.FooterDivider;
+    divider:ClearAllPoints();
+    divider:SetPoint("CENTER", self.FrontFrame, "BOTTOM", 0, y);
 end
 
 local function CreateParchmentBackground(parent)
@@ -140,6 +153,14 @@ local function CreateParchmentBackground(parent)
     divider:SetHeight(DIVIDER_H);
     divider:SetPoint("TOP", header, "TOP", 0, 0);
     header.Divider = divider;
+
+    local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
+    footerDivider:SetTexture(file);
+    footerDivider:SetTexCoord(RectToTexCoord(FOOTER_COLS, FOOTER_ROWS));
+    footerDivider:SetWidth(FOOTER_W);
+    footerDivider:SetHeight(FOOTER_H);
+    frontFrame.FooterDivider = footerDivider;
+    self:SetFooterOffset(FOOTER_OFFSET_Y);
 
     return self;
 end
