@@ -1,8 +1,12 @@
+
+
+
 local _, addon = ...;
 
 -- Shows the parchment while talking to an NPC and hides it when the conversation ends.
 
 local CreateParchmentBackground = addon.CreateParchmentBackground;
+local QuestData = addon.QuestData;
 
 local parchment = CreateParchmentBackground(UIParent);
 
@@ -45,12 +49,16 @@ eventFrame:SetScript("OnEvent", function(self, event)
                 self:SetScript("OnUpdate", nil);
                 parchment:Show();
                 parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
+                parchment:SetTitle("Quest Title");
             end
         end);
     end
     if SHOW_EVENTS[event] then
+        -- Quest text is only valid during its own event, so read it here.
+        local page = QuestData:GetPage(event);
         parchment:Show();
         parchment:UpdatePortrait();
+        parchment:SetTitle(page.title);
     elseif HIDE_EVENTS[event] then
         parchment:Hide();
     end

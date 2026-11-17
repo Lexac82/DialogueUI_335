@@ -8,5 +8,7 @@
 
 Initialization.lua
 Code\Utility\ThemeUtil.lua
+Code\Utility\FontUtil.lua
+Code\Dialogue\QuestData.lua
 Code\Widget\ParchmentBackground.lua
 Code\Dialogue\ParchmentVisibility.lua

@@ -1,6 +1,7 @@
 local _, addon = ...;
 
 local ThemeUtil = addon.ThemeUtil;
+local FontUtil = addon.FontUtil;
 
 local min = math.min;
 
@@ -55,6 +56,18 @@ local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
 local FOOTER_H = RowsToHeight(FOOTER_ROWS);
 local FOOTER_OFFSET_Y = 96; -- retail default; depends on button height once buttons exist
 
+local TOPLIGHT_COLS = { 0, 672 };
+local TOPLIGHT_ROWS = { 1336, 1400 };
+local TOPLIGHT_W = (TOPLIGHT_COLS[2] - TOPLIGHT_COLS[1]) * SCALE;
+local TOPLIGHT_H = (TOPLIGHT_ROWS[2] - TOPLIGHT_ROWS[1]) * SCALE;
+local TOPLIGHT_ALPHA = 0.06;
+local TOPLIGHT_OFFSET_Y = -2 * FRAME_SIZE_MULTIPLIER;
+
+local TITLE_FONT_HEIGHT = 18 * FRAME_SIZE_MULTIPLIER;
+local TITLE_LEFT_X = 53 * FRAME_SIZE_MULTIPLIER;
+local TITLE_RIGHT_X = -8 * FRAME_SIZE_MULTIPLIER;
+local TITLE_Y = 2 * FRAME_SIZE_MULTIPLIER;
+
 local ParchmentBackground = {};
 ParchmentBackground.__index = ParchmentBackground;
 
@@ -103,6 +116,10 @@ end
 function ParchmentBackground:UpdatePortrait(unit)
     unit = unit or (UnitExists("npc") and "npc" or "player");
     SetPortraitTexture(self.FrontFrame.Header.Portrait, unit);
+end
+
+function ParchmentBackground:SetTitle(text)
+    self.FrontFrame.Header.Title:SetText(text or "");
 end
 
 function ParchmentBackground:SetFooterOffset(y)
@@ -164,6 +181,24 @@ local function CreateParchmentBackground(parent)
     divider:SetHeight(DIVIDER_H);
     divider:SetPoint("TOP", header, "TOP", 0, 0);
     header.Divider = divider;
+
+    local topLight = header:CreateTexture(nil, "ARTWORK");
+    topLight:SetTexture(file);
+    topLight:SetTexCoord(RectToTexCoord(TOPLIGHT_COLS, TOPLIGHT_ROWS));
+    topLight:SetBlendMode("ADD");
+    topLight:SetAlpha(TOPLIGHT_ALPHA);
+    topLight:SetWidth(TOPLIGHT_W);
+    topLight:SetHeight(TOPLIGHT_H);
+    topLight:SetPoint("CENTER", divider, "CENTER", 0, TOPLIGHT_OFFSET_Y);
+    header.TopLight = topLight;
+
+    local title = header:CreateFontString(nil, "OVERLAY");
+    title:SetFontObject(FontUtil:GetQuestTitleFont(TITLE_FONT_HEIGHT));
+    title:SetJustifyH("LEFT");
+    title:SetJustifyV("BOTTOM");
+    title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
+    title:SetPoint("RIGHT", header, "RIGHT", TITLE_RIGHT_X, TITLE_Y);
+    header.Title = title;
 
     local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
     footerDivider:SetTexture(file);
