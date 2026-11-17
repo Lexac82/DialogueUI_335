@@ -1,0 +1,12 @@
+## Interface: 30300
+## Version: 0.1.0
+## Title: Dialogue UI
+## Notes: Quest Dialogue UI (WotLK 3.3.5a port)
+## Author: Navardraz
+
+## SavedVariables: DialogueUI_335_DB
+
+Initialization.lua
+Code\Utility\ThemeUtil.lua
+Code\Widget\ParchmentBackground.lua
+Code\Dialogue\ParchmentVisibility.lua
