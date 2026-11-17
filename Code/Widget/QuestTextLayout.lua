@@ -34,8 +34,89 @@ local PARAGRAPH_FONT_NAME = "DUI335_Quest_Paragraph";
 local SUBHEADER_FONT_NAME = "DUI335_Quest_SubHeader";
 local SUBHEADER_LABEL = "Objectives";               -- retail uses OBJECTIVES_LABEL, not in wow-docs
 
+-- Smooth reveal, like Blizzard's quest frame. Skipped when "Instant Quest Text" is on.
+local INSTANT_TEXT_CVAR = "questFadingDisable";        -- UNVERIFIED name: not in wow-docs
+local REVEAL_CPS = 40;                                  -- characters per second
+local REVEAL_GRADIENT = 30;                             -- soft edge width in pixels
+local REVEAL_TAIL = 5;                                  -- extra characters so the last ones fully fade in (~30 px)
+
+local pcall = pcall;
+local GetCVarBool = GetCVarBool;
+local strlen = string.len;
+
+local function IsInstantText()
+    -- GetCVarBool raises an error for an unknown CVar, so a wrong name falls back to the fade.
+    local ok, value = pcall(GetCVarBool, INSTANT_TEXT_CVAR);
+    return ok and value and true or false
+end
+
 local QuestTextLayout = {};
 QuestTextLayout.__index = QuestTextLayout;
+
+function QuestTextLayout:StopReveal()
+    self.ScrollArea:SetScript("OnUpdate", nil);
+    local items = self.revealItems;
+    for i = 1, #items do
+        local item = items[i];
+        if item.fs then
+            item.fs:SetAlphaGradient(0, 0);     -- length 0 restores full opacity
+        end
+        item.region:Show();
+    end
+end
+
+-- Reveals paragraphs and sub-headers one after another, in layout order.
+function QuestTextLayout:StartReveal()
+    local items = self.revealItems;
+    if #items == 0 or IsInstantText() then
+        self:StopReveal();
+        return
+    end
+
+    for i = 1, #items do
+        items[i].region:Hide();
+    end
+
+    local index, progress = 0, 0;
+
+    -- Moves to the next item. Returns false when none are left.
+    local function Advance()
+        index = index + 1;
+        progress = 0;
+        local item = items[index];
+        if not item then
+            return false
+        end
+        -- Gradient first, then show, so the text never appears fully opaque for a frame.
+        if item.fs then
+            item.fs:SetAlphaGradient(0, REVEAL_GRADIENT);
+        end
+        item.region:Show();
+        return true
+    end
+
+    Advance();
+
+    self.ScrollArea:SetScript("OnUpdate", function(frame, elapsed)
+        progress = progress + elapsed * REVEAL_CPS;
+        local item = items[index];
+        while item do
+            if item.fs and progress < item.length + REVEAL_TAIL then
+                item.fs:SetAlphaGradient(progress, REVEAL_GRADIENT);
+                return
+            end
+            -- Finished (or a sub-header, which has no text to sweep): restore and move on.
+            if item.fs then
+                item.fs:SetAlphaGradient(0, 0);
+            end
+            if not Advance() then
+                frame:SetScript("OnUpdate", nil);
+                return
+            end
+            item = items[index];
+        end
+    end);
+end
 
 -- Re-anchors the scroll area between the header and the footer.
 -- The scroll area is the text box: inset paddingH on the left and right, like CSS padding.
@@ -47,6 +128,9 @@ function QuestTextLayout:SetFooterOffset(y)
 end
 
 function QuestTextLayout:ReleaseAll()
+    self:StopReveal();
+    self.revealItems = {};
+
     for i = 1, self.fontStringCount do
         local fs = self.fontStrings[i];
         fs:SetText("");
@@ -146,6 +230,8 @@ function QuestTextLayout:InsertSubHeader(offsetY, text)
     local subHeader = self:AcquireSubHeader();
     self:SetSubHeaderText(subHeader, text);
     subHeader.frame:SetPoint("TOPLEFT", self.ContentFrame, "TOPLEFT", 0, -offsetY);
+    local items = self.revealItems;
+    items[#items + 1] = {region = subHeader.frame, length = 0};
     return Round(offsetY + SUBHEADER_SIZE)
 end
 
@@ -162,6 +248,8 @@ function QuestTextLayout:FormatParagraph(offsetY, text)
         fs:SetWidth(self.textWidth);
         fs:SetPoint("TOPLEFT", self.ContentFrame, "TOPLEFT", 0, -offsetY);
         fs:SetText(paragraph);
+        local items = self.revealItems;
+        items[#items + 1] = {region = fs, fs = fs, length = strlen(paragraph)};
         offsetY = Round(offsetY + fs:GetStringHeight() + PARAGRAPH_SPACING);
     end
 
@@ -187,6 +275,8 @@ function QuestTextLayout:SetQuestText(body, objective)
 
     -- Kept for the scroll range once scrolling is ported.
     self.contentHeight = offsetY;
+
+    self:StartReveal();
 end
 
 -- parent: parchment frame. width: parchment width. scale: FRAME_SIZE_MULTIPLIER.
@@ -220,6 +310,7 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset)
     self.fontStringCount = 0;
     self.subHeaders = {};
     self.subHeaderCount = 0;
+    self.revealItems = {};
     self.contentHeight = 0;
 
     return self
