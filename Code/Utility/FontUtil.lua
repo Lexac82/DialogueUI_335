@@ -41,15 +41,22 @@ local function GetAlphabetForClient()
     return clientAlphabet;
 end
 
-local titleFontObject;
+local fontObjects = {};
 
--- Returns the shared quest title font object, created on first use.
-function FontUtil:GetQuestTitleFont(height)
-    if not titleFontObject then
+-- Returns the named quest font object, created on first use. Retail's DUIFontFamily_Serif_<n>.
+function FontUtil:GetQuestFont(name, height)
+    local fontObject = fontObjects[name];
+    if not fontObject then
         local file = TITLE_FONT_FILE[GetAlphabetForClient()] or TITLE_FONT_FILE.roman;
-        titleFontObject = CreateFont("DUIFont_Quest_Title");
-        titleFontObject:SetFont(file, height, "");
-        titleFontObject:SetTextColor(TITLE_COLOR[1], TITLE_COLOR[2], TITLE_COLOR[3]);
+        fontObject = CreateFont(name);
+        fontObject:SetFont(file, height, "");
+        fontObject:SetTextColor(TITLE_COLOR[1], TITLE_COLOR[2], TITLE_COLOR[3]);
+        fontObjects[name] = fontObject;
     end
-    return titleFontObject;
+    return fontObject;
+end
+
+-- Returns the shared quest title font object.
+function FontUtil:GetQuestTitleFont(height)
+    return self:GetQuestFont("DUIFont_Quest_Title", height);
 end

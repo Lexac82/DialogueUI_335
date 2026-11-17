@@ -126,6 +126,12 @@ function ParchmentBackground:SetFooterOffset(y)
     local divider = self.FrontFrame.FooterDivider;
     divider:ClearAllPoints();
     divider:SetPoint("CENTER", self.FrontFrame, "BOTTOM", 0, y);
+    self.QuestText:SetFooterOffset(y);
+end
+
+-- Quest body and objectives. Objectives get a sub-header when present.
+function ParchmentBackground:SetQuestText(body, objective)
+    self.QuestText:SetQuestText(body, objective);
 end
 
 local function CreateParchmentBackground(parent)
@@ -167,6 +173,9 @@ local function CreateParchmentBackground(parent)
     frontFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING_H, 0);
     frontFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PADDING_H, 0);
     self.FrontFrame = frontFrame;
+
+    -- Created before the footer so SetFooterOffset can reach it.
+    self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y);
 
     local header = CreateFrame("Frame", nil, frontFrame);
     header:SetWidth(DIVIDER_W);

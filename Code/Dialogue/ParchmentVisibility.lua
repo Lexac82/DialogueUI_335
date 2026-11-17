@@ -37,6 +37,8 @@ end
 -- TEST ONLY: show the parchment shortly after the player loads. Remove when done testing.
 local TEST_SHOW_DELAY = 1; -- seconds after PLAYER_ENTERING_WORLD
 local TEST_PORTRAIT_UNIT = "target"; -- portrait comes from the selected target
+local TEST_BODY = "The wolves have grown bold in the northern fields and the farmers no longer dare to walk the road at dusk. Someone must thin their numbers before the harvest is lost.\nBring me proof of your work when it is done, and I will see you rewarded for your trouble."; -- two paragraphs
+local TEST_OBJECTIVE = "Kill 10 Timber Wolves in Elwynn Forest.";
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 
 eventFrame:SetScript("OnEvent", function(self, event)
@@ -50,6 +52,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
                 parchment:Show();
                 parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
                 parchment:SetTitle("Quest Title");
+                parchment:SetQuestText(TEST_BODY, TEST_OBJECTIVE);
             end
         end);
     end
@@ -59,6 +62,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:Show();
         parchment:UpdatePortrait();
         parchment:SetTitle(page.title);
+        parchment:SetQuestText(page.body, page.objective);
     elseif HIDE_EVENTS[event] then
         parchment:Hide();
     end
