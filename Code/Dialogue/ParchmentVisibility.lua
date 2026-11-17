@@ -23,15 +23,16 @@ local HIDE_EVENTS = {
     QUEST_FINISHED = true,
 };
 
--- TEST ONLY: show the parchment shortly after the player loads. Remove when done testing.
-local TEST_SHOW_DELAY = 1; -- seconds after PLAYER_ENTERING_WORLD
-
 for event in pairs(SHOW_EVENTS) do
     eventFrame:RegisterEvent(event);
 end
 for event in pairs(HIDE_EVENTS) do
     eventFrame:RegisterEvent(event);
 end
+
+-- TEST ONLY: show the parchment shortly after the player loads. Remove when done testing.
+local TEST_SHOW_DELAY = 1; -- seconds after PLAYER_ENTERING_WORLD
+local TEST_PORTRAIT_UNIT = "target"; -- portrait comes from the selected target
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 
 eventFrame:SetScript("OnEvent", function(self, event)
@@ -43,10 +44,13 @@ eventFrame:SetScript("OnEvent", function(self, event)
             if elapsed >= TEST_SHOW_DELAY then
                 self:SetScript("OnUpdate", nil);
                 parchment:Show();
+                parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
             end
         end);
-    elseif SHOW_EVENTS[event] then
+    end
+    if SHOW_EVENTS[event] then
         parchment:Show();
+        parchment:UpdatePortrait();
     elseif HIDE_EVENTS[event] then
         parchment:Hide();
     end

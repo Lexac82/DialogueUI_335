@@ -45,6 +45,10 @@ local DIVIDER_H = RowsToHeight(DIVIDER_ROWS);
 local HEADER_OFFSET_Y = -28 * FRAME_SIZE_MULTIPLIER;
 local PADDING_H = 26 * FRAME_SIZE_MULTIPLIER;
 
+local HEADER_PORTRAIT_SIZE = 34 * FRAME_SIZE_MULTIPLIER;
+local HEADER_PORTRAIT_X = 23 * FRAME_SIZE_MULTIPLIER;
+local HEADER_PORTRAIT_Y = -23 * FRAME_SIZE_MULTIPLIER;
+
 local FOOTER_COLS = { 0, 736 };
 local FOOTER_ROWS = { 1408, 1472 };
 local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
@@ -92,6 +96,13 @@ end
 function ParchmentBackground:Hide()
     self.frame:SetScript("OnUpdate", nil);
     self.frame:Hide();
+end
+
+-- Header portrait: the NPC in the conversation, or the player as a fallback (same as retail).
+-- An explicit unit can be passed (e.g. "target" for testing).
+function ParchmentBackground:UpdatePortrait(unit)
+    unit = unit or (UnitExists("npc") and "npc" or "player");
+    SetPortraitTexture(self.FrontFrame.Header.Portrait, unit);
 end
 
 function ParchmentBackground:SetFooterOffset(y)
@@ -161,6 +172,13 @@ local function CreateParchmentBackground(parent)
     footerDivider:SetHeight(FOOTER_H);
     frontFrame.FooterDivider = footerDivider;
     self:SetFooterOffset(FOOTER_OFFSET_Y);
+
+    local portrait = header:CreateTexture(nil, "ARTWORK");
+    portrait:SetWidth(HEADER_PORTRAIT_SIZE);
+    portrait:SetHeight(HEADER_PORTRAIT_SIZE);
+    portrait:SetPoint("CENTER", header, "TOPLEFT", HEADER_PORTRAIT_X, HEADER_PORTRAIT_Y);
+    portrait:SetVertexColor(1, 0.9, 0.78); -- light theme tint, as retail
+    header.Portrait = portrait;
 
     return self;
 end
