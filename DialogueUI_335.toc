@@ -12,6 +12,7 @@ Code\Utility\FontUtil.lua
 Code\Utility\MathUtil.lua
 Code\Utility\TextUtil.lua
 Code\Dialogue\QuestData.lua
+Code\Widget\SmoothScrollFrame.lua
 Code\Widget\QuestTextLayout.lua
 Code\Widget\ParchmentBackground.lua
 Code\Dialogue\ParchmentVisibility.lua

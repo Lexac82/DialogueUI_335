@@ -175,7 +175,7 @@ local function CreateParchmentBackground(parent)
     self.FrontFrame = frontFrame;
 
     -- Created before the footer so SetFooterOffset can reach it.
-    self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y);
+    self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y, FULL_H);
 
     local header = CreateFrame("Frame", nil, frontFrame);
     header:SetWidth(DIVIDER_W);
@@ -216,6 +216,8 @@ local function CreateParchmentBackground(parent)
     footerDivider:SetHeight(FOOTER_H);
     frontFrame.FooterDivider = footerDivider;
     self:SetFooterOffset(FOOTER_OFFSET_Y);
+    -- Fades with the scroll position; hidden while the text does not scroll.
+    self.QuestText:SetFooterDivider(footerDivider);
 
     local portrait = header:CreateTexture(nil, "ARTWORK");
     portrait:SetWidth(HEADER_PORTRAIT_SIZE);

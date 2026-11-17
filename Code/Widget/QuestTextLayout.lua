@@ -1,8 +1,8 @@
 local _, addon = ...;
 
 -- Quest description (body + objectives) inside the parchment.
--- Port of retail's FormatParagraph, AcquireAndSetSubHeader and UseQuestLayout, without scrolling.
--- The scroll area is kept as an anchor-only frame so scrolling can be added later.
+-- Port of retail's FormatParagraph, AcquireAndSetSubHeader and UseQuestLayout.
+-- Scrolling: ScrollArea is a ScrollFrame (SmoothScrollFrame.lua), ContentFrame is its scroll child.
 
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
@@ -54,7 +54,7 @@ local QuestTextLayout = {};
 QuestTextLayout.__index = QuestTextLayout;
 
 function QuestTextLayout:StopReveal()
-    self.ScrollArea:SetScript("OnUpdate", nil);
+    self.revealFrame:SetScript("OnUpdate", nil);
     local items = self.revealItems;
     for i = 1, #items do
         local item = items[i];
@@ -97,7 +97,8 @@ function QuestTextLayout:StartReveal()
 
     Advance();
 
-    self.ScrollArea:SetScript("OnUpdate", function(frame, elapsed)
+    -- Own frame: the scroll area's OnUpdate belongs to the scroll easing.
+    self.revealFrame:SetScript("OnUpdate", function(frame, elapsed)
         progress = progress + elapsed * REVEAL_CPS;
         local item = items[index];
         while item do
@@ -121,10 +122,40 @@ end
 -- Re-anchors the scroll area between the header and the footer.
 -- The scroll area is the text box: inset paddingH on the left and right, like CSS padding.
 function QuestTextLayout:SetFooterOffset(y)
+    self.footerOffset = y;
     local scrollArea = self.ScrollArea;
     scrollArea:ClearAllPoints();
     scrollArea:SetPoint("TOPLEFT", self.parent, "TOPLEFT", self.paddingLeft, -self.scrollTop);
     scrollArea:SetPoint("BOTTOMRIGHT", self.parent, "BOTTOMRIGHT", -self.paddingRight, y);
+    if self.contentHeight > 0 then
+        self:UpdateScrollRange();
+    end
+end
+
+-- The divider whose alpha follows the scroll position (see SmoothScrollFrame.lua).
+function QuestTextLayout:SetFooterDivider(texture)
+    self.ScrollArea.footerDivider = texture;
+    self.ScrollArea:UpdateDivider(self.ScrollArea.value);
+end
+
+-- Port of retail's SetScrollRange (DialogueUI.lua:955).
+-- The view height comes from the final parchment height: the real frame height is animated.
+function QuestTextLayout:UpdateScrollRange()
+    local viewHeight = self.fullHeight - self.scrollTop - self.footerOffset;
+    local range = self.contentHeight - viewHeight + PARAGRAPH_SPACING;
+
+    if range > 0 then
+        if range < 12 then
+            range = 12;
+        end
+        range = Round(range + 36);
+    else
+        range = 0;
+    end
+
+    -- Scroll child is a view taller than the range, so the client's own scroll range is never smaller than ours.
+    self.ContentFrame:SetHeight(viewHeight + range);
+    self.ScrollArea:SetScrollRange(range);
 end
 
 function QuestTextLayout:ReleaseAll()
@@ -259,6 +290,7 @@ end
 -- Shows the quest body, then the objectives under a sub-header when there are any.
 function QuestTextLayout:SetQuestText(body, objective)
     self:ReleaseAll();
+    self.ScrollArea:ResetScroll();
 
     local offsetY = self.topOffset;
 
@@ -273,18 +305,21 @@ function QuestTextLayout:SetQuestText(body, objective)
         offsetY = self:FormatParagraph(offsetY, objective);
     end
 
-    -- Kept for the scroll range once scrolling is ported.
     self.contentHeight = offsetY;
+    self:UpdateScrollRange();
 
     self:StartReveal();
 end
 
 -- parent: parchment frame. width: parchment width. scale: FRAME_SIZE_MULTIPLIER.
 -- footerOffset: distance from the parchment bottom to the scroll area bottom.
-local function CreateQuestTextLayout(parent, width, scale, footerOffset)
+-- fullHeight: parchment height once its intro animation is done.
+local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHeight)
     local self = setmetatable({}, QuestTextLayout);
 
     self.parent = parent;
+    self.fullHeight = fullHeight;
+    self.contentHeight = 0;
     self.scrollTop = (28 + 40) * scale;             -- retail UseQuestLayout topOffset
     -- Text box edges line up with the header divider (358 px, centred on the frame).
     local inset = (width - DIVIDER_BASE_WIDTH * scale) / 2;
@@ -293,15 +328,20 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset)
     self.textWidth = width - self.paddingLeft - self.paddingRight;
     self.topOffset = 6 * scale;                     -- retail UpdateQuestTitle, header allowance
 
-    self.ScrollArea = CreateFrame("Frame", nil, parent);
+    self.ScrollArea = CreateFrame("ScrollFrame", nil, parent);
+    addon.InitSmoothScrollFrame(self.ScrollArea);
     self:SetFooterOffset(footerOffset);
 
-
     -- Content has no inset of its own: its width is the padded text box.
+    -- Height is set by UpdateScrollRange. The scroll frame clips it to the box.
     local contentFrame = CreateFrame("Frame", nil, self.ScrollArea);
-    contentFrame:SetPoint("TOPLEFT", self.ScrollArea, "TOPLEFT", 0, 0);
-    contentFrame:SetPoint("BOTTOMRIGHT", self.ScrollArea, "BOTTOMRIGHT", 0, 0);
+    contentFrame:SetWidth(self.textWidth);
+    contentFrame:SetHeight(self.fullHeight - self.scrollTop - footerOffset);
+    self.ScrollArea:SetScrollChild(contentFrame);
     self.ContentFrame = contentFrame;
+
+    -- Separate frame for the reveal OnUpdate.
+    self.revealFrame = CreateFrame("Frame", nil, self.ScrollArea);
 
     self.paragraphFont = FontUtil:GetQuestFont(PARAGRAPH_FONT_NAME, FONT_SIZE);
     self.subHeaderFont = FontUtil:GetQuestFont(SUBHEADER_FONT_NAME, FONT_SIZE);
@@ -311,7 +351,6 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset)
     self.subHeaders = {};
     self.subHeaderCount = 0;
     self.revealItems = {};
-    self.contentHeight = 0;
 
     return self
 end
