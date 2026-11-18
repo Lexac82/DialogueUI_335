@@ -204,11 +204,12 @@ end
 -- Swaps the texture file (the crop coordinates stay the same).
 function TiledSlice:SetTexture(file)
     self.file = file;
+    local keep = addon.API.SetTextureKeepCoords;
     for i = 1, 4 do
-        self.corners[i]:SetTexture(file);
+        keep(self.corners[i], file);
     end
     for i = 1, #self.tiles do
-        self.tiles[i]:SetTexture(file);
+        keep(self.tiles[i], file);
     end
 end
 
@@ -277,6 +278,6 @@ end
 
 function NineSlice:SetTexture(pieces, file)
     for i = 1, #pieces do
-        pieces[i]:SetTexture(file);
+        addon.API.SetTextureKeepCoords(pieces[i], file);
     end
 end

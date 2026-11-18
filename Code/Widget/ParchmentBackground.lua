@@ -275,8 +275,6 @@ local function CreateParchmentBackground(parent)
     self.elapsed = 0;
     self.duration = DEFAULT_DURATION;
 
-    local file = ThemeUtil:GetTextureFile("Parchment.blp");
-
     local frame = CreateFrame("Frame", nil, parent or UIParent);
     frame:SetWidth(FRAME_WIDTH);
     frame:SetHeight(START_H);
@@ -286,21 +284,21 @@ local function CreateParchmentBackground(parent)
     self.frame = frame;
 
     local top = frame:CreateTexture(nil, "BACKGROUND");
-    top:SetTexture(file);
+    ThemeUtil:BindTexture(top, "Parchment.blp");
     top:SetTexCoord(RowsToTexCoord(TOP_ROWS));
     top:SetWidth(FRAME_WIDTH);
     top:SetHeight(TOP_H);
     top:SetPoint("CENTER", frame, "TOP", 0, 0);
 
     local bottom = frame:CreateTexture(nil, "BACKGROUND");
-    bottom:SetTexture(file);
+    ThemeUtil:BindTexture(bottom, "Parchment.blp");
     bottom:SetTexCoord(RowsToTexCoord(BOTTOM_ROWS));
     bottom:SetWidth(FRAME_WIDTH);
     bottom:SetHeight(BOTTOM_H);
     bottom:SetPoint("CENTER", frame, "BOTTOM", 0, 0);
 
     local middle = frame:CreateTexture(nil, "BACKGROUND");
-    middle:SetTexture(file);
+    ThemeUtil:BindTexture(middle, "Parchment.blp");
     middle:SetTexCoord(RowsToTexCoord(MID_ROWS));
     middle:SetPoint("TOPLEFT", top, "BOTTOMLEFT", 0, 0);
     middle:SetPoint("BOTTOMRIGHT", bottom, "TOPRIGHT", 0, 0);
@@ -327,7 +325,7 @@ local function CreateParchmentBackground(parent)
     frontFrame.Header = header;
 
     local divider = header:CreateTexture(nil, "ARTWORK");
-    divider:SetTexture(file);
+    ThemeUtil:BindTexture(divider, "Parchment.blp");
     divider:SetTexCoord(RectToTexCoord(DIVIDER_COLS, DIVIDER_ROWS));
     divider:SetWidth(DIVIDER_W);
     divider:SetHeight(DIVIDER_H);
@@ -335,7 +333,7 @@ local function CreateParchmentBackground(parent)
     header.Divider = divider;
 
     local topLight = header:CreateTexture(nil, "ARTWORK");
-    topLight:SetTexture(file);
+    ThemeUtil:BindTexture(topLight, "Parchment.blp");
     topLight:SetTexCoord(RectToTexCoord(TOPLIGHT_COLS, TOPLIGHT_ROWS));
     topLight:SetBlendMode("ADD");
     topLight:SetAlpha(TOPLIGHT_ALPHA);
@@ -356,7 +354,7 @@ local function CreateParchmentBackground(parent)
     self.HeaderTags = addon.CreateHeaderTags(header, title);
 
     local checkIcon = header:CreateTexture(nil, "ARTWORK");
-    checkIcon:SetTexture(file);
+    ThemeUtil:BindTexture(checkIcon, "Parchment.blp");
     checkIcon:SetTexCoord(RectToTexCoord(CHECK_COLS, CHECK_ROWS));
     checkIcon:SetWidth(CHECK_SIZE);
     checkIcon:SetHeight(CHECK_SIZE);
@@ -365,7 +363,7 @@ local function CreateParchmentBackground(parent)
     header.CompleteIcon = checkIcon;
 
     local gossipDivider = frontFrame:CreateTexture(nil, "ARTWORK");
-    gossipDivider:SetTexture(file);
+    ThemeUtil:BindTexture(gossipDivider, "Parchment.blp");
     gossipDivider:SetTexCoord(RectToTexCoord(GOSSIP_DIVIDER_COLS, GOSSIP_DIVIDER_ROWS));
     gossipDivider:SetWidth(GOSSIP_DIVIDER_W);
     gossipDivider:SetHeight(GOSSIP_DIVIDER_H);
@@ -373,7 +371,7 @@ local function CreateParchmentBackground(parent)
     gossipDivider:Hide();
     frontFrame.HeaderDivider = gossipDivider;
     local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
-    footerDivider:SetTexture(file);
+    ThemeUtil:BindTexture(footerDivider, "Parchment.blp");
     footerDivider:SetTexCoord(RectToTexCoord(FOOTER_COLS, FOOTER_ROWS));
     footerDivider:SetWidth(FOOTER_W);
     footerDivider:SetHeight(FOOTER_H);
@@ -402,8 +400,17 @@ local function CreateParchmentBackground(parent)
     portrait:SetWidth(HEADER_PORTRAIT_SIZE);
     portrait:SetHeight(HEADER_PORTRAIT_SIZE);
     portrait:SetPoint("CENTER", header, "TOPLEFT", HEADER_PORTRAIT_X, HEADER_PORTRAIT_Y);
-    portrait:SetVertexColor(1, 0.9, 0.78); -- light theme tint, as retail
     header.Portrait = portrait;
+    -- Warm tint on the Brown theme, none on Dark (as retail).
+    local function TintPortrait()
+        if ThemeUtil:IsDarkMode() then
+            portrait:SetVertexColor(1, 1, 1);
+        else
+            portrait:SetVertexColor(1, 0.9, 0.78);
+        end
+    end
+    TintPortrait();
+    CallbackRegistry:Register("ThemeChanged", TintPortrait);
 
     return self;
 end

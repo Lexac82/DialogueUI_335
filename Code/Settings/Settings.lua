@@ -9,6 +9,8 @@ local NineSlice = addon.NineSlice;
 local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
 local CallbackRegistry = addon.CallbackRegistry;
+local GetDBValue = addon.GetDBValue;
+local SetDBValue = addon.SetDBValue;
 
 local CreateFrame = CreateFrame;
 local InCombatLockdown = InCombatLockdown;
@@ -43,7 +45,14 @@ local TAB_ENTRIES = {
     { name = L["Gameplay"] },
 };
 
-local TOGGLE_NAME = "DialogueUI335SettingsToggle";      -- global names so key bindings can click them
+-- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
+local DECOR_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\ParchmentDecor\\Dalaran.blp";
+local DECOR_INSET = 4;                  -- distance from the frame's bottom right corner
+local DECOR_MASK_OFFSET = 24;           -- mask edge below the description text
+local DECOR_MASK_ALPHA = 0.875;         -- alpha of the mask's opaque part (0xDF)
+local DECOR_FADE_ROWS = 8 / 128;        -- fade height as a part of the picture (8 of the mask's 128 rows)
+
+local TOGGLE_NAME ="DialogueUI335SettingsToggle";      -- global names so key bindings can click them
 local CLOSE_NAME = "DialogueUI335SettingsClose";
 
 local SettingsUI = {};
@@ -58,7 +67,7 @@ local frame;
 
 -- Three-piece divider: two end caps keep their shape, the middle stretches. Retail slices these with margins
 -- (H: left/right 32, V: top/bottom 32) and draws them 9 px thick.
-local function CreateDivider(parent, file, isVertical)
+local function CreateDivider(parent, fileName, isVertical)
     local f = CreateFrame("Frame", nil, parent);
     local cap = 32 / 256;
     local capSize = 32 * DIVIDER_THICKNESS / 16;
@@ -97,7 +106,7 @@ local function CreateDivider(parent, file, isVertical)
     end
 
     for i = 1, 3 do
-        f.pieces[i]:SetTexture(file);
+        ThemeUtil:BindTexture(f.pieces[i], fileName);
     end
     return f
 end
@@ -127,7 +136,8 @@ local function CreateCloseButton(parent)
     button:SetHeight(TAB_HEIGHT);
     button:RegisterForClicks("LeftButtonUp");
 
-    local file = ThemeUtil:GetTextureFile("Settings-CloseButton.blp");
+    local fileName = "Settings-CloseButton.blp";
+    local file = ThemeUtil:GetTextureFile(fileName);
     local level = button:GetFrameLevel();
 
     -- Background and hover glow are 128x64 cells of the 256x128 sheet, sliced with 16 px corners.
@@ -136,6 +146,7 @@ local function CreateCloseButton(parent)
     backFrame:SetFrameLevel(level);
     button.background = NineSlice:CreateTiled(backFrame, file, { 128, 64 }, 16, 1, "BACKGROUND", CLOSE_SHEET);
     button.background:Update(TAB_MIN_WIDTH, TAB_HEIGHT);
+    ThemeUtil:BindSlice(button.background, fileName);
 
     local highlightFrame = CreateFrame("Frame", nil, button);
     highlightFrame:SetAllPoints(button);
@@ -143,12 +154,13 @@ local function CreateCloseButton(parent)
     button.highlight = NineSlice:CreateTiled(highlightFrame, file, { 128, 64 }, 16, 1, "ARTWORK", CLOSE_HIGHLIGHT_SHEET);
     button.highlight:Update(TAB_MIN_WIDTH, TAB_HEIGHT);
     button.highlight:SetShown(false);
+    ThemeUtil:BindSlice(button.highlight, fileName);
 
     local iconFrame = CreateFrame("Frame", nil, button);
     iconFrame:SetAllPoints(button);
     iconFrame:SetFrameLevel(level + 2);
     local icon = iconFrame:CreateTexture(nil, "OVERLAY");
-    icon:SetTexture(file);
+    ThemeUtil:BindTexture(icon, fileName);
     icon:SetTexCoord(0.0625, 0.1875, 0.625, 0.875);
     icon:SetWidth(FONT_HEIGHT);
     icon:SetHeight(FONT_HEIGHT);
@@ -230,12 +242,258 @@ end
 
 
 ---------------------------------------------------------------------------
+-- Options
+---------------------------------------------------------------------------
+
+local OPTION_ROW_HEIGHT = OPTIONBUTTON_HEIGHT;
+local OPTION_LABEL_OFFSET = 14;
+local OPTION_WIDGET_SIZE = 24;
+local ARROW_FILE = "Settings-ArrowOption.blp";
+local ARROW_BUTTON_WIDTH = 24;
+local ARROW_BUTTON_HEIGHT = 32;
+local ARROWOPTION_WIDTH = OPTION_WIDGET_SIZE * 7;
+local ARROWOPTION_VALUETEXT_OFFSET_Y = -2;
+-- Retail sizes the bars in screen pixels (API.GetPixelForWidget: 5 and 4 px, ~3.6 and ~2.8 units at 1080p).
+-- Same 0.75 units per pixel as the other pixel-scaled art here (BACKGROUND_SCALE).
+local ARROWOPTION_BAR_HEIGHT = 4 * BACKGROUND_SCALE;        -- retail uses 5 px, tuned by eye in the game
+local ARROWOPTION_BAR_GAP = 4 * BACKGROUND_SCALE;
+local ARROWOPTION_BAR_SHRINK = 4;
+
+-- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
+local Schematic = {
+    {   -- UI
+        options = {
+            {type = "ArrowOption", name = L["Theme"], description = L["Theme Desc"], dbKey = "Theme",
+                choices = {
+                    {dbValue = 1, valueText = L["Theme Brown"]},
+                    {dbValue = 2, valueText = L["Theme Dark"]},
+                },
+            },
+        },
+    },
+    {   -- Control
+        options = {},
+    },
+    {   -- Gameplay
+        options = {},
+    },
+};
+
+-- One arrow of the arrow option. The 128x128 sheet holds the arrow (top left) and its hover glow (top right),
+-- drawn pointing right; the left arrow flips them.
+local function CreateArrowButton(parent, delta)
+    local button = CreateFrame("Button", nil, parent);
+    button:SetWidth(ARROW_BUTTON_WIDTH);
+    button:SetHeight(ARROW_BUTTON_HEIGHT);
+    button:RegisterForClicks("LeftButtonUp");
+    button.delta = delta;
+
+    local arrow = button:CreateTexture(nil, "BACKGROUND");
+    arrow:SetWidth(OPTION_WIDGET_SIZE);
+    arrow:SetHeight(OPTION_WIDGET_SIZE);
+    arrow:SetPoint("CENTER", button, "CENTER", 0, 0);
+    ThemeUtil:BindTexture(arrow, ARROW_FILE);
+
+    local glow = button:CreateTexture(nil, "OVERLAY");
+    glow:SetAllPoints(arrow);
+    glow:Hide();
+    ThemeUtil:BindTexture(glow, ARROW_FILE);
+
+    if delta < 0 then
+        arrow:SetTexCoord(0.5, 0, 0, 0.5);
+        glow:SetTexCoord(1, 0.5, 0, 0.5);
+    else
+        arrow:SetTexCoord(0, 0.5, 0, 0.5);
+        glow:SetTexCoord(0.5, 1, 0, 0.5);
+    end
+
+    button.arrow = arrow;
+    button.glow = glow;
+    return button
+end
+
+-- "< value >" with one small bar per choice under the text. Arrows step through the choices (no wrap-around).
+local function CreateArrowOption(row, optionData)
+    local widget = CreateFrame("Frame", nil, row.content);
+    widget:SetWidth(ARROWOPTION_WIDTH);
+    widget:SetHeight(OPTION_WIDGET_SIZE);
+    widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
+
+    widget.choices = optionData.choices;
+    widget.dbKey = optionData.dbKey;
+    local numChoices = #widget.choices;
+
+    widget.valueText = widget:CreateFontString(nil, "OVERLAY");
+    widget.valueText:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsValue", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey90" }));
+    widget.valueText:SetJustifyH("CENTER");
+    widget.valueText:SetWidth(120);
+    widget.valueText:SetPoint("TOP", widget, "TOP", 0, ARROWOPTION_VALUETEXT_OFFSET_Y);
+
+    widget.leftArrow = CreateArrowButton(widget, -1);
+    widget.leftArrow:SetPoint("LEFT", widget, "LEFT", 0, 0);
+    widget.rightArrow = CreateArrowButton(widget, 1);
+    widget.rightArrow:SetPoint("RIGHT", widget, "RIGHT", 0, 0);
+
+    for _, button in ipairs({ widget.leftArrow, widget.rightArrow }) do
+        button:SetScript("OnEnter", function(self)
+            self.glow:Show();
+            row:OnEnter();
+        end);
+        button:SetScript("OnLeave", function(self)
+            self.glow:Hide();
+            row:OnLeave();
+        end);
+        button:SetScript("OnMouseDown", function(self)
+            if self:IsEnabled() then
+                self.arrow:SetPoint("CENTER", self, "CENTER", self.delta < 0 and -1 or 1, 0);
+            end
+        end);
+        button:SetScript("OnMouseUp", function(self)
+            self.arrow:SetPoint("CENTER", self, "CENTER", 0, 0);
+        end);
+        button:SetScript("OnClick", function(self)
+            widget:SelectByDelta(self.delta);
+        end);
+    end
+
+    -- One bar per choice, from the arrow edge to the other arrow edge.
+    widget.bars = {};
+    local barWidth = (ARROWOPTION_WIDTH - 2 * ARROWOPTION_BAR_SHRINK - 2 * ARROW_BUTTON_WIDTH
+        - (numChoices - 1) * ARROWOPTION_BAR_GAP) / numChoices;
+    for i = 1, numChoices do
+        -- Retail: a 16x4 piece of the sheet (x 0-16, y 124-128), tiled slice with 1 texel margins.
+        -- Its own frame, so the bar can be dimmed as a whole.
+        local bar = CreateFrame("Frame", nil, widget);
+        bar:SetWidth(barWidth);
+        bar:SetHeight(ARROWOPTION_BAR_HEIGHT);
+        bar:SetPoint("BOTTOMLEFT", widget, "BOTTOMLEFT",
+            ARROW_BUTTON_WIDTH + ARROWOPTION_BAR_SHRINK + (barWidth + ARROWOPTION_BAR_GAP) * (i - 1), 2);
+        local slice = NineSlice:CreateTiled(bar, ThemeUtil:GetTextureFile(ARROW_FILE), { 16, 4 }, 1, BACKGROUND_SCALE,
+            "OVERLAY", { 0, 124, 128, 128 });
+        slice:Update(barWidth, ARROWOPTION_BAR_HEIGHT);
+        ThemeUtil:BindSlice(slice, ARROW_FILE);
+        widget.bars[i] = bar;
+    end
+
+    function widget:ShowChoice(id)
+        self.selectedID = id;
+        self.valueText:SetText(self.choices[id].valueText);
+        local dimmed = ThemeUtil:IsDarkMode() and 0.5 or 0.2;
+        for i, bar in ipairs(self.bars) do
+            bar:SetAlpha(i == id and 1 or dimmed);
+        end
+        -- The ends are disabled instead of wrapping around.
+        if id == 1 then
+            self.leftArrow:Disable();
+            self.leftArrow:SetAlpha(0.2);
+        else
+            self.leftArrow:Enable();
+            self.leftArrow:SetAlpha(1);
+        end
+        if id == numChoices then
+            self.rightArrow:Disable();
+            self.rightArrow:SetAlpha(0.2);
+        else
+            self.rightArrow:Enable();
+            self.rightArrow:SetAlpha(1);
+        end
+    end
+
+    -- Shows the saved value.
+    function widget:Refresh()
+        local value = GetDBValue(self.dbKey);
+        local id = 1;
+        for i, choice in ipairs(self.choices) do
+            if choice.dbValue == value then
+                id = i;
+                break
+            end
+        end
+        self:ShowChoice(id);
+    end
+
+    function widget:SelectByDelta(delta)
+        local id = (self.selectedID or 1) + delta;
+        if id < 1 or id > numChoices then
+            return
+        end
+        self:ShowChoice(id);
+        SetDBValue(self.dbKey, self.choices[id].dbValue, true);
+        PlaySound("igMainMenuOptionCheckBoxOn");
+        row:OnEnter();      -- the description may depend on the choice
+    end
+
+    -- Dark dims the bars less than Brown.
+    CallbackRegistry:Register("ThemeChanged", function()
+        if widget.selectedID then
+            widget:ShowChoice(widget.selectedID);
+        end
+    end);
+
+    return widget
+end
+
+local OptionLabelFont;
+
+-- A row of the option list: label on the left, the option widget on the right, hover glow behind both.
+local function CreateOptionRow(page, index, optionData)
+    local row = CreateFrame("Button", nil, page);
+    row:SetWidth(OPTIONBUTTON_WIDTH);
+    row:SetHeight(OPTION_ROW_HEIGHT);
+    row:SetPoint("TOPLEFT", page, "TOPLEFT", 0, -(index - 1) * OPTION_ROW_HEIGHT);
+    row.optionData = optionData;
+
+    -- Label and widget live one level above the row, so the hover glow (row level + 1) is under them.
+    local content = CreateFrame("Frame", nil, row);
+    content:SetAllPoints(row);
+    content:SetFrameLevel(row:GetFrameLevel() + 2);
+    row.content = content;
+
+    local label = content:CreateFontString(nil, "OVERLAY");
+    label:SetFontObject(OptionLabelFont);
+    label:SetJustifyH("LEFT");
+    label:SetPoint("LEFT", content, "LEFT", OPTION_LABEL_OFFSET, 0);
+    label:SetText(optionData.name);
+    row.label = label;
+
+    function row:OnEnter()
+        SettingsUI:HighlightButton(self, 1);
+        SettingsUI:SetDescription(self.optionData.description);
+    end
+    function row:OnLeave()
+        SettingsUI:HighlightButton(nil);
+        SettingsUI:SetDescription(nil);
+    end
+    row:SetScript("OnEnter", row.OnEnter);
+    row:SetScript("OnLeave", row.OnLeave);
+    ForwardDrag(row);
+
+    if optionData.type == "ArrowOption" then
+        row.widget = CreateArrowOption(row, optionData);
+    end
+
+    return row
+end
+
+function SettingsUI:RefreshTab(tabID)
+    local rows = frame.rows[tabID];
+    for i = 1, #rows do
+        if rows[i].widget then
+            rows[i].widget:Refresh();
+        end
+    end
+end
+
+
+---------------------------------------------------------------------------
 -- Frame
 ---------------------------------------------------------------------------
 
 local function CreateSettingsFrame()
-    NormalTabFont = FontUtil:GetQuestFont("DUI335_SettingsTab", FONT_HEIGHT);               -- dark brown, on paper
-    SelectedTabFont = FontUtil:GetColoredFont("DUI335_SettingsTabSelected", FONT_HEIGHT, { 0.87, 0.86, 0.75 });   -- cream, on the dark selection
+    -- Normal: on paper (retail DUIFont_Quest_Gossip). Selected: on the dark plate (DUIFont_Quest_Quest).
+    NormalTabFont = FontUtil:GetQuestFont("DUI335_SettingsTab", FONT_HEIGHT, { "DarkBrown", "DarkModeGoldDim" });
+    SelectedTabFont = FontUtil:GetColoredFont("DUI335_SettingsTabSelected", FONT_HEIGHT, { "Ivory", "DarkModeGold" });
+    OptionLabelFont = FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" });
 
     local f = CreateFrame("Frame", "DialogueUI335Settings", UIParent);
     frame = f;
@@ -269,6 +527,7 @@ local function CreateSettingsFrame()
     f.backgroundSlice = NineSlice:CreateTiled(background, ThemeUtil:GetTextureFile("GenericFrame-Tiled-Large.blp"),
         { 512, 512 }, 80, BACKGROUND_SCALE, "BACKGROUND");
     f.backgroundSlice:Update(frameWidth + 2 * BACKGROUND_SHADOW, frameHeight + 2 * BACKGROUND_SHADOW);
+    ThemeUtil:BindSlice(f.backgroundSlice, "GenericFrame-Tiled-Large.blp");
 
     -- Dividers and description sit on one frame above the background.
     local content = CreateFrame("Frame", nil, f);
@@ -291,6 +550,7 @@ local function CreateSettingsFrame()
     f.selectionFrame = selectionFrame;
     f.selection = NineSlice:CreateTiled(selectionFrame, ThemeUtil:GetTextureFile("Settings-TabButton-Selection.blp"),
         { 128, 64 }, 16, SELECTION_SCALE, "BACKGROUND");
+    ThemeUtil:BindSlice(f.selection, "Settings-TabButton-Selection.blp");
 
     -- Hover glow shared by the tab buttons.
     local highlightFrame = CreateFrame("Frame", nil, header);
@@ -298,6 +558,7 @@ local function CreateSettingsFrame()
     f.highlightFrame = highlightFrame;
     f.highlight = NineSlice:CreateTiled(highlightFrame, ThemeUtil:GetTextureFile("Settings-ButtonHighlight.blp"),
         { 128, 64 }, 24, 1, "BACKGROUND");
+    ThemeUtil:BindSlice(f.highlight, "Settings-ButtonHighlight.blp");
 
     f.closeButton = CreateCloseButton(header);
     f.closeButton:SetFrameLevel(baseLevel + 4);
@@ -316,7 +577,7 @@ local function CreateSettingsFrame()
     end
 
     -- Line under the header.
-    f.headerDivider = CreateDivider(content, ThemeUtil:GetTextureFile("Settings-Divider-H.blp"), false);
+    f.headerDivider = CreateDivider(content, "Settings-Divider-H.blp", false);
     f.headerDivider:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -TAB_BUTTON_GAP);
     f.headerDivider:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", 0, -TAB_BUTTON_GAP);
 
@@ -336,8 +597,17 @@ local function CreateSettingsFrame()
         f.pages[i] = page;
     end
 
+    -- The option rows of every tab (the options do not change, so they are built once).
+    f.rows = {};
+    for i, tabData in ipairs(Schematic) do
+        f.rows[i] = {};
+        for j, optionData in ipairs(tabData.options) do
+            f.rows[i][j] = CreateOptionRow(f.pages[i], j, optionData);
+        end
+    end
+
     -- Line between the list and the description. Retail anchors it to the scroll bar (list right + 4).
-    f.verticalDivider = CreateDivider(content, ThemeUtil:GetTextureFile("Settings-Divider-V.blp"), true);
+    f.verticalDivider = CreateDivider(content, "Settings-Divider-V.blp", true);
     f.verticalDivider:SetPoint("TOPLEFT", list, "TOPRIGHT", 8, 0);
     f.verticalDivider:SetPoint("BOTTOMLEFT", list, "BOTTOMRIGHT", 8, 0);
 
@@ -353,7 +623,7 @@ local function CreateSettingsFrame()
     f.preview = preview;
 
     local description = content:CreateFontString(nil, "OVERLAY");
-    description:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT));
+    description:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" }));
     description:SetJustifyH("LEFT");
     description:SetJustifyV("TOP");
     description:SetSpacing(4);
@@ -361,8 +631,20 @@ local function CreateSettingsFrame()
     description:SetPoint("TOP", preview, "TOP", 0, -8);
     f.description = description;
 
+    -- Decor picture, bottom right (retail BackgroundDecor + DecorMask). 3.3.5a has no mask texture, so the picture
+    -- is two textures that follow the description text: the body below the mask edge, a short fade band above it.
+    local decorBody = content:CreateTexture(nil, "ARTWORK");
+    decorBody:SetTexture(DECOR_FILE);
+    local decorFade = content:CreateTexture(nil, "ARTWORK");
+    decorFade:SetTexture(DECOR_FILE);
+    f.decor = { body = decorBody, fade = decorFade, size = rightAreaWidth, frameHeight = frameHeight };
+    CallbackRegistry:Register("ThemeChanged", function()
+        SettingsUI:UpdateDecor();
+    end);
+
     -- Keys while the window is open: Esc and F1 close it.
     f:SetScript("OnShow", function()
+        SettingsUI:RefreshTab(f.tabID);         -- a setting may have changed by other means (/run)
         SettingsUI:UpdateKeys();
         CallbackRegistry:Trigger("SettingsUI.Show");
     end);
@@ -387,7 +669,9 @@ end
 -- Public
 ---------------------------------------------------------------------------
 
-function SettingsUI:HighlightButton(button)
+-- levelOffset: frame level of the glow relative to the button. Tabs: -1 (behind the tab, which has no art of its own),
+-- option rows: +1 (above the row, under its label and widget).
+function SettingsUI:HighlightButton(button, levelOffset)
     local f = frame;
     f.highlightFrame:Hide();
     f.highlightFrame:ClearAllPoints();
@@ -395,7 +679,7 @@ function SettingsUI:HighlightButton(button)
     if button and not button.isSelected then
         f.highlightFrame:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0);
         f.highlightFrame:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0);
-        f.highlightFrame:SetFrameLevel(button:GetFrameLevel() - 1);
+        f.highlightFrame:SetFrameLevel(button:GetFrameLevel() + (levelOffset or -1));
         f.highlight:Update(button:GetWidth(), button:GetHeight());
         f.highlightFrame:Show();
     end
@@ -428,6 +712,7 @@ function SettingsUI:SelectTab(tabID, silent)
     end
     self:HighlightButton(nil);
     self:SetDescription(nil);
+    self:RefreshTab(tabID);
 
     if not silent and f:IsVisible() then
         PlaySound("igMainMenuOptionCheckBoxOn");
@@ -436,6 +721,63 @@ end
 
 function SettingsUI:SetDescription(text)
     frame.description:SetText(text or "");
+    self:UpdateDecor();
+end
+
+-- Places the decor picture. Retail: the mask's bottom edge sits 24 below the description text. Below that edge
+-- the picture is fully visible (mask alpha 0.875), above it fades out over 8 of the mask's 128 rows.
+function SettingsUI:UpdateDecor()
+    local decor = frame.decor;
+    local body, fade, size = decor.body, decor.fade, decor.size;
+    local pictureBottom = DECOR_INSET;                  -- from the frame bottom
+    local pictureTop = DECOR_INSET + size;
+    local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + 8 + frame.description:GetStringHeight();  -- from the frame top
+    local edge = decor.frameHeight - descriptionBottom - DECOR_MASK_OFFSET;
+    local fadeHeight = size * DECOR_FADE_ROWS;
+
+    local r, g, b, alpha;
+    if ThemeUtil:IsDarkMode() then
+        r, g, b, alpha = 0.2, 0.2, 0.2, 1;
+        body:SetBlendMode("ADD");
+        fade:SetBlendMode("ADD");
+    else
+        r, g, b, alpha = 173 / 255, 114 / 255, 65 / 255, 0.8;
+        body:SetBlendMode("BLEND");
+        fade:SetBlendMode("BLEND");
+    end
+    alpha = alpha * DECOR_MASK_ALPHA;
+
+    -- Body: from the picture bottom up to the edge.
+    local bodyTop = math.min(math.max(edge, pictureBottom), pictureTop);
+    if bodyTop > pictureBottom then
+        body:ClearAllPoints();
+        body:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -DECOR_INSET, pictureBottom);
+        body:SetWidth(size);
+        body:SetHeight(bodyTop - pictureBottom);
+        body:SetTexCoord(0, 1, (pictureTop - bodyTop) / size, 1);
+        body:SetVertexColor(r, g, b, alpha);
+        body:Show();
+    else
+        body:Hide();
+    end
+
+    -- Fade band: just above the edge, transparent at its top.
+    local bandBottom = math.max(edge, pictureBottom);
+    local bandTop = math.min(edge + fadeHeight, pictureTop);
+    if bandTop > bandBottom then
+        fade:ClearAllPoints();
+        fade:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -DECOR_INSET, bandBottom);
+        fade:SetWidth(size);
+        fade:SetHeight(bandTop - bandBottom);
+        fade:SetTexCoord(0, 1, (pictureTop - bandTop) / size, (pictureTop - bandBottom) / size);
+        local alphaBottom = alpha * (1 - (bandBottom - edge) / fadeHeight);
+        local alphaTop = alpha * (1 - (bandTop - edge) / fadeHeight);
+        -- VERTICAL: the first color is at the bottom.
+        fade:SetGradientAlpha("VERTICAL", r, g, b, alphaBottom, r, g, b, alphaTop);
+        fade:Show();
+    else
+        fade:Hide();
+    end
 end
 
 function SettingsUI:Show()

@@ -180,9 +180,9 @@ local SourceFont;      -- item strip text: same size as the paragraphs, always d
 
 local function InitFonts()
     for tag, name in pairs(FontNames) do
-        Fonts[tag] = FontUtil:GetQuestFont(name, 12);
+        Fonts[tag] = FontUtil:GetQuestFont(name, 12, false);        -- the book sets its own colors (kit), no theme
     end
-    SourceFont = FontUtil:GetQuestFont("DUI335_Book_Source", 12);
+    SourceFont = FontUtil:GetQuestFont("DUI335_Book_Source", 12, false);
 end
 
 local function ApplyFontSizes()
@@ -1129,7 +1129,7 @@ function Book:CreateSourceButton()
     panel:SetPoint("TOPLEFT", f, "TOPLEFT", -SOURCE_PANEL_PAD, SOURCE_PANEL_PAD_V);
     panel:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", SOURCE_PANEL_PAD, -SOURCE_PANEL_PAD_V);
     f.panel = panel;
-    f.panelSlice = addon.NineSlice:CreateTiled(panel, addon.ThemeUtil:GetTextureFile("GenericFrame-Tiled-Large.blp"),
+    f.panelSlice = addon.NineSlice:CreateTiled(panel, addon.ThemeUtil:GetFixedTextureFile("GenericFrame-Tiled-Large.blp"),
         {512, 512}, 80, SOURCE_PANEL_SCALE, "BACKGROUND");
 
     f.icon = f:CreateTexture(nil, "ARTWORK");

@@ -41,11 +41,26 @@ local ART = {
     [4] = {background = "OptionBackground-Grey.blp", font = "active", glow = {0.23, 0.23, 0.23}},
 };
 
-local FONT_COLOR_ACTIVE = {0.87, 0.86, 0.75};
-local FONT_COLOR_DISABLED = {0.50, 0.36, 0.24};
-local FONT_COLOR_GOSSIP = {0.19, 0.17, 0.13};       -- retail DUIFont_Quest_Gossip
-local FONT_COLOR_NOTE = {0.70, 0.70, 0.70};         -- retail DUIFont_QuestType_Right
-local FONT_COLOR_HOTKEY = {0.70, 0.70, 0.70};
+-- {Brown, Dark} color keys of ThemeUtil, from retail's FONT_OBJECT_COLOR.
+local FONT_COLOR_ACTIVE = {"Ivory", "DarkModeGold"};                -- DUIFont_Quest_Quest
+local FONT_COLOR_DISABLED = {"LightBrown", "DarkModeGrey50"};       -- DUIFont_Quest_Disabled
+local FONT_COLOR_GOSSIP = {"DarkBrown", "DarkModeGoldDim"};         -- DUIFont_Quest_Gossip
+local FONT_COLOR_NOTE = {"DarkModeGrey70", "DarkModeGrey70"};       -- DUIFont_QuestType_Right
+local FONT_COLOR_HOTKEY = {"DarkModeGrey70", "DarkModeGrey70"};
+
+-- The Dark ButtonHighlight-Gossip is 128x32, the Brown one 128x64 (all other glow files are 128x64).
+local HIGHLIGHT_SLICE = {left = 40, right = 16, top = 8, bottom = 8};
+
+-- Re-cuts the nine pieces of a CreateEdges slice for a texture of another size.
+local function SetSliceCoords(pieces, texW, texH, slice)
+    local u = {0, slice.left / texW, 1 - slice.right / texW, 1};
+    local v = {0, slice.top / texH, 1 - slice.bottom / texH, 1};
+    for row = 1, 3 do
+        for col = 1, 3 do
+            pieces[(row - 1) * 3 + col]:SetTexCoord(u[col], u[col + 1], v[row], v[row + 1]);
+        end
+    end
+end
 
 -- Retail's EasingFunctions.outQuart.
 local function OutQuart(t, from, to, duration)
@@ -63,6 +78,7 @@ local function CreateHotkey(button)
     f:SetHeight(HOTKEY_SIZE);
 
     f.background = NineSlice:Create(f, ThemeUtil:GetTextureFile("HotkeyBackground.blp"), {32, 32}, 8, HOTKEY_CORNER, "ARTWORK");
+    ThemeUtil:BindSlice(f.background, "HotkeyBackground.blp");
 
     f.keyName = f:CreateFontString(nil, "OVERLAY");
     f.keyName:SetFontObject(FontUtil:GetColoredFont("DUI335_Hotkey", 10, FONT_COLOR_HOTKEY));
@@ -109,7 +125,7 @@ local function CreateLock(button)
     f:Hide();
 
     f.progress = f:CreateTexture(nil, "BACKGROUND");
-    f.progress:SetTexture(ThemeUtil:GetTextureFile("ButtonLockProgress.blp"));
+    ThemeUtil:BindTexture(f.progress, "ButtonLockProgress.blp");
     f.progress:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0);
     f.progress:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0);
 
@@ -233,6 +249,8 @@ function OptionButtonMixin:SetArt(id)
         self.glowFile = glowFile;
         NineSlice:SetTexture(self.highlight.back, ThemeUtil:GetTextureFile(glowFile));
         NineSlice:SetBlendMode(self.highlight.back, art.glowFile and "BLEND" or "ADD");
+        local texHeight = (glowFile == GOSSIP_GLOW and ThemeUtil:IsDarkMode()) and 32 or 64;
+        SetSliceCoords(self.highlight.back, 128, texHeight, HIGHLIGHT_SLICE);
     end
     if art.glow then
         NineSlice:SetVertexColor(self.highlight.back, art.glow[1], art.glow[2], art.glow[3]);
@@ -412,7 +430,7 @@ local function CreateOptionButton(parent, name, owner)
     highlight.back = NineSlice:CreateEdges(highlight, ThemeUtil:GetTextureFile("ButtonHighlight-Add.blp"), {128, 64}, 40, 16, 8, 8, "ARTWORK");
     NineSlice:SetBlendMode(highlight.back, "ADD");
     highlight.front = highlight:CreateTexture(nil, "OVERLAY");
-    highlight.front:SetTexture(ThemeUtil:GetTextureFile("ButtonHighlight-Front.blp"));
+    ThemeUtil:BindTexture(highlight.front, "ButtonHighlight-Front.blp");
     highlight.front:SetWidth(HIGHLIGHT_FRONT_WIDTH);
     button.highlight = highlight;
 
@@ -456,6 +474,14 @@ local function CreateOptionButton(parent, name, owner)
     button:SetScript("OnMouseDown", button.OnMouseDown);
     button:SetScript("OnMouseUp", button.OnMouseUp);
     button:SetScript("OnClick", button.OnClick);
+
+    -- The background file and the glow file depend on the art id: apply them again.
+    addon.CallbackRegistry:Register("ThemeChanged", function()
+        if button.artID then
+            button.glowFile = nil;
+            button:SetArt(button.artID);
+        end
+    end);
 
     return button
 end

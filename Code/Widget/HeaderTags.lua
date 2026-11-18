@@ -8,7 +8,7 @@ local ICON_SIZE = 14;
 local ICON_TEXT_GAP = 2;
 local SPACING = 8;
 local FONT_HEIGHT = 11;
-local TEXT_COLOR = {0.45, 0.36, 0.24};      -- muted brown, readable on the parchment
+local TEXT_COLOR = {"MutedBrown", "DarkModeGrey70"};      -- muted brown on the parchment, grey on Dark (retail DUIFont_QuestType_Right)
 
 local HeaderTags = {};
 HeaderTags.__index = HeaderTags;

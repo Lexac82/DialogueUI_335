@@ -74,8 +74,10 @@ local RECT_BUTTON_DISABLED = {0, 344, 256, 32};
 local COORD_TITLE_STRIP = {96 / 512, 1, 0, 64 / 512};
 local COORD_QUEUE_MARKER = {0, 32 / 512, 96 / 512, 128 / 512};
 
-local COLOR_TEXT = {0.19, 0.17, 0.13};      -- DarkBrown
-local COLOR_BUTTON = {0.87, 0.86, 0.75};    -- Ivory
+-- {Brown, Dark} color keys of ThemeUtil
+local COLOR_TITLE = {"DarkBrown", "DarkModeGrey90"};
+local COLOR_DESC = {"DarkBrown", "DarkModeGrey70"};
+local COLOR_BUTTON = {"Ivory", "DarkModeGold"};
 local COLOR_PROGRESS = {0.36, 0.25, 0.2};
 
 -- Tooltip lines that mark the item type. These are FrameXML strings, not in wow-docs (UNVERIFIED): the English
@@ -136,8 +138,8 @@ local GetBagPosition;       -- defined below, used by the button click
 
 local function UpdateFonts()
     local size = GetDBValue("QuestItemDisplayFontSize");
-    TitleFont = FontUtil:GetColoredFont("DUI335_QID_Title" .. size, size, COLOR_TEXT);
-    DescFont = FontUtil:GetColoredFont("DUI335_QID_Desc" .. size, max(size - 2, 8), COLOR_TEXT);
+    TitleFont = FontUtil:GetColoredFont("DUI335_QID_Title" .. size, size, COLOR_TITLE);
+    DescFont = FontUtil:GetColoredFont("DUI335_QID_Desc" .. size, max(size - 2, 8), COLOR_DESC);
     ButtonFont = FontUtil:GetColoredFont("DUI335_QID_Button" .. size, max(size - 2, 8), COLOR_BUTTON);
 end
 
@@ -157,7 +159,9 @@ local function SheetFile()
 end
 
 local function CreateSheetSlice(frame, rect, margin, layer, scale)
-    return NineSlice:CreateTiled(frame, SheetFile(), {rect[3], rect[4]}, margin, scale or 1, layer, {rect[1], rect[2], SHEET_SIZE, SHEET_SIZE});
+    local slice = NineSlice:CreateTiled(frame, SheetFile(), {rect[3], rect[4]}, margin, scale or 1, layer, {rect[1], rect[2], SHEET_SIZE, SHEET_SIZE});
+    ThemeUtil:BindSlice(slice, SHEET_FILE);
+    return slice
 end
 
 function QuestItemDisplay:Init()
@@ -185,7 +189,7 @@ function QuestItemDisplay:Init()
 
     local titleStrip = self:CreateTexture(nil, "ARTWORK");
     self.titleStrip = titleStrip;
-    titleStrip:SetTexture(SheetFile());
+    ThemeUtil:BindTexture(titleStrip, SHEET_FILE);
     titleStrip:SetTexCoord(COORD_TITLE_STRIP[1], COORD_TITLE_STRIP[2], COORD_TITLE_STRIP[3], COORD_TITLE_STRIP[4]);
     titleStrip:SetBlendMode("ADD");
     titleStrip:SetAlpha(0.15);
@@ -236,6 +240,13 @@ function QuestItemDisplay:Init()
     self:SetScript("OnHide", self.OnHide);
 
     self:LoadPosition();
+
+    -- Button text color depends on the state and the theme.
+    addon.CallbackRegistry:Register("ThemeChanged", function()
+        if self.buttonState then
+            self:SetButtonState(self.buttonState);
+        end
+    end);
 end
 
 -- The secure button under the text: reads the item, or (when the quest is already in the log) opens the log.
@@ -375,10 +386,11 @@ function QuestItemDisplay:SetButtonState(state)
     btn.normal:SetShown(state == "normal");
     btn.highlight:SetShown(state == "highlight");
     btn.disabled:SetShown(state == "disabled");
+    self.buttonState = state;
     if state == "disabled" then
-        btn.text:SetTextColor(COLOR_TEXT[1], COLOR_TEXT[2], COLOR_TEXT[3]);
+        btn.text:SetTextColor(ThemeUtil:GetColor(ThemeUtil:IsDarkMode() and "DarkModeGrey70" or "DarkBrown"));
     else
-        btn.text:SetTextColor(COLOR_BUTTON[1], COLOR_BUTTON[2], COLOR_BUTTON[3]);
+        btn.text:SetTextColor(ThemeUtil:GetColor(ThemeUtil:IsDarkMode() and "DarkModeGold" or "Ivory"));
     end
 end
 
@@ -905,7 +917,7 @@ function QuestItemDisplay:UpdateQueueMarkers()
         if i <= count then
             if not marker then
                 marker = self:CreateTexture(nil, "OVERLAY");
-                marker:SetTexture(SheetFile());
+                ThemeUtil:BindTexture(marker, SHEET_FILE);
                 marker:SetTexCoord(COORD_QUEUE_MARKER[1], COORD_QUEUE_MARKER[2], COORD_QUEUE_MARKER[3], COORD_QUEUE_MARKER[4]);
                 marker:SetWidth(QUEUE_MARKER_SIZE);
                 marker:SetHeight(QUEUE_MARKER_SIZE);

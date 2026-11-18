@@ -31,8 +31,8 @@ local COIN_FILE = "Coin-Gold.blp";
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
 
-local COLOR_NORMAL = {0.19, 0.17, 0.13};  -- DUIFont_Item on the Brown theme
-local COLOR_CHOOSE = {0.87, 0.86, 0.75};  -- Ivory, DUIFont_ItemSelect on the Brown theme
+local COLOR_NORMAL = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
+local COLOR_CHOOSE = {"Ivory", "DarkModeGold"};           -- DUIFont_ItemSelect
 
 local FADE_SPEED = 1 / 0.15;              -- retail FadeFrame duration 0.15 s
 
@@ -66,7 +66,19 @@ function RewardItemButton:SetStyle(style)
     NineSlice:SetShown(self.backgroundNormal, not choose);
     NineSlice:SetShown(self.backgroundChoose, choose);
     self.border:SetTexture(ThemeUtil:GetTextureFile(choose and BORDER_CHOOSE or BORDER_NORMAL));
-    self.name:SetFontObject(choose and self.fontChoose or self.fontNormal);
+    self:UpdateNameColor();
+end
+
+-- Name color: the font color (Ivory when chosen). In Dark the name takes its item quality color (retail).
+function RewardItemButton:UpdateNameColor()
+    local font = (self.style == 2) and self.fontChoose or self.fontNormal;
+    self.name:SetFontObject(font);
+    local entry = self.entry;
+    if self.style ~= 2 and entry and entry.kind == "item" and entry.quality and ThemeUtil:IsDarkMode() then
+        self.name:SetTextColor(ThemeUtil:GetQualityColor(entry.quality));
+    else
+        self.name:SetTextColor(font:GetTextColor());     -- explicit, so a quality color from before is gone
+    end
 end
 
 function RewardItemButton:SetCount(text)
@@ -129,6 +141,7 @@ function RewardItemButton:SetEntry(entry)
 
     self.icon:SetTexture(texture);
     self.name:SetText(name);
+    self:UpdateNameColor();
     self:SetCount(count);
     SetOverlay(self.overlay, overlay);
     self:SetSellMarker(false);
@@ -141,7 +154,7 @@ function RewardItemButton:SetSellMarker(shown)
     if shown then
         if not self.coin then
             local coin = self.topFrame:CreateTexture(nil, "OVERLAY");
-            coin:SetTexture(ThemeUtil:GetTextureFile(COIN_FILE));
+            ThemeUtil:BindTexture(coin, COIN_FILE);
             coin:SetWidth(15);
             coin:SetHeight(15);
             coin:SetPoint("CENTER", self.icon, "TOPLEFT", 3, -3);
@@ -234,6 +247,8 @@ local function CreateRewardItemButton(parent, host)
 
     self.backgroundNormal = NineSlice:Create(frame, ThemeUtil:GetTextureFile(BACKGROUND_NORMAL), {64, 64}, 16, 16, "BACKGROUND");
     self.backgroundChoose = NineSlice:Create(frame, ThemeUtil:GetTextureFile(BACKGROUND_CHOOSE), {256, 64}, 16, 16, "BACKGROUND");
+    ThemeUtil:BindSlice(self.backgroundNormal, BACKGROUND_NORMAL);
+    ThemeUtil:BindSlice(self.backgroundChoose, BACKGROUND_CHOOSE);
 
     local icon = frame:CreateTexture(nil, "ARTWORK");
     icon:SetWidth(ICON_SIZE);
@@ -257,7 +272,7 @@ local function CreateRewardItemButton(parent, host)
     self.topFrame = topFrame;
 
     local overlay = topFrame:CreateTexture(nil, "OVERLAY");
-    overlay:SetTexture(ThemeUtil:GetTextureFile(OVERLAY_FILE));
+    ThemeUtil:BindTexture(overlay, OVERLAY_FILE);
     overlay:SetWidth(BORDER_SIZE);
     overlay:SetHeight(BORDER_SIZE);
     overlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
@@ -283,7 +298,7 @@ local function CreateRewardItemButton(parent, host)
     local sheenFrame = CreateFrame("Frame", nil, frame);
     sheenFrame:SetAllPoints(frame);
     local sheen = sheenFrame:CreateTexture(nil, "OVERLAY");
-    sheen:SetTexture(ThemeUtil:GetTextureFile(SHEEN_FILE));
+    ThemeUtil:BindTexture(sheen, SHEEN_FILE);
     sheen:SetBlendMode("ADD");
     sheen:SetWidth(BORDER_SIZE);
     sheen:SetHeight(BORDER_SIZE);
@@ -303,6 +318,11 @@ local function CreateRewardItemButton(parent, host)
     end);
 
     self:SetStyle(1);
+
+    -- The border file and the name color depend on the style.
+    addon.CallbackRegistry:Register("ThemeChanged", function()
+        self:SetStyle(self.style);
+    end);
     return self
 end
 

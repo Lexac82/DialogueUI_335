@@ -21,6 +21,9 @@ addon.VERSION_TEXT = VERSION_TEXT;
 -- Same key names as retail's DefaultValues, so the future settings menu can reuse retail's definitions.
 -- Where our default differs from retail's it is noted.
 local DefaultValues = {
+    --Appearance
+    Theme = 1,                                  --1 Brown, 2 Dark
+
     --Reward tooltip
     UseBlizzardTooltip = false,
     TooltipShowItemComparison = false,

@@ -22,25 +22,28 @@ local SECTION_SPACING = 2 * 12;                          -- PARAGRAPH_BUTTON_SPA
 local TIGHT_SPACING = 1;
 GossipDataProvider.GAPS = {paragraph = PARAGRAPH_SPACING, section = SECTION_SPACING, tight = TIGHT_SPACING, none = 0};
 
--- Quest level colours (retail QuestDifficulty.lua, "Bright" set, used on the red and grey buttons).
-local COLOR_VERY_HARD = "f85658";
-local COLOR_HARD = "ff9845";
-local COLOR_NORMAL = "e9c21b";
-local COLOR_EASY = "81c285";
-local COLOR_TRIVIAL = "b2a6a5";
-local COLOR_UNFINISHED = "b3b3b3";
+-- Quest level colours (retail QuestDifficulty.lua): "Bright" on the Brown theme, "Dark" on the Dark theme.
+local DIFFICULTY_COLORS = {
+    Bright = {VeryHard = "f85658", Hard = "ff9845", Normal = "e9c21b", Easy = "81c285", Trivial = "b2a6a5", Unfinished = "b3b3b3"},
+    Dark = {VeryHard = "ff7370", Hard = "ed953c", Normal = "d9c726", Easy = "91be93", Trivial = "b2a6a5", Unfinished = "b3b3b3"},
+};
+
+local function GetColors()
+    return addon.ThemeUtil:IsDarkMode() and DIFFICULTY_COLORS.Dark or DIFFICULTY_COLORS.Bright
+end
 
 local function GetLevelColor(levelDiff)
+    local colors = GetColors();
     if levelDiff > 5 then
-        return COLOR_VERY_HARD
+        return colors.VeryHard
     elseif levelDiff >= 3 then
-        return COLOR_HARD
+        return colors.Hard
     elseif levelDiff >= -2 then
-        return COLOR_NORMAL
+        return colors.Normal
     elseif levelDiff >= -5 then
-        return COLOR_EASY
+        return colors.Easy
     end
-    return COLOR_TRIVIAL
+    return colors.Trivial
 end
 
 -- "|cffRRGGBB62|r  Title". Level 0 or nil: just the title.
@@ -51,9 +54,9 @@ local function FormatQuestTitle(row)
     end
     local hex;
     if row.kind == "active" and not row.complete then
-        hex = COLOR_UNFINISHED;
+        hex = GetColors().Unfinished;
     elseif row.trivial then
-        hex = COLOR_TRIVIAL;
+        hex = GetColors().Trivial;
     else
         hex = GetLevelColor(level - (UnitLevel("player") or level));
     end
@@ -310,19 +313,11 @@ local function ReadGreetingQuests(quests)
 end
 
 -- Red option text (retail: <Skip Chapter> style options) is made legible on parchment and gets the red icon.
--- Same patterns and replacement colour as retail's ThemeUtil (Brown theme). Textures/Icons/Gossip-Red.blp.
-local RED_PATTERNS = {"|[cC][fF][fF][fF][fF]0000", "|[cC][fF][fF][fF][fF]4040"};
-local RED_REPLACEMENT = "|cff9B2020";
+-- ThemeUtil:AdjustTextColor does the replacement (red on Brown, blue on Dark, as retail). Textures/Icons/Gossip-Red.blp.
 local ICON_RED = ICON_PATH .. "Gossip-Red.blp";
 
 local function AdjustRedText(text)
-    for _, pattern in ipairs(RED_PATTERNS) do
-        local replaced, count = string.gsub(text, pattern, RED_REPLACEMENT);
-        if count > 0 then
-            return replaced, true
-        end
-    end
-    return text, false
+    return addon.ThemeUtil:AdjustTextColor(text)
 end
 
 -- "The auction house" -> "The Auction House": menu entries come from the server in sentence case. Whole sentences

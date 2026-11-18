@@ -81,6 +81,18 @@ end
 API.CreateFromMixins = CreateFromMixins;
 
 
+-- Textures -----------------------------------------------------------------------------------------------------
+
+-- SetTexture with the crop kept. Not every client keeps the texture coordinates when the file changes.
+function API.SetTextureKeepCoords(texture, file)
+    local ulx, uly, llx, lly, urx, ury, lrx, lry = texture:GetTexCoord();
+    texture:SetTexture(file);
+    if ulx then
+        texture:SetTexCoord(ulx, uly, llx, lly, urx, ury, lrx, lry);
+    end
+end
+
+
 -- Timer --------------------------------------------------------------------------------------------------------
 
 -- 3.3.5a has no C_Timer.After. One shared frame runs every pending timer and stops when none is left.

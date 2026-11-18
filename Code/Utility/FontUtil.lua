@@ -43,29 +43,42 @@ end
 
 local fontObjects = {};
 
+-- Colors of a font follow the theme (see ThemeUtil:RegisterFont). Quest text default: retail DUIFont_Quest_Title.
+local DEFAULT_COLOR_KEYS = { "DarkBrown", "DarkModeGrey90" };
+
 -- Returns the named quest font object, created on first use. Retail's DUIFontFamily_Serif_<n>.
-function FontUtil:GetQuestFont(name, height)
+-- colors: {BrownColorKey, DarkColorKey} from ThemeUtil (default: title color), or false for a font that keeps
+-- a fixed color and sets it itself (the Book).
+function FontUtil:GetQuestFont(name, height, colors)
     local fontObject = fontObjects[name];
     if not fontObject then
         local file = TITLE_FONT_FILE[GetAlphabetForClient()] or TITLE_FONT_FILE.roman;
         fontObject = CreateFont(name);
         fontObject:SetFont(file, height, "");
-        fontObject:SetTextColor(TITLE_COLOR[1], TITLE_COLOR[2], TITLE_COLOR[3]);
         fontObjects[name] = fontObject;
+        if colors == false then
+            fontObject:SetTextColor(TITLE_COLOR[1], TITLE_COLOR[2], TITLE_COLOR[3]);
+        else
+            addon.ThemeUtil:RegisterFont(fontObject, colors or DEFAULT_COLOR_KEYS);
+        end
     end
     return fontObject;
 end
 
 -- Same Friz Quadrata (per-alphabet) font with an explicit colour. Used for the item names and the tooltip.
--- color: {r, g, b}. Created on first use, cached by name.
+-- color: {r, g, b} (fixed), or {BrownColorKey, DarkColorKey} (follows the theme). Created on first use, cached by name.
 function FontUtil:GetColoredFont(name, height, color)
     local fontObject = fontObjects[name];
     if not fontObject then
         local file = TITLE_FONT_FILE[GetAlphabetForClient()] or TITLE_FONT_FILE.roman;
         fontObject = CreateFont(name);
         fontObject:SetFont(file, height, "");
-        fontObject:SetTextColor(color[1], color[2], color[3]);
         fontObjects[name] = fontObject;
+        if type(color[1]) == "string" then
+            addon.ThemeUtil:RegisterFont(fontObject, color);
+        else
+            fontObject:SetTextColor(color[1], color[2], color[3]);
+        end
     end
     return fontObject;
 end

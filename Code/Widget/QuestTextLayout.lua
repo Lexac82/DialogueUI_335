@@ -223,24 +223,23 @@ function QuestTextLayout:AcquireSubHeader()
 
     local subHeader = self.subHeaders[count];
     if not subHeader then
-        local file = ThemeUtil:GetTextureFile(SUBHEADER_TEX_NAME);
         local frame = CreateFrame("Frame", nil, self.ContentFrame);
         frame:SetHeight(SUBHEADER_HEIGHT);
 
         -- Three horizontal pieces: left cap, stretched middle, right cap.
         local left = frame:CreateTexture(nil, "BORDER");
-        left:SetTexture(file);
+        ThemeUtil:BindTexture(left, SUBHEADER_TEX_NAME);
         left:SetTexCoord(0, SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 0, 1);
         left:SetWidth(SUBHEADER_CAP);
         left:SetHeight(SUBHEADER_HEIGHT);
 
         local middle = frame:CreateTexture(nil, "BORDER");
-        middle:SetTexture(file);
+        ThemeUtil:BindTexture(middle, SUBHEADER_TEX_NAME);
         middle:SetTexCoord(SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 1 - SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 0, 1);
         middle:SetHeight(SUBHEADER_HEIGHT);
 
         local right = frame:CreateTexture(nil, "BORDER");
-        right:SetTexture(file);
+        ThemeUtil:BindTexture(right, SUBHEADER_TEX_NAME);
         right:SetTexCoord(1 - SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 1, 0, 1);
         right:SetWidth(SUBHEADER_CAP);
         right:SetHeight(SUBHEADER_HEIGHT);
@@ -440,8 +439,8 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHei
     -- Separate frame for the reveal OnUpdate.
     self.revealFrame = CreateFrame("Frame", nil, self.ScrollArea);
 
-    self.paragraphFont = FontUtil:GetQuestFont(PARAGRAPH_FONT_NAME, FONT_SIZE);
-    self.subHeaderFont = FontUtil:GetQuestFont(SUBHEADER_FONT_NAME, FONT_SIZE);
+    self.paragraphFont = FontUtil:GetQuestFont(PARAGRAPH_FONT_NAME, FONT_SIZE, {"DarkBrown", "DarkModeGrey70"});
+    self.subHeaderFont = FontUtil:GetQuestFont(SUBHEADER_FONT_NAME, FONT_SIZE, {"DarkBrown", "DarkModeGrey90"});
 
     self.fontStrings = {};
     self.fontStringCount = 0;

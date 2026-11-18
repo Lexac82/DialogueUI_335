@@ -15,22 +15,33 @@ local function Thousands(n)
 end
 MoneyUtil.Thousands = Thousands;
 
--- Short text for reward rows: "12g 34s 56c". Plain colour: the Brown theme does not colourise it.
+-- Short text for reward rows: "12g 34s 56c". Colored only in the Dark theme (retail GenerateMoneyText).
+local COIN_COLOR = { g = "|cffffbb18", s = "|cffc5d2e8", c = "|cffe3b277" };
+
 function MoneyUtil:GetShortText(copper)
     copper = floor(copper or 0);
     local gold = floor(copper / 10000);
     local silver = floor((copper % 10000) / 100);
     local rest = copper % 100;
 
+    local colorized = addon.ThemeUtil:IsDarkMode();
+    local function Part(amount, unit)
+        local text = amount .. unit;
+        if colorized then
+            return COIN_COLOR[unit] .. text .. "|r"
+        end
+        return text
+    end
+
     local parts = {};
     if gold > 0 then
-        parts[#parts + 1] = Thousands(gold) .. "g";
+        parts[#parts + 1] = Part(Thousands(gold), "g");
     end
     if silver > 0 then
-        parts[#parts + 1] = silver .. "s";
+        parts[#parts + 1] = Part(silver, "s");
     end
     if rest > 0 or #parts == 0 then
-        parts[#parts + 1] = rest .. "c";
+        parts[#parts + 1] = Part(rest, "c");
     end
     return table.concat(parts, " ")
 end

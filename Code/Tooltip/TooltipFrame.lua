@@ -316,12 +316,14 @@ local function CreateTooltipFrame()
     local file = ThemeUtil:GetTextureFile(BACKGROUND_FILE);
     -- Tiled like retail's TextureSliceMode(1): corners keep their texel size, edges and centre repeat.
     self.background = NineSlice:CreateTiled(frame, file, BACKGROUND_SIZE, BACKGROUND_MARGIN, BACKGROUND_SCALE, "BACKGROUND");
+    ThemeUtil:BindSlice(self.background, BACKGROUND_FILE);
 
     -- Hotkey hint: key cap (9-slice) + description.
     local hotkeyFrame = CreateFrame("Frame", nil, frame);
     hotkeyFrame:SetHeight(HOTKEY_HEIGHT);
     hotkeyFrame:SetWidth(30);
-    NineSlice:Create(hotkeyFrame, ThemeUtil:GetTextureFile(HOTKEY_FILE), HOTKEY_SIZE, HOTKEY_MARGIN, HOTKEY_MARGIN, "BACKGROUND");
+    local hotkeyBackground = NineSlice:Create(hotkeyFrame, ThemeUtil:GetTextureFile(HOTKEY_FILE), HOTKEY_SIZE, HOTKEY_MARGIN, HOTKEY_MARGIN, "BACKGROUND");
+    ThemeUtil:BindSlice(hotkeyBackground, HOTKEY_FILE);
     local keyText = hotkeyFrame:CreateFontString(nil, "ARTWORK");
     keyText:SetFontObject(self.fonts.body);
     keyText:SetPoint("CENTER", hotkeyFrame, "CENTER", 0, 0);

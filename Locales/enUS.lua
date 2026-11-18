@@ -21,6 +21,12 @@ L["UI"] = "UI";
 L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
 
+-- Settings: UI tab
+L["Theme"] = "Theme";
+L["Theme Desc"] = "Select a color theme for the UI.";
+L["Theme Brown"] = "Brown";
+L["Theme Dark"] = "Dark";
+
 -- Quest types and tags
 L["Quest"] = "Quest";
 L["Quest Frequency Daily"] = "Daily";

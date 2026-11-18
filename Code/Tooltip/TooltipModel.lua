@@ -31,7 +31,7 @@ local function CreatePreview(tooltip)
     icon:SetTexCoord(ICON_TEXCOORD[1], ICON_TEXCOORD[2], ICON_TEXCOORD[3], ICON_TEXCOORD[4]);
 
     local border = frame:CreateTexture(nil, "OVERLAY");
-    border:SetTexture(ThemeUtil:GetTextureFile(BORDER_FILE));
+    ThemeUtil:BindTexture(border, BORDER_FILE);
     border:SetAllPoints(frame);
 
     frame.icon = icon;

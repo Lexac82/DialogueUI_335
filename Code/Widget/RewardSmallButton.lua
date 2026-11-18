@@ -22,8 +22,7 @@ local TEXT_LEFT = 18;
 local TEXT_RIGHT = 6;
 local BACKGROUND_FILE = "ItemButtonBackground.blp";
 local XP_FILE = "XP-Purple.blp";
-local TEXT_COLOR = {0.19, 0.17, 0.13};
-local RED_COLOR = {0.61, 0.125, 0.125};       -- ThemeUtil:AdjustTextColor turns pure red into |cff9B2020 on Brown
+local TEXT_COLOR = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
 
 local ICON_HONOR = {
     Alliance = "Interface\\PVPFrame\\PVP-Currency-Alliance",
@@ -75,8 +74,11 @@ function RewardSmallButton:SetEntry(entry)
 
     self.icon:SetTexture(icon);
     self.text:SetText(text);
-    local color = red and RED_COLOR or TEXT_COLOR;
-    self.text:SetTextColor(color[1], color[2], color[3]);
+    if red then
+        self.text:SetTextColor(ThemeUtil:GetWarningColor());
+    else
+        self.text:SetTextColor(self.font:GetTextColor());
+    end
     self.frame:SetAlpha(1);
 end
 
@@ -103,7 +105,8 @@ local function CreateRewardSmallButton(parent, host)
     self.frame = frame;
 
     -- Drawn corner 7 px: the row is only 15 px high, so the 16 px slice margin would overlap.
-    NineSlice:Create(frame, ThemeUtil:GetTextureFile(BACKGROUND_FILE), {64, 64}, 16, 7, "BACKGROUND");
+    local background = NineSlice:Create(frame, ThemeUtil:GetTextureFile(BACKGROUND_FILE), {64, 64}, 16, 7, "BACKGROUND");
+    ThemeUtil:BindSlice(background, BACKGROUND_FILE);
 
     local icon = frame:CreateTexture(nil, "ARTWORK");
     icon:SetWidth(ICON_SIZE);
@@ -112,7 +115,8 @@ local function CreateRewardSmallButton(parent, host)
     self.icon = icon;
 
     local text = frame:CreateFontString(nil, "ARTWORK");
-    text:SetFontObject(FontUtil:GetColoredFont("DUI335_Item", 10, TEXT_COLOR));
+    self.font = FontUtil:GetColoredFont("DUI335_Item", 10, TEXT_COLOR);
+    text:SetFontObject(self.font);
     text:SetJustifyH("LEFT");
     text:SetJustifyV("MIDDLE");
     text:SetWordWrap(false);
@@ -125,6 +129,13 @@ local function CreateRewardSmallButton(parent, host)
     end);
     frame:SetScript("OnLeave", function()
         host:OnButtonLeave(self);
+    end);
+
+    -- Icon file, money colors and the warning color depend on the theme: fill the row again.
+    addon.CallbackRegistry:Register("ThemeChanged", function()
+        if self.entry then
+            self:SetEntry(self.entry);
+        end
     end);
 
     return self
