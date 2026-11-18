@@ -119,6 +119,14 @@ function QuestTextLayout:StartReveal()
     end);
 end
 
+-- Top of the text box: below the header on quest pages, below the divider on the first-contact page.
+function QuestTextLayout:SetScrollTop(y)
+    if self.scrollTop ~= y then
+        self.scrollTop = y;
+        self:SetFooterOffset(self.footerOffset);
+    end
+end
+
 -- Re-anchors the scroll area between the header and the footer.
 -- The scroll area is the text box: inset paddingH on the left and right, like CSS padding.
 function QuestTextLayout:SetFooterOffset(y)
@@ -180,6 +188,15 @@ function QuestTextLayout:ReleaseAll()
         subHeader.frame:Hide();
     end
     self.subHeaderCount = 0;
+
+    for i = 1, self.rowCount do
+        local row = self.rowButtons[i];
+        row:ResetVisual();
+        row:ClearAllPoints();
+        row:Hide();
+    end
+    self.rowCount = 0;
+    self.rowNames = {};
 end
 
 function QuestTextLayout:AcquireFontString()
@@ -290,11 +307,75 @@ function QuestTextLayout:FormatParagraph(offsetY, text)
     return offsetY - PARAGRAPH_SPACING
 end
 
+function QuestTextLayout:AcquireRow()
+    local count = self.rowCount + 1;
+    self.rowCount = count;
+    local row = self.rowButtons[count];
+    if not row then
+        row = addon.CreateOptionButton(self.ContentFrame, "DialogueUI335Row" .. count, self.owner);
+        row:SetButtonWidth(self.textWidth);
+        self.rowButtons[count] = row;
+    end
+    row:Show();
+    return row
+end
+
+local function OnClick_Row(button)
+    local row = button.row;
+    if row and row.select then
+        row.select(row.index);
+    end
+end
+
+-- First-contact page (GOSSIP_SHOW, QUEST_GREETING): greeting text, then one button per quest or option.
+-- page: GossipData:Read(event). Rows 1-9 get a key (the badge on quests, "N. " in front of option text).
+function QuestTextLayout:SetListPage(page)
+    self:ReleaseAll();
+    self.ScrollArea:ResetScroll();
+    self:SetScrollTop(self.listScrollTop);
+
+    local gaps = addon.GossipData.GAPS;
+    local offsetY = PARAGRAPH_SPACING;
+    local body = page.body;
+    if body and body ~= "" then
+        offsetY = self:FormatParagraph(offsetY, body);
+    end
+
+    for _, data in ipairs(page.rows) do
+        local row = self:AcquireRow();
+        row.row = data;
+        local text, key = data.text, nil;
+        if data.kind == "option" then
+            if data.key then
+                text = data.key .. ". " .. text;
+            end
+        else
+            key = data.key;
+        end
+        row:Configure({
+            type = data.kind, text = text, art = data.art, key = key, icon = data.icon, iconSize = data.iconSize, note = data.note,
+            padding = data.kind == "option" and addon.OPTION_BUTTON_PADDING_SMALL or nil,
+            onClick = OnClick_Row,
+        });
+        offsetY = offsetY + gaps[data.gap or "none"];
+        row:SetPoint("TOPLEFT", self.ContentFrame, "TOPLEFT", 0, -offsetY);
+        offsetY = Round(offsetY + row:GetHeight());
+        if data.key then
+            self.rowNames[#self.rowNames + 1] = "DialogueUI335Row" .. self.rowCount;
+        end
+    end
+
+    self.contentHeight = offsetY;
+    self:UpdateScrollRange();
+    self:StartReveal();
+end
+
 -- Shows the quest body, then the objectives under a sub-header when there are any.
 -- page (optional): QuestData page with suggested group size, rewards, costs and requirements.
 function QuestTextLayout:SetQuestText(body, objective, page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
+    self:SetScrollTop(self.questScrollTop);
 
     local offsetY = self.topOffset;
 
@@ -334,7 +415,12 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHei
     self.parent = parent;
     self.fullHeight = fullHeight;
     self.contentHeight = 0;
-    self.scrollTop = (28 + 40) * scale;             -- retail UseQuestLayout topOffset
+    self.questScrollTop = (28 + 40) * scale;        -- retail UseQuestLayout topOffset
+    self.listScrollTop = 42 * scale;                -- retail UseQuestLayout(false): the Header is hidden
+    self.scrollTop = self.questScrollTop;
+    self.rowButtons = {};
+    self.rowCount = 0;
+    self.rowNames = {};
     -- Text box edges line up with the header divider (358 px, centred on the frame).
     local inset = (width - DIVIDER_BASE_WIDTH * scale) / 2;
     self.paddingLeft = inset;

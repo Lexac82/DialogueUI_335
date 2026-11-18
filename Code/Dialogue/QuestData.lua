@@ -150,6 +150,8 @@ local ICON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\";
 local ICON_AVAILABLE = ICON_PATH .. "AvailableQuest.blp";
 local ICON_DAILY = ICON_PATH .. "DailyQuest.blp";
 local ICON_WEEKLY = ICON_PATH .. "WeeklyQuest.blp";
+local ICON_COMPLETE = ICON_PATH .. "CompleteQuest.blp";
+local ICON_INCOMPLETE = ICON_PATH .. "IncompleteQuest.blp";
 
 local QUEST_TAG_ICON = {
     Dungeon = ICON_PATH .. "QuestTag-Dungeon.blp",
@@ -176,7 +178,9 @@ local function FindLogEntry(title)
     end
 end
 
-local function ReadTags(page)
+-- stateIcon: icon of the "Quest" pill for the page. The accept page uses "!" (available); a quest being handed in
+-- uses "?" (incomplete while in progress, complete when it can be turned in).
+local function ReadTags(page, stateIcon)
     local tags = {};
     local logTag, logGroup, logDaily = FindLogEntry(page.title);
 
@@ -185,7 +189,7 @@ local function ReadTags(page)
     elseif (QuestIsDaily and QuestIsDaily()) or logDaily then
         tags[#tags + 1] = {kind = "type", text = "Daily", icon = ICON_DAILY};
     else
-        tags[#tags + 1] = {kind = "type", text = "Quest", icon = ICON_AVAILABLE};
+        tags[#tags + 1] = {kind = "type", text = "Quest", icon = stateIcon or ICON_AVAILABLE};
     end
 
     local label = logTag and QUEST_TAG_LABEL[logTag];
@@ -227,7 +231,7 @@ local PAGE_READERS = {
             required = {},
             completable = IsQuestCompletable() and true or false,   -- enables the Continue button
         };
-        ReadTags(page);
+        ReadTags(page, page.completable and ICON_COMPLETE or ICON_INCOMPLETE);
         local numItems = GetNumQuestItems() or 0;
         for i = 1, numItems do
             local item = ReadItem("required", i);
@@ -248,7 +252,7 @@ local PAGE_READERS = {
             title = GetTitleText(),
             body = GetRewardText(),
         };
-        ReadTags(page);
+        ReadTags(page, ICON_COMPLETE);
         ReadRewards(page, true);
         return page
     end,

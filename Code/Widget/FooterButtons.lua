@@ -150,6 +150,7 @@ end
 -- event: the quest or gossip event that opened the page. page: QuestData:GetPage(event).
 function Footer:SetPage(event, page)
     self.event, self.page = event, page;
+    self.rowNames = nil;        -- only the first-contact page sets them, after SetPage (SetRowKeys)
     self:ApplyAccept();
     self:ApplyExit();
     self:UpdateKeys();
@@ -190,12 +191,34 @@ function Footer:UpdateKeys()
     end
 
     local accept, exit = self.accept, self.exit;
+    local spaceUsed = false;
     if accept:IsShown() and accept.isEnabled and accept.hasHotkey then
         SetOverrideBindingClick(self.keyOwner, true, "SPACE", ACCEPT_NAME, "LeftButton");
+        spaceUsed = true;
     end
     if exit:IsShown() and exit.isEnabled and exit.hasHotkey then
         SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", EXIT_NAME, "LeftButton");
     end
+
+    -- First-contact page: keys 1-9 click the rows in order. Space takes the first row (retail "Confirm"),
+    -- or says goodbye when the page has no rows.
+    local rowNames = self.rowNames;
+    if rowNames and not spaceUsed then
+        for i = 1, #rowNames do
+            SetOverrideBindingClick(self.keyOwner, true, tostring(i), rowNames[i], "LeftButton");
+        end
+        if rowNames[1] then
+            SetOverrideBindingClick(self.keyOwner, true, "SPACE", rowNames[1], "LeftButton");
+        elseif exit:IsShown() then
+            SetOverrideBindingClick(self.keyOwner, true, "SPACE", EXIT_NAME, "LeftButton");
+        end
+    end
+end
+
+-- Rows of the first-contact page that have a key (global button names, in key order). nil clears them.
+function Footer:SetRowKeys(names)
+    self.rowNames = names;
+    self:UpdateKeys();
 end
 
 -- Distance from the parchment bottom to the footer divider (retail: button height + padding bottom + 2 gaps).

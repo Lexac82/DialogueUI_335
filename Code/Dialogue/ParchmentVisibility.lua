@@ -7,6 +7,7 @@ local _, addon = ...;
 
 local CreateParchmentBackground = addon.CreateParchmentBackground;
 local QuestData = addon.QuestData;
+local GossipData = addon.GossipData;
 
 local parchment = CreateParchmentBackground(UIParent);
 
@@ -45,6 +46,34 @@ local HIDE_EVENTS = {
     QUEST_FINISHED = true,
 };
 
+-- First-contact pages: greeting text plus a list of quests and options (no quest header).
+local LIST_EVENTS = {
+    GOSSIP_SHOW = true,
+    QUEST_GREETING = true,
+};
+
+-- Closing events are acted on a moment later. Choosing a quest in the list closes the gossip window and opens the
+-- quest page right after, and accepting a quest can reopen the list: the parchment should stay up for both.
+local HIDE_DELAY = 0.15;
+local hideFrame = CreateFrame("Frame");
+local hideElapsed = 0;
+
+local function CancelPendingHide()
+    hideFrame:SetScript("OnUpdate", nil);
+end
+
+local function HideSoon()
+    hideElapsed = 0;
+    hideFrame:SetScript("OnUpdate", function(frame, dt)
+        hideElapsed = hideElapsed + dt;
+        if hideElapsed >= HIDE_DELAY then
+            frame:SetScript("OnUpdate", nil);
+            parchment:Hide();
+            lastEvent, lastPage = nil, nil;
+        end
+    end);
+end
+
 for event in pairs(SHOW_EVENTS) do
     eventFrame:RegisterEvent(event);
 end
@@ -53,6 +82,7 @@ for event in pairs(HIDE_EVENTS) do
 end
 
 -- TEST ONLY: show the parchment shortly after the player loads. Remove when done testing.
+local TEST_ENABLED = false; -- set to true to show the test quest page after login
 local TEST_SHOW_DELAY = 1; -- seconds after PLAYER_ENTERING_WORLD
 local TEST_PORTRAIT_UNIT = "target"; -- portrait comes from the selected target
 local TEST_BODY = "Traveler, you arrive at a dark hour. For three nights now, a pale light has burned in the old watchtower on Gallows Ridge, and no one in Thornwick Hollow has slept soundly since. The shepherds say the light moves, drifting from window to window as though something were searching the empty rooms. Last week, young Merrin went up the ridge to bring back a lost ewe, and he has not been seen again. His mother sits by the well each evening and stares at the hill.\n"
@@ -137,7 +167,7 @@ eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 eventFrame:RegisterEvent("QUEST_ITEM_UPDATE");
 
 eventFrame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_ENTERING_WORLD" then
+    if event == "PLAYER_ENTERING_WORLD" and TEST_ENABLED then
         -- TEST ONLY
         local elapsed, sinceCheck = 0, 0;
         self:SetScript("OnUpdate", function(_, dt)
@@ -161,7 +191,14 @@ eventFrame:SetScript("OnEvent", function(self, event)
             end
         end);
     end
-    if SHOW_EVENTS[event] then
+    if LIST_EVENTS[event] then
+        CancelPendingHide();
+        local page = GossipData:Read(event);
+        parchment:Show();
+        parchment:SetListPage(event, page);
+        lastEvent, lastPage = event, page;
+    elseif SHOW_EVENTS[event] then
+        CancelPendingHide();
         -- Quest text is only valid during its own event, so read it here.
         local page = QuestData:GetPage(event);
         parchment:Show();
@@ -173,8 +210,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:SetPage(event, page);
         lastEvent, lastPage = event, page;
     elseif HIDE_EVENTS[event] then
-        parchment:Hide();
-        lastEvent, lastPage = nil, nil;
+        HideSoon();
     elseif event == "QUEST_ITEM_UPDATE" then
         -- Item data arrived: redraw once (retail re-runs the handler 0.5 s later).
         if lastPage and lastPage.incomplete then

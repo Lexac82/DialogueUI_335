@@ -169,6 +169,20 @@ function TiledSlice:Update(width, height)
         end
         y = y + tileH;
     end
+    if self.hidden then
+        self:SetShown(false);
+    end
+end
+
+-- Shows or hides the whole slice (corners and every tile). Update keeps the state.
+function TiledSlice:SetShown(shown)
+    self.hidden = not shown;
+    for i = 1, 4 do
+        if shown then self.corners[i]:Show() else self.corners[i]:Hide() end
+    end
+    for i = 1, self.used do
+        if shown then self.tiles[i]:Show() else self.tiles[i]:Hide() end
+    end
 end
 
 -- Swaps the texture file (the crop coordinates stay the same).

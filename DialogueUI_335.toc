@@ -14,6 +14,7 @@ Code\Utility\TextUtil.lua
 Code\Utility\NineSlice.lua
 Code\Utility\MoneyUtil.lua
 Code\Dialogue\QuestData.lua
+Code\Dialogue\GossipData.lua
 Code\Tooltip\TooltipFrame.lua
 Code\Tooltip\TooltipScan.lua
 Code\Tooltip\TooltipModel.lua
@@ -28,5 +29,6 @@ Code\Widget\OptionButton.lua
 Code\Widget\FooterButtons.lua
 Code\Widget\HeaderTags.lua
 Code\Widget\ParchmentBackground.lua
+Code\Dialogue\BlizzardFrames.lua
 Code\Dialogue\ParchmentVisibility.lua
 Code\Dialogue\QuestAlert.lua

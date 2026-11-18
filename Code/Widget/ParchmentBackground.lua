@@ -1,4 +1,4 @@
-local _, addon = ...;
+local addonName, addon = ...;
 
 local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
@@ -11,7 +11,7 @@ local FRAME_SIZE_MULTIPLIER = 1.1; -- retail default
 local FRAME_WIDTH = 546.13 * FRAME_SIZE_MULTIPLIER;
 local SCALE = FRAME_WIDTH / ATLAS_WIDTH;
 
-local DEFAULT_DURATION = 0.5; -- seconds for both height and fade
+local DEFAULT_DURATION = 0.35; -- seconds for both height and fade
 local START_MID_RATIO = 0.1;  -- middle piece starts at this fraction of its full height
 
 local TOP_ROWS = { 0, 256 };
@@ -57,6 +57,12 @@ local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
 local FOOTER_H = RowsToHeight(FOOTER_ROWS);
 local FOOTER_OFFSET_Y = 96; -- first value only; the footer buttons set the real one (button height + padding)
 
+-- Divider shown instead of the Header on the first-contact page (retail HeaderDivider).
+local GOSSIP_DIVIDER_COLS = { 0, 736 };
+local GOSSIP_DIVIDER_ROWS = { 1480, 1544 };
+local GOSSIP_DIVIDER_W = (GOSSIP_DIVIDER_COLS[2] - GOSSIP_DIVIDER_COLS[1]) * SCALE;
+local GOSSIP_DIVIDER_H = (GOSSIP_DIVIDER_ROWS[2] - GOSSIP_DIVIDER_ROWS[1]) * SCALE;
+local GOSSIP_DIVIDER_Y = -42 * FRAME_SIZE_MULTIPLIER;
 local TOPLIGHT_COLS = { 0, 672 };
 local TOPLIGHT_ROWS = { 1336, 1400 };
 local TOPLIGHT_W = (TOPLIGHT_COLS[2] - TOPLIGHT_COLS[1]) * SCALE;
@@ -130,6 +136,28 @@ function ParchmentBackground:SetCompleteIcon(shown)
     end
 end
 
+-- Header (title, portrait, pills) on quest pages, divider only on the first-contact page.
+function ParchmentBackground:SetListMode(isList)
+    local frontFrame = self.FrontFrame;
+    if isList then
+        frontFrame.Header:Hide();
+        frontFrame.HeaderDivider:Show();
+    else
+        frontFrame.Header:Show();
+        frontFrame.HeaderDivider:Hide();
+    end
+end
+
+-- First-contact page: greeting text and the quest / option rows (GossipData:Read). Replaces SetTitle,
+-- SetTags, SetQuestText and SetPage for GOSSIP_SHOW and QUEST_GREETING.
+function ParchmentBackground:SetListPage(event, page)
+    self:SetCompleteIcon(false);
+    self:SetTags(nil);
+    self:SetListMode(true);
+    self.QuestText:SetListPage(page);
+    self.Footer:SetPage(event, page);
+    self.Footer:SetRowKeys(self.QuestText.rowNames);
+end
 function ParchmentBackground:Hide()
     self:SetCompleteIcon(false);
     self.frame:SetScript("OnUpdate", nil);
@@ -180,6 +208,7 @@ end
 
 -- Quest body and objectives. Objectives get a sub-header when present.
 function ParchmentBackground:SetQuestText(body, objective, page)
+    self:SetListMode(false);
     self.QuestText:SetQuestText(body, objective, page);
 end
 
@@ -199,6 +228,50 @@ function ParchmentBackground:FlashRewardChoices()
     self.QuestText.rewards:FlashChoices();
 end
 
+local function GetDB()
+    DialogueUI_335_DB = DialogueUI_335_DB or {};
+    return DialogueUI_335_DB
+end
+
+-- Puts the frame back where the player left it (UIParent offsets), else the default CENTER.
+local function RestorePosition(frame)
+    local pos = GetDB().ParchmentPosition;
+    if pos and pos.point and pos.x and pos.y then
+        frame:ClearAllPoints();
+        frame:SetPoint(pos.point, UIParent, pos.relativePoint or pos.point, pos.x, pos.y);
+    end
+end
+
+local function SavePosition(frame)
+    local point, _, relativePoint, x, y = frame:GetPoint(1);
+    if point then
+        GetDB().ParchmentPosition = { point = point, relativePoint = relativePoint, x = x, y = y };
+    end
+end
+
+-- Left-drag on the paper moves the whole parchment. Other mouse frames on it (scroll area) forward the drag.
+local function MakeMovable(frame, ...)
+    frame:SetMovable(true);
+    frame:SetClampedToScreen(true);
+    frame:SetUserPlaced(false); -- we save the position ourselves
+    local function OnDragStart()
+        frame:StartMoving();
+    end
+    local function OnDragStop()
+        frame:StopMovingOrSizing();
+        SavePosition(frame);
+    end
+    local function EnableDrag(target)
+        target:EnableMouse(true);
+        target:RegisterForDrag("LeftButton");
+        target:SetScript("OnDragStart", OnDragStart);
+        target:SetScript("OnDragStop", OnDragStop);
+    end
+    EnableDrag(frame);
+    for i = 1, select("#", ...) do
+        EnableDrag((select(i, ...)));
+    end
+end
 local function CreateParchmentBackground(parent)
     local self = setmetatable({}, ParchmentBackground);
     self.elapsed = 0;
@@ -241,6 +314,18 @@ local function CreateParchmentBackground(parent)
 
     -- Created before the footer so SetFooterOffset can reach it.
     self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y, FULL_H);
+    self.QuestText.owner = self;
+
+    -- Saved variables are loaded after this file runs, so the saved position is only readable on ADDON_LOADED.
+    local loader = CreateFrame("Frame");
+    loader:RegisterEvent("ADDON_LOADED");
+    loader:SetScript("OnEvent", function(f, event, name)
+        if name == addonName then
+            f:UnregisterEvent("ADDON_LOADED");
+            RestorePosition(frame);
+        end
+    end);
+    MakeMovable(frame, self.QuestText.ScrollArea);
 
     local header = CreateFrame("Frame", nil, frontFrame);
     header:SetWidth(DIVIDER_W);
@@ -286,6 +371,14 @@ local function CreateParchmentBackground(parent)
     checkIcon:Hide();
     header.CompleteIcon = checkIcon;
 
+    local gossipDivider = frontFrame:CreateTexture(nil, "ARTWORK");
+    gossipDivider:SetTexture(file);
+    gossipDivider:SetTexCoord(RectToTexCoord(GOSSIP_DIVIDER_COLS, GOSSIP_DIVIDER_ROWS));
+    gossipDivider:SetWidth(GOSSIP_DIVIDER_W);
+    gossipDivider:SetHeight(GOSSIP_DIVIDER_H);
+    gossipDivider:SetPoint("CENTER", frontFrame, "TOP", 0, GOSSIP_DIVIDER_Y);
+    gossipDivider:Hide();
+    frontFrame.HeaderDivider = gossipDivider;
     local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
     footerDivider:SetTexture(file);
     footerDivider:SetTexCoord(RectToTexCoord(FOOTER_COLS, FOOTER_ROWS));

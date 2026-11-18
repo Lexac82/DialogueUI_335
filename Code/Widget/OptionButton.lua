@@ -23,8 +23,17 @@ local HOVER_DURATION = 0.25;
 local HOVER_OFFSET = 8;
 local HIGHLIGHT_FRONT_WIDTH = 18;
 
--- Art ids as retail's SetButtonArt: 1 red (main action), 2 blue, 3 hollow (disabled), 4 grey (exit).
+local ICON_SIZE = 14;               -- retail BUTTON_ICON_SIZE
+local ICON_PADDING = 6;             -- retail ICON_PADDING_H
+local PADDING_SMALL = 6;            -- retail BUTTON_PADDING_SMALL (gossip option rows)
+local NOTE_PADDING = 8;             -- right-hand note: distance from the right edge
+local GOSSIP_GLOW = "ButtonHighlight-Gossip.blp";
+local ADD_GLOW = "ButtonHighlight-Add.blp";
+
+-- Art ids as retail's SetButtonArt: 0 gossip option (no background), 1 red (main action), 2 blue,
+-- 3 hollow (disabled), 4 grey (exit).
 local ART = {
+    [0] = {font = "gossip", noBackground = true, glowFile = GOSSIP_GLOW, noFront = true},
     [1] = {background = "OptionBackground-Common.blp", font = "active", glow = {0.62, 0, 0}},
     [2] = {background = "OptionBackground-Blue.blp", font = "active", glow = {0, 0.3, 0.4}},
     [3] = {background = "OptionBackground-Hollow.blp", font = "disabled"},
@@ -33,6 +42,8 @@ local ART = {
 
 local FONT_COLOR_ACTIVE = {0.87, 0.86, 0.75};
 local FONT_COLOR_DISABLED = {0.50, 0.36, 0.24};
+local FONT_COLOR_GOSSIP = {0.19, 0.17, 0.13};       -- retail DUIFont_Quest_Gossip
+local FONT_COLOR_NOTE = {0.70, 0.70, 0.70};         -- retail DUIFont_QuestType_Right
 local FONT_COLOR_HOTKEY = {0.70, 0.70, 0.70};
 
 -- Retail's EasingFunctions.outQuart.
@@ -173,7 +184,7 @@ function OptionButton:ShowHover()
     self.hovered = true;
     self:StartShift(HOVER_OFFSET);
     local art = ART[self.artID];
-    if art and art.glow then
+    if art and (art.glow or art.glowFile) then
         self.highlight:Show();
     end
 end
@@ -200,13 +211,37 @@ end
 function OptionButton:SetArt(id)
     local art = ART[id];
     self.artID = id;
-    self.bgSlice:SetTexture(ThemeUtil:GetTextureFile(art.background));
-    local color = art.font == "disabled" and FONT_COLOR_DISABLED or FONT_COLOR_ACTIVE;
+    if art.noBackground then
+        self.bgSlice:SetShown(false);
+    else
+        self.bgSlice:SetShown(true);
+        self.bgSlice:SetTexture(ThemeUtil:GetTextureFile(art.background));
+    end
+    local color = FONT_COLOR_ACTIVE;
+    if art.font == "disabled" then
+        color = FONT_COLOR_DISABLED;
+    elseif art.font == "gossip" then
+        color = FONT_COLOR_GOSSIP;
+    end
     self.name:SetFontObject(FontUtil:GetColoredFont("DUI335_Option_" .. art.font, FONT_SIZE, color));
     self.name:SetSpacing(TEXT_SPACING);
 
+    -- Glow: tinted additive (action buttons) or the plain gossip glow (option rows).
+    local glowFile = art.glowFile or ADD_GLOW;
+    if self.glowFile ~= glowFile then
+        self.glowFile = glowFile;
+        NineSlice:SetTexture(self.highlight.back, ThemeUtil:GetTextureFile(glowFile));
+        NineSlice:SetBlendMode(self.highlight.back, art.glowFile and "BLEND" or "ADD");
+    end
     if art.glow then
         NineSlice:SetVertexColor(self.highlight.back, art.glow[1], art.glow[2], art.glow[3]);
+    else
+        NineSlice:SetVertexColor(self.highlight.back, 1, 1, 1);
+    end
+    if art.noFront then
+        self.highlight.front:Hide();
+    else
+        self.highlight.front:Show();
     end
 end
 
@@ -215,17 +250,52 @@ function OptionButton:SetButtonWidth(width)
     self.baseWidth = width;
 end
 
+-- Lays out badge, icon, label and right-hand note, then sizes the button to the (wrapped) label.
+-- The width is set before the text so the wrap height is right.
 function OptionButton:Layout()
-    local nameOffset = BUTTON_PADDING;
+    local padding = self.padding or BUTTON_PADDING;
+    local iconOffset, nameOffset = padding, padding;
     if self.hasHotkey then
-        nameOffset = HOTKEY_PADDING + self.hotkey:GetWidth() + HOTKEY_PADDING;
+        iconOffset = HOTKEY_PADDING + self.hotkey:GetWidth() + HOTKEY_PADDING;
+        nameOffset = iconOffset;
+    end
+    local iconSize = self.iconSize or ICON_SIZE;
+    if self.iconFile then
+        nameOffset = iconOffset + iconSize + ICON_PADDING;
     end
 
-    self.name:SetWidth(self.baseWidth - nameOffset - HOVER_OFFSET);
-    local height = Round(self.name:GetStringHeight() + 2 * BUTTON_PADDING);
+    local noteWidth = 0;
+    if self.noteText then
+        self.note:SetText(self.noteText);
+        self.note:Show();
+        noteWidth = Round(self.note:GetStringWidth()) + NOTE_PADDING;
+    else
+        self.note:Hide();
+    end
+
+    self.name:SetWidth(self.baseWidth - nameOffset - noteWidth - HOVER_OFFSET);
+    self.name:SetText(self.text or "");
+    -- A bigger icon makes the row taller and the label is centred against it.
+    local textHeight = self.name:GetStringHeight();
+    local contentHeight = textHeight;
+    if self.iconFile and iconSize > contentHeight then
+        contentHeight = iconSize;
+    end
+    local height = Round(contentHeight + 2 * padding);
     self:SetHeight(height);
     self.name:ClearAllPoints();
-    self.name:SetPoint("TOPLEFT", self.content, "TOPLEFT", nameOffset, -BUTTON_PADDING);
+    self.name:SetPoint("TOPLEFT", self.content, "TOPLEFT", nameOffset, -padding - Round((contentHeight - textHeight) / 2));
+
+    if self.iconFile then
+        self.icon:SetTexture(self.iconFile);
+        self.icon:SetWidth(iconSize);
+        self.icon:SetHeight(iconSize);
+        self.icon:ClearAllPoints();
+        self.icon:SetPoint("TOPLEFT", self.content, "TOPLEFT", iconOffset, -padding - Round((contentHeight - iconSize) / 2) + 1);
+        self.icon:Show();
+    else
+        self.icon:Hide();
+    end
 
     self.highlight.front:SetHeight(height);
     self.bgSlice:Update(self.baseWidth, height);
@@ -242,7 +312,8 @@ function OptionButton:SetHotkeyShown(shown)
     self:Layout();
 end
 
--- cfg: text, art (1-4), key ("SPACE", "Esc" or nil), enabled (default true), onClick(button), type.
+-- cfg: text, art (0-4), key ("SPACE", "Esc", "1".."9" or nil), enabled (default true), onClick(button), type.
+-- List rows also use: icon (texture path), iconSize (default 14), note (small grey text on the right), padding (default 12).
 -- A disabled button is only drawn differently: it still receives the mouse so the Complete button can flash the rewards.
 function OptionButton:Configure(cfg)
     self.lock:Clear();
@@ -251,13 +322,17 @@ function OptionButton:Configure(cfg)
     self.type = cfg.type;
     self.onClickFunc = cfg.onClick;
     self.isEnabled = cfg.enabled ~= false;
+    self.text = cfg.text;
+    self.iconFile = cfg.icon;
+    self.iconSize = cfg.iconSize;
+    self.noteText = cfg.note;
+    self.padding = cfg.padding;
     self:SetArt(cfg.art);       -- sets the font: it must come before SetText in 3.3.5a
-    self.name:SetText(cfg.text);
 
     if cfg.key then
         self.hotkey:SetKey(cfg.key);
     end
-    self:SetHotkeyShown(cfg.key ~= nil);
+    self:SetHotkeyShown(cfg.key ~= nil);      -- also runs Layout, which sets the text
 
     -- A new page can appear under the mouse.
     if self:IsMouseOver() then
@@ -357,6 +432,19 @@ local function CreateOptionButton(parent, name, owner)
     button.name = content:CreateFontString(nil, "OVERLAY");
     button.name:SetJustifyH("LEFT");
     button.name:SetJustifyV("TOP");
+    button.name:SetWordWrap(true);
+
+    button.icon = content:CreateTexture(nil, "OVERLAY");
+    button.icon:SetWidth(ICON_SIZE);
+    button.icon:SetHeight(ICON_SIZE);
+    button.icon:Hide();
+
+    -- Quest type note ("Trivial", "Repeatable"): fixed on the button, it does not slide with the content.
+    button.note = button:CreateFontString(nil, "OVERLAY");
+    button.note:SetFontObject(FontUtil:GetColoredFont("DUI335_QuestType", 10, FONT_COLOR_NOTE));
+    button.note:SetJustifyH("RIGHT");
+    button.note:SetPoint("RIGHT", button, "RIGHT", -NOTE_PADDING, 0);
+    button.note:Hide();
 
     local hotkey = CreateHotkey(button);
     hotkey:SetFrameLevel(level + 3);
@@ -374,3 +462,4 @@ local function CreateOptionButton(parent, name, owner)
 end
 
 addon.CreateOptionButton = CreateOptionButton;
+addon.OPTION_BUTTON_PADDING_SMALL = PADDING_SMALL;
