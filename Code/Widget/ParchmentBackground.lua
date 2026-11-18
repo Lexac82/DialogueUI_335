@@ -68,6 +68,14 @@ local TITLE_FONT_HEIGHT = 18 * FRAME_SIZE_MULTIPLIER;
 local TITLE_LEFT_X = 53 * FRAME_SIZE_MULTIPLIER;
 local TITLE_RIGHT_X = -8 * FRAME_SIZE_MULTIPLIER;
 local TITLE_Y = 2 * FRAME_SIZE_MULTIPLIER;
+local TITLE_RIGHT_X_WITH_ICON = -56 * FRAME_SIZE_MULTIPLIER;
+
+-- Completed-quest checkmark (retail's WarbandCompleteAlert icon), top right of the header.
+local CHECK_COLS = { 736, 832 };
+local CHECK_ROWS = { 1160, 1256 };
+local CHECK_SIZE = 44 * FRAME_SIZE_MULTIPLIER;
+local CHECK_X = -25 * FRAME_SIZE_MULTIPLIER;
+local CHECK_Y = -20 * FRAME_SIZE_MULTIPLIER;
 
 local ParchmentBackground = {};
 ParchmentBackground.__index = ParchmentBackground;
@@ -107,7 +115,23 @@ function ParchmentBackground:Show(duration)
     self:Play(duration);
 end
 
+-- Checkmark in the header for a quest that is being turned in (QUEST_COMPLETE). Moves the title clear of it.
+function ParchmentBackground:SetCompleteIcon(shown)
+    local header = self.FrontFrame.Header;
+    local title = header.Title;
+    local rightX = shown and TITLE_RIGHT_X_WITH_ICON or TITLE_RIGHT_X;
+    title:ClearAllPoints();
+    title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
+    title:SetPoint("RIGHT", header, "RIGHT", rightX, TITLE_Y);
+    if shown then
+        header.CompleteIcon:Show();
+    else
+        header.CompleteIcon:Hide();
+    end
+end
+
 function ParchmentBackground:Hide()
+    self:SetCompleteIcon(false);
     self.frame:SetScript("OnUpdate", nil);
     self.frame:Hide();
 end
@@ -244,6 +268,15 @@ local function CreateParchmentBackground(parent)
     title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
     title:SetPoint("RIGHT", header, "RIGHT", TITLE_RIGHT_X, TITLE_Y);
     header.Title = title;
+
+    local checkIcon = header:CreateTexture(nil, "ARTWORK");
+    checkIcon:SetTexture(file);
+    checkIcon:SetTexCoord(RectToTexCoord(CHECK_COLS, CHECK_ROWS));
+    checkIcon:SetWidth(CHECK_SIZE);
+    checkIcon:SetHeight(CHECK_SIZE);
+    checkIcon:SetPoint("CENTER", header, "TOPRIGHT", CHECK_X, CHECK_Y);
+    checkIcon:Hide();
+    header.CompleteIcon = checkIcon;
 
     local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
     footerDivider:SetTexture(file);

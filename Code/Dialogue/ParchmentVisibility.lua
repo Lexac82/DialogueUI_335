@@ -150,6 +150,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
                 parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
                 local testPage = BuildTestPage();
                 parchment:SetTitle(testPage.title);
+                parchment:SetCompleteIcon(true);
                 parchment:SetQuestText(testPage.body, testPage.objective, testPage);
                 parchment:SetPage("QUEST_COMPLETE", testPage);
             end
@@ -161,6 +162,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:Show();
         parchment:UpdatePortrait();
         parchment:SetTitle(page.title);
+        parchment:SetCompleteIcon(event == "QUEST_COMPLETE");
         parchment:SetQuestText(page.body, page.objective, page);
         parchment:SetPage(event, page);
         lastEvent, lastPage = event, page;
