@@ -54,6 +54,13 @@ function TooltipScan:ScanHyperlink(link)
     return Collect(tooltip)
 end
 
+-- Item in a bag slot (used for readable books and letters).
+function TooltipScan:ScanBagItem(bag, slot)
+    local tooltip = GetScanner();
+    tooltip:SetBagItem(bag, slot);
+    return Collect(tooltip)
+end
+
 function TooltipScan:ScanRewardSpell()
     local tooltip = GetScanner();
     tooltip:SetQuestRewardSpell();

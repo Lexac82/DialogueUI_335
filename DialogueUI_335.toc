@@ -33,3 +33,7 @@ Code\Dialogue\BlizzardFrames.lua
 Code\Dialogue\ParchmentVisibility.lua
 Code\Dialogue\QuestAlert.lua
 Code\Widget\QuestItemDisplay.lua
+Code\Book\BookFormatter.lua
+Code\Book\BookItem.lua
+Code\Book\BookUI.lua
+Code\Book\BookEvents.lua
