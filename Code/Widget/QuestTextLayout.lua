@@ -161,6 +161,9 @@ end
 function QuestTextLayout:ReleaseAll()
     self:StopReveal();
     self.revealItems = {};
+    if self.rewards then
+        self.rewards:ReleaseAll();
+    end
 
     for i = 1, self.fontStringCount do
         local fs = self.fontStrings[i];
@@ -288,7 +291,8 @@ function QuestTextLayout:FormatParagraph(offsetY, text)
 end
 
 -- Shows the quest body, then the objectives under a sub-header when there are any.
-function QuestTextLayout:SetQuestText(body, objective)
+-- page (optional): QuestData page with suggested group size, rewards, costs and requirements.
+function QuestTextLayout:SetQuestText(body, objective, page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
 
@@ -303,6 +307,16 @@ function QuestTextLayout:SetQuestText(body, objective)
         offsetY = offsetY + PARAGRAPH_SPACING;
         offsetY = self:InsertSubHeader(offsetY, SUBHEADER_LABEL);
         offsetY = self:FormatParagraph(offsetY, objective);
+    end
+
+    if page then
+        if page.suggested then
+            -- QUEST_SUGGESTED_GROUP_NUM is a FrameXML string ("Suggested Players [%d]"), not in wow-docs.
+            local format = _G.QUEST_SUGGESTED_GROUP_NUM or "Suggested Players [%d]";
+            offsetY = offsetY + PARAGRAPH_SPACING;
+            offsetY = self:FormatParagraph(offsetY, format:format(page.suggested));
+        end
+        offsetY = self.rewards:Layout(offsetY, page);
     end
 
     self.contentHeight = offsetY;
@@ -351,6 +365,9 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHei
     self.subHeaders = {};
     self.subHeaderCount = 0;
     self.revealItems = {};
+
+    self.paragraphSpacing = PARAGRAPH_SPACING;
+    self.rewards = addon.CreateRewardLayout(self);
 
     return self
 end

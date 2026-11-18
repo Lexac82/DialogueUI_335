@@ -12,6 +12,12 @@ local parchment = CreateParchmentBackground(UIParent);
 
 local eventFrame = CreateFrame("Frame");
 
+-- Last page shown, so QUEST_ITEM_UPDATE can redraw it when item data arrives late.
+local lastEvent, lastPage;
+local retryFrame = CreateFrame("Frame");
+local retryElapsed = 0;
+local RETRY_DELAY = 0.5;
+
 -- Opening events: gossip, quest greeting, and quest pages. Each one is a conversation step.
 local SHOW_EVENTS = {
     GOSSIP_SHOW = true,
@@ -46,20 +52,93 @@ local TEST_BODY = "Traveler, you arrive at a dark hour. For three nights now, a 
     .. "If you find Merrin, bring him home first, and do not worry about anything else. The village has little coin, but we have gathered what we could: a purse of silver, a good wool cloak woven by the women of the Hollow, and my late husband's hunting knife, which has never failed its owner. Take it with our blessing. Come back alive, and you will always have a warm seat by our fire and a roof over your head, whatever road you travel next.\n"
     .. "Go now, and may the old stars watch over you. I will keep a candle burning in the window until you return."; -- 8 paragraphs, 500+ words, so the scrolling can be seen
 local TEST_OBJECTIVE = "Retrieve the Lantern Keeper's Journal and the Silver Lens from Gallows Ridge Tower.";
+
+-- TEST ONLY: one page with every reward type at once (choices, items, money, XP, spell, title, honor,
+-- talents, arena points, costs, requirements, suggested players). Item name, icon, quality and link come from
+-- GetItemInfo. Items the client has not cached are requested from the server first (see RequestTestItems).
+-- Tooltips use the item link (no quest is open).
+local TEST_ITEM_IDS = {19019, 50645, 3416, 3765, 2592, 6948, 2589};
+local TEST_WAIT_MAX = 15;       -- seconds to wait for the server before showing placeholders
+
+-- Returns true when every test item is cached. For the others, a hyperlink tooltip is set on the hidden scan
+-- tooltip, which makes the client ask the server for the item (the only way in 3.3.5a).
+local function RequestTestItems()
+    local allCached = true;
+    for _, itemID in ipairs(TEST_ITEM_IDS) do
+        if not GetItemInfo(itemID) then
+            allCached = false;
+            addon.TooltipScan:ScanHyperlink("item:" .. itemID .. ":0:0:0:0:0:0:0:0");
+        end
+    end
+    return allCached
+end
+
+local function TestItem(itemType, index, itemID, count, quality, isUsable)
+    local name, link, itemQuality, _, _, _, _, _, _, texture = GetItemInfo(itemID);
+    return {
+        kind = "item", itemType = itemType, index = index, test = true,
+        name = name or ("Test Item " .. itemID),
+        texture = texture or "Interface\\Icons\\INV_Misc_QuestionMark",
+        count = count or 1,
+        quality = itemQuality or quality or 1,
+        isUsable = isUsable ~= false,
+        link = link or ("item:" .. itemID .. ":0:0:0:0:0:0:0:0"),
+    }
+end
+
+local function BuildTestPage()
+    local choices = {
+        TestItem("choice", 1, 19019, 1, 5),                 -- Thunderfury (legendary)
+        TestItem("choice", 2, 50645, 1, 4),                 -- Leggings of Northern Lights (epic)
+        TestItem("choice", 3, 3416, 1, 3, false),           -- Martyr's Chain (rare), shown as unusable
+        TestItem("choice", 4, 3765, 1, 2),                  -- Brigand's Pauldrons
+    };
+    local rewards = {
+        {kind = "xp", amount = 12450, small = true, order = 1},
+        {kind = "money", amount = 123456, small = true, order = 2},
+        {kind = "honor", amount = 350, small = true, order = 510},
+        {kind = "talents", amount = 1, small = true, order = 520},
+        {kind = "arena", amount = 25, small = true, order = 530},
+        {kind = "spell", name = "Test Spell Reward", texture = "Interface\\Icons\\Spell_Nature_Regeneration", order = 100},
+        {kind = "title", name = "Test the Brave", order = 200},
+        TestItem("reward", 1, 2592, 5, 1),                  -- stack of 5
+        TestItem("reward", 2, 6948, 1, 1),
+    };
+    return {
+        title = "Quest Title",
+        body = TEST_BODY,
+        objective = TEST_OBJECTIVE,
+        suggested = 3,
+        moneyToGet = 25000,
+        required = {TestItem("required", 1, 2589, 10, 1)},
+        rewards = rewards,
+        choices = choices,
+        canChoose = true,
+    }
+end
+
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
+eventFrame:RegisterEvent("QUEST_ITEM_UPDATE");
 
 eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_ENTERING_WORLD" then
         -- TEST ONLY
-        local elapsed = 0;
+        local elapsed, sinceCheck = 0, 0;
         self:SetScript("OnUpdate", function(_, dt)
             elapsed = elapsed + dt;
-            if elapsed >= TEST_SHOW_DELAY then
+            sinceCheck = sinceCheck + dt;
+            if elapsed < TEST_SHOW_DELAY or sinceCheck < 0.5 then
+                return
+            end
+            sinceCheck = 0;
+            -- Ask for uncached items, then show once they all arrived (or after TEST_WAIT_MAX).
+            if RequestTestItems() or elapsed >= TEST_SHOW_DELAY + TEST_WAIT_MAX then
                 self:SetScript("OnUpdate", nil);
                 parchment:Show();
                 parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
-                parchment:SetTitle("Quest Title");
-                parchment:SetQuestText(TEST_BODY, TEST_OBJECTIVE);
+                local testPage = BuildTestPage();
+                parchment:SetTitle(testPage.title);
+                parchment:SetQuestText(testPage.body, testPage.objective, testPage);
             end
         end);
     end
@@ -69,8 +148,26 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:Show();
         parchment:UpdatePortrait();
         parchment:SetTitle(page.title);
-        parchment:SetQuestText(page.body, page.objective);
+        parchment:SetQuestText(page.body, page.objective, page);
+        lastEvent, lastPage = event, page;
     elseif HIDE_EVENTS[event] then
         parchment:Hide();
+        lastEvent, lastPage = nil, nil;
+    elseif event == "QUEST_ITEM_UPDATE" then
+        -- Item data arrived: redraw once (retail re-runs the handler 0.5 s later).
+        if lastPage and lastPage.incomplete then
+            retryElapsed = 0;
+            retryFrame:SetScript("OnUpdate", function(frame, dt)
+                retryElapsed = retryElapsed + dt;
+                if retryElapsed >= RETRY_DELAY then
+                    frame:SetScript("OnUpdate", nil);
+                    if lastEvent then
+                        local page = QuestData:GetPage(lastEvent);
+                        parchment:SetQuestText(page.body, page.objective, page);
+                        lastPage = page;
+                    end
+                end
+            end);
+        end
     end
 end);

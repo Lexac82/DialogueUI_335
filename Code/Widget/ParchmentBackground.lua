@@ -130,8 +130,24 @@ function ParchmentBackground:SetFooterOffset(y)
 end
 
 -- Quest body and objectives. Objectives get a sub-header when present.
-function ParchmentBackground:SetQuestText(body, objective)
-    self.QuestText:SetQuestText(body, objective);
+function ParchmentBackground:SetQuestText(body, objective, page)
+    self.QuestText:SetQuestText(body, objective, page);
+end
+
+-- Reward choice (see RewardLayout.lua). GetRewardChoice: choice index for GetQuestReward, 0 when there is
+-- nothing to choose, nil while the player has not chosen yet. The future Complete button disables itself on nil.
+function ParchmentBackground:GetRewardChoice()
+    return self.QuestText.rewards:GetChoiceIndex()
+end
+
+-- fn(choiceIndex) is called when the player picks a reward.
+function ParchmentBackground:SetRewardChoiceHandler(fn)
+    self.QuestText.rewards.onChoiceChanged = fn;
+end
+
+-- For the Complete button: clicked while no reward is chosen -> flash the choices.
+function ParchmentBackground:FlashRewardChoices()
+    self.QuestText.rewards:FlashChoices();
 end
 
 local function CreateParchmentBackground(parent)

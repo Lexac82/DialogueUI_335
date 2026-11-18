@@ -56,6 +56,33 @@ function FontUtil:GetQuestFont(name, height)
     return fontObject;
 end
 
+-- Same Friz Quadrata (per-alphabet) font with an explicit colour. Used for the item names and the tooltip.
+-- color: {r, g, b}. Created on first use, cached by name.
+function FontUtil:GetColoredFont(name, height, color)
+    local fontObject = fontObjects[name];
+    if not fontObject then
+        local file = TITLE_FONT_FILE[GetAlphabetForClient()] or TITLE_FONT_FILE.roman;
+        fontObject = CreateFont(name);
+        fontObject:SetFont(file, height, "");
+        fontObject:SetTextColor(color[1], color[2], color[3]);
+        fontObjects[name] = fontObject;
+    end
+    return fontObject;
+end
+
+-- Item stack count font: retail uses ARIALN 10 with outline. The client's own copy is used here.
+function FontUtil:GetCountFont()
+    local name = "DUI335_ItemCount";
+    local fontObject = fontObjects[name];
+    if not fontObject then
+        fontObject = CreateFont(name);
+        fontObject:SetFont("Fonts\\ARIALN.TTF", 10, "OUTLINE");
+        fontObject:SetTextColor(1, 1, 1);
+        fontObjects[name] = fontObject;
+    end
+    return fontObject;
+end
+
 -- Returns the shared quest title font object.
 function FontUtil:GetQuestTitleFont(height)
     return self:GetQuestFont("DUIFont_Quest_Title", height);
