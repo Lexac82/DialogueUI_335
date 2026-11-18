@@ -14,9 +14,6 @@ local SplitParagraph = API.SplitParagraph;
 
 local CreateFrame = CreateFrame;
 
--- Header divider width before scaling (ParchmentBackground.lua DIVIDER_COLS).
-local DIVIDER_BASE_WIDTH = 358;
-
 -- Unscaled values, same as retail's DialogueUI.lua:41-44.
 local FONT_SIZE = 12;                               -- DUIFontFamily_Serif_12
 local TEXT_SPACING = FONT_SIZE * 0.35;              -- line spacing
@@ -330,6 +327,7 @@ end
 function QuestTextLayout:SetListPage(page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
+    self.isListPage = true;
     self:SetScrollTop(self.listScrollTop);
 
     local gaps = addon.GossipDataProvider.GAPS;
@@ -373,6 +371,7 @@ end
 function QuestTextLayout:SetQuestText(body, objective, page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
+    self.isListPage = false;
     self:SetScrollTop(self.questScrollTop);
 
     local offsetY = self.topOffset;
@@ -402,27 +401,38 @@ function QuestTextLayout:SetQuestText(body, objective, page)
     self:StartReveal();
 end
 
--- parent: parchment frame. width: parchment width. scale: FRAME_SIZE_MULTIPLIER.
+-- The sizes that follow the frame size. width: parchment width. scale: frame size multiplier.
+-- fullHeight: parchment height once its intro animation is done. inset: text box margin on each side
+-- (the text box lines up with the header divider). Does not lay out the page again.
+function QuestTextLayout:SetSize(width, scale, fullHeight, inset)
+    self.fullHeight = fullHeight;
+    self.questScrollTop = (28 + 40) * scale;        -- retail UseQuestLayout topOffset
+    self.listScrollTop = 42 * scale;                -- retail UseQuestLayout(false): the Header is hidden
+    self.scrollTop = self.isListPage and self.listScrollTop or self.questScrollTop;
+    self.paddingLeft = inset;
+    self.paddingRight = inset;
+    self.textWidth = width - 2 * inset;
+    self.topOffset = 6 * scale;                     -- retail UpdateQuestTitle, header allowance
+
+    if self.ContentFrame then
+        self.ContentFrame:SetWidth(self.textWidth);
+        for i = 1, #self.rowButtons do
+            self.rowButtons[i]:SetButtonWidth(self.textWidth);
+        end
+    end
+end
+
+-- parent: parchment frame. width, scale, fullHeight, inset: see SetSize.
 -- footerOffset: distance from the parchment bottom to the scroll area bottom.
--- fullHeight: parchment height once its intro animation is done.
-local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHeight)
+local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHeight, inset)
     local self = setmetatable({}, QuestTextLayout);
 
     self.parent = parent;
-    self.fullHeight = fullHeight;
     self.contentHeight = 0;
-    self.questScrollTop = (28 + 40) * scale;        -- retail UseQuestLayout topOffset
-    self.listScrollTop = 42 * scale;                -- retail UseQuestLayout(false): the Header is hidden
-    self.scrollTop = self.questScrollTop;
     self.rowButtons = {};
     self.rowCount = 0;
     self.rowNames = {};
-    -- Text box edges line up with the header divider (358 px, centred on the frame).
-    local inset = (width - DIVIDER_BASE_WIDTH * scale) / 2;
-    self.paddingLeft = inset;
-    self.paddingRight = inset;
-    self.textWidth = width - self.paddingLeft - self.paddingRight;
-    self.topOffset = 6 * scale;                     -- retail UpdateQuestTitle, header allowance
+    self:SetSize(width, scale, fullHeight, inset);
 
     self.ScrollArea = CreateFrame("ScrollFrame", nil, parent);
     addon.InitSmoothScrollFrame(self.ScrollArea);

@@ -230,27 +230,47 @@ function Footer:GetFooterOffset()
     return self.footerOffset
 end
 
+-- The sizes that follow the frame size. width: parchment width. paddingH / paddingBottom: already scaled by
+-- the frame size multiplier. Buttons that already show a label are laid out again for the new width.
+function Footer:SetSize(width, paddingH, paddingBottom)
+    local buttonWidth = Round(0.5 * (width - 2 * paddingH - BUTTON_GAP));
+    local parent = self.parent;
+
+    local accept, exit = self.accept, self.exit;
+    accept:ClearAllPoints();
+    accept:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", paddingH, paddingBottom);
+    accept:SetButtonWidth(buttonWidth);
+    exit:ClearAllPoints();
+    exit:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -paddingH, paddingBottom);
+    exit:SetButtonWidth(buttonWidth);
+
+    if accept.text then
+        accept:Layout();
+    end
+    if exit.text then
+        exit:Layout();
+    end
+
+    -- Measured with the exit button's label (it is shown on every page).
+    if not exit.text then
+        self:ApplyExit();
+    end
+    self.footerOffset = Round(exit:GetHeight() + paddingBottom + BUTTON_GAP * 2);
+end
+
 -- parent: parchment frame. owner: ParchmentBackground (RequestClose, GetRewardChoice, FlashRewardChoices).
--- width: parchment width. paddingH / paddingBottom: already scaled by the frame size multiplier.
+-- width, paddingH, paddingBottom: see SetSize.
 local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom)
     local self = setmetatable({}, Footer);
     self.parent = parent;
     self.owner = owner;
     self.keyOwner = CreateFrame("Frame", nil, parent);
 
-    local buttonWidth = Round(0.5 * (width - 2 * paddingH - BUTTON_GAP));
-
     self.accept = addon.CreateOptionButton(parent, ACCEPT_NAME, owner);
-    self.accept:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", paddingH, paddingBottom);
-    self.accept:SetButtonWidth(buttonWidth);
-
     self.exit = addon.CreateOptionButton(parent, EXIT_NAME, owner);
-    self.exit:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -paddingH, paddingBottom);
-    self.exit:SetButtonWidth(buttonWidth);
 
     -- Measured once with the default label, as retail does with the Goodbye button.
-    self:ApplyExit();
-    self.footerOffset = Round(self.exit:GetHeight() + paddingBottom + BUTTON_GAP * 2);
+    self:SetSize(width, paddingH, paddingBottom);
     self.accept:Hide();
 
     -- Esc changes hands when the settings window opens or closes.

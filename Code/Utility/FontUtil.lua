@@ -113,3 +113,10 @@ end
 function FontUtil:GetQuestTitleFont(height)
     return self:GetQuestFont("DUIFont_Quest_Title", height);
 end
+
+-- The title follows the frame size: set the new height on the existing font object (its FontStrings follow).
+function FontUtil:SetQuestTitleFontHeight(height)
+    local fontObject = self:GetQuestTitleFont(height);
+    local file = fontObject:GetFont();
+    fontObject:SetFont(file, height, "");
+end

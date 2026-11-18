@@ -1,12 +1,19 @@
 # Settings menu
 
-Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `Settings.lua`). Code: `Code/Settings/Settings.lua`.
+Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `Settings.lua`). Code: `Code/Settings/Settings.lua`. Theme work is in `docs/Theme.md`.
 
-## Decisions
+## Status
 
-- Same structure and textures as retail. Tabs: **UI | Control | Gameplay** (no Camera, no Accessibility).
-- Opens with `/dui` or `/dialogui`, and with **F1** while the dialogue is shown (override binding in `FooterButtons.lua`, like Space and Esc). While the window is open F1 and Esc close it.
-- First step: the shell only. The tabs are empty.
+| Item | State |
+|---|---|
+| Window shell (frame, header, tabs UI / Control / Gameplay, close button, dividers, decor picture) | done |
+| Opens with `/dui`, `/dialogui`, and F1 while the dialogue is shown (Esc and F1 close it) | done |
+| Option row + arrow option widget (`< value >` with one bar per choice) | done |
+| UI tab: **Theme** (Brown / Dark) | done |
+| UI tab: **Frame Size** (Extra Small 0.9 / Small 1.0 / Medium 1.1 / Large 1.25) | written, **not tested in the game**, see "Frame Size: what was done" |
+| Other options (Font Size, Font, Frame Orientation, Hide UI, Book, ...), Control tab, Gameplay tab | not started |
+
+Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
 
 ## Layout (retail numbers at font height 12)
 
@@ -18,41 +25,34 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 |  option list                       |  preview (hidden)       |
 |  432 x 378 (10.5 rows of 36)       |  description text       |
 |  one page frame per tab            |  (right area, 273 wide) |
-|                                    |                         |
+|                                    |  decor picture (Dalaran)|
 +--------------------------------------------------------------+
 ```
 
 - List and description area are in the golden ratio: width = round((432 + 1.5 * 14) / 0.618).
-- Background: `GenericFrame-Tiled-Large` (already converted), 80 px corners, 16 px drop shadow outside the frame edge.
-- Selected tab: dark plate (`Settings-TabButton-Selection`) with cream text. Other tabs: dark brown text. Hover: `Settings-ButtonHighlight`.
-- Not ported: the decor picture in the right area (retail masks it with `Mask-SettingsDecor`, no mask in 3.3.5a), the scroll bar (comes with the first long tab), gamepad support.
+- Option rows: `CreateOptionRow` / `CreateArrowOption` in `Settings.lua`. Options are listed in the `Schematic` table (fields follow retail: `type`, `name`, `description`, `dbKey`, `choices`). Rows are built once at load, `RefreshTab` re-reads the saved values.
+- Arrow option bars: 16x4 piece of `Settings-ArrowOption` (x 0-16, y 124-128), tiled slice with 1 texel margins, height tuned by eye (`ARROWOPTION_BAR_HEIGHT`).
+- The decor picture has no mask in 3.3.5a: it is a body plus a fade band (`SetGradientAlpha`) that follow the description height (`SettingsUI:UpdateDecor`).
+- Not ported: the scroll bar (needed when a tab has more than ~10 rows), gamepad support, preview pictures (`Art/PreviewPicture`).
 
-## Textures
+## Frame Size: what was done (not tested in the game)
 
-In `temp\`, waiting for BLP conversion. Destination: `Textures\Theme_Brown\`. Keep the file names.
+- `FrameSize` (default 2 = Medium) is in `DefaultValues`. `Code/Utility/FrameSize.lua` (`addon.FrameSize:GetMultiplier()`) maps 0..3 to 0.9, 1.0, 1.1, 1.25 and fires `"FrameSizeChanged"` after the setting changed (and once at load with the saved value). It is the one source of the multiplier.
+- `ParchmentBackground.lua`: the file-level constants became `ComputeMetrics(m)`; `ParchmentBackground:ApplySize()` re-sizes and re-anchors the frame, parchment pieces, header, divider, portrait, check mark, title (font height too, `FontUtil:SetQuestTitleFontHeight`), gossip and footer dividers. `QuestTextLayout:SetSize` and `Footer:SetSize` take over the text box width, paddings, top offsets and button widths.
+- `DialogueUI.lua`: on `"FrameSizeChanged"` the open page is laid out again from the stored page (no reveal fade; `SetPage` again on QUEST_COMPLETE because the redraw clears the reward choice).
+- Option and strings: `Settings.lua` UI tab (after Theme), `Locales/enUS.lua` (`Frame Size`, `Frame Size Desc`, `Size Extra Small/Small/Medium/Large`).
 
-| File | Size | Used by | Needed now |
-|---|---|---|---|
-| Settings-CloseButton | 256x128 | close button: background, hover and X icon in one sheet | yes |
-| Settings-TabButton-Selection | 128x64 | selected tab plate | yes |
-| Settings-ButtonHighlight | 128x64 | tab hover, later option row hover | yes |
-| Settings-Divider-H | 256x16 | line under the header | yes |
-| Settings-Divider-V | 16x256 | line between list and description | yes |
-| Settings-Checkbox | 128x128 | checkbox option | later |
-| Settings-ArrowOption | 128x128 | `< value >` option and its arrows | later |
-| Settings-DropdownButton | 512x256 | dropdown option | later |
-| Settings-Keybinding | 512x512 | keybinding option | later |
-| Settings-PreviewBorder | 64x64 | frame around preview pictures | later |
-| Settings-SubOptionIcon | 64x64 | marker in front of child options | later |
-| Settings-Move, Settings-Reset | 64x64 | position buttons (Gameplay) | later |
-| DropdownMenu-Component | - | popup menu of the dropdown | later |
-| LabelBackground | - | sub-header label | later |
+### Answers to the investigation questions
 
-Already converted and reused: `GenericFrame-Tiled-Large`, `ScrollBar-Vertical-*`, `HotkeyBackground`.
-Dropped: `Settings-BackgroundShadow` (retail code never loads it), the whole `Theme_Dark` set.
+1. **Retail's viewport formula was not copied.** Our frame width is fixed (`546.13 x m`) and everything else is linear in `m`, so each size is the Medium layout scaled. That keeps Medium identical to before (one difference: the text box now uses the exact divider width 358.4 x m instead of 358 x m, 0.2 units per side). Retail's 0.618 x viewport height x m can only be matched after checking what `WorldFrame:GetSize()` returns in 3.3.5a (not checked, not in the docs I looked at), so whether our Medium equals retail's visible size at a given resolution is **still unverified**.
+2. **Scaled by m** (as retail): paddings (26, 36), header offset, portrait size and position, title font height (18), title offsets, check mark, gossip divider offset, topLight offset, quest and list text top offsets (28 + 40, 42, 6), footer inset, and all atlas pieces (via width / 1024). **Not scaled** (fixed in retail or font-based): body, sub-header and button fonts (12), paragraph spacing, sub-header sizes, header tag pills, option button padding and icons, reward button sizes and gaps (8), `BUTTON_GAP`. Retail's `maxSizeMultiplier` caps (quest portrait model) have no counterpart here yet.
+3. Text width, reward grid (`quarterFrameWidth` = (textWidth - 3 x 8) / 4), list rows and footer buttons (half of frame width minus inset and gap) are all derived from the new widths, so they follow the multiplier. Reward and item buttons are not scaled themselves.
+4. **Not checked.** `Parchment.blp` pieces are stretched at 0.48 to 0.67 units per texel; look for blur or gaps at 0.9 and 1.25.
 
-After conversion: move the `.blp` files to `Textures\Theme_Brown\` and delete `temp\`. The code already points at the `.blp` paths.
+### To look at in the game
 
-## Not tested in the game
+Frame edges and parchment seams at all four sizes; header, portrait, title and check mark positions; footer buttons and divider; body text wrap and reward rows at 0.9 and 1.25; changing the size with a quest page, a first-contact page and QUEST_COMPLETE open (reward choice kept?); title font height changes live; Brown and Dark theme after a size change; Book size is untouched.
 
-Written without a client to run it. Check: slice corners of the close button and the tab plate, divider thickness, F1 and Esc while the dialogue is open, F1 outside the dialogue (should still be "target self").
+## Later options (not planned in detail yet)
+
+From retail's UI tab: Font Size, Font, Frame Orientation (probably not useful with our draggable frame), Hide UI and its sub-options, Show Copy Text Button, Show NPC Name On Page, then the Quest group (Mark Highest Sell Price, Use Blizzard Tooltip, ...), Readables (Book size and options). Control and Gameplay tabs follow `Settings_Definitions` in retail. Open questions from `SettingsMenu-Questions.md` (items 2, 5, 6): which options to include, live vs reload, and the two tooltip settings.

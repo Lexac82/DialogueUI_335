@@ -63,6 +63,24 @@ function MainFrame:HideUI()
     lastEvent, lastPage = nil, nil;
 end
 
+-- The frame size changed (ParchmentBackground has already resized itself): lay out the open page again for the new
+-- text width. The page is the one already read, quest text is only valid during its own event.
+addon.CallbackRegistry:Register("FrameSizeChanged", function()
+    if not lastEvent then
+        return
+    end
+    local page = lastPage;
+    if LIST_EVENTS[lastEvent] then
+        MainFrame:SetListPage(lastEvent, page);
+    else
+        MainFrame:SetQuestText(page.body, page.objective, page);
+        if lastEvent == "QUEST_COMPLETE" then
+            MainFrame:SetPage(lastEvent, page);     -- the redraw clears the reward choice
+        end
+    end
+    MainFrame.QuestText:StopReveal();               -- no fade-in again
+end);
+
 -- Item data arrived: redraw once (retail re-runs the handler 0.5 s later). A new update restarts the wait.
 function MainFrame:OnItemUpdate()
     if not (lastPage and lastPage.incomplete) then

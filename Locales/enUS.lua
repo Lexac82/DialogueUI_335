@@ -26,6 +26,12 @@ L["Theme"] = "Theme";
 L["Theme Desc"] = "Select a color theme for the UI.";
 L["Theme Brown"] = "Brown";
 L["Theme Dark"] = "Dark";
+L["Frame Size"] = "Frame Size";
+L["Frame Size Desc"] = "Set the size of the dialogue UI.\n\nDefault: Medium";
+L["Size Extra Small"] = "Extra Small";
+L["Size Small"] = "Small";
+L["Size Medium"] = "Medium";
+L["Size Large"] = "Large";
 
 -- Quest types and tags
 L["Quest"] = "Quest";

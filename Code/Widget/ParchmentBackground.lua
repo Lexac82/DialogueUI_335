@@ -10,9 +10,7 @@ local min = math.min;
 
 local ATLAS_WIDTH = 1024;
 local ATLAS_HEIGHT = 2048;
-local FRAME_SIZE_MULTIPLIER = 1.1; -- retail default
-local FRAME_WIDTH = 546.13 * FRAME_SIZE_MULTIPLIER;
-local SCALE = FRAME_WIDTH / ATLAS_WIDTH;
+local BASE_WIDTH = 546.13;      -- frame width at multiplier 1 (retail: 0.85 x height, see docs/SettingsMenu.md)
 
 local DEFAULT_DURATION = 0.35; -- seconds for both height and fade
 local START_MID_RATIO = 0.1;  -- middle piece starts at this fraction of its full height
@@ -24,9 +22,20 @@ local BOTTOM_ROWS = { 896, 1152 };
 local DIVIDER_COLS = { 0, 672 };
 local DIVIDER_ROWS = { 1160, 1256 };
 
-local function RowsToHeight(rows)
-    return (rows[2] - rows[1]) * SCALE;
-end
+local FOOTER_COLS = { 0, 736 };
+local FOOTER_ROWS = { 1408, 1472 };
+local FOOTER_OFFSET_Y = 96; -- first value only; the footer buttons set the real one (button height + padding)
+
+-- Divider shown instead of the Header on the first-contact page (retail HeaderDivider).
+local GOSSIP_DIVIDER_COLS = { 0, 736 };
+local GOSSIP_DIVIDER_ROWS = { 1480, 1544 };
+local TOPLIGHT_COLS = { 0, 672 };
+local TOPLIGHT_ROWS = { 1336, 1400 };
+local TOPLIGHT_ALPHA = 0.06;
+
+-- Completed-quest checkmark (retail's WarbandCompleteAlert icon), top right of the header.
+local CHECK_COLS = { 736, 832 };
+local CHECK_ROWS = { 1160, 1256 };
 
 local function RowsToTexCoord(rows)
     return 0, 1, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
@@ -36,55 +45,55 @@ local function RectToTexCoord(cols, rows)
     return cols[1] / ATLAS_WIDTH, cols[2] / ATLAS_WIDTH, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
 end
 
-local TOP_H = RowsToHeight(TOP_ROWS);
-local MID_H = RowsToHeight(MID_ROWS);
-local BOTTOM_H = RowsToHeight(BOTTOM_ROWS);
+-- Every size and offset of the parchment for one frame size multiplier m. Atlas pieces are scaled by width / 1024,
+-- retail's own sizes (paddings, offsets) by m. Medium (1.1) is the look the layout was made for.
+local function ComputeMetrics(m)
+    local width = BASE_WIDTH * m;
+    local scale = width / ATLAS_WIDTH;
+    local M = { multiplier = m, width = width };
 
-local CAP_OVERHANG = (TOP_H + BOTTOM_H) / 2;
-local FULL_H = MID_H + CAP_OVERHANG;
-local START_H = CAP_OVERHANG + MID_H * START_MID_RATIO;
+    M.topH = (TOP_ROWS[2] - TOP_ROWS[1]) * scale;
+    M.midH = (MID_ROWS[2] - MID_ROWS[1]) * scale;
+    M.bottomH = (BOTTOM_ROWS[2] - BOTTOM_ROWS[1]) * scale;
+    M.capOverhang = (M.topH + M.bottomH) / 2;
+    M.fullH = M.midH + M.capOverhang;
+    M.startH = M.capOverhang + M.midH * START_MID_RATIO;
 
-local DIVIDER_W = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * SCALE;
-local DIVIDER_H = RowsToHeight(DIVIDER_ROWS);
-local HEADER_OFFSET_Y = -28 * FRAME_SIZE_MULTIPLIER;
-local PADDING_H = 26 * FRAME_SIZE_MULTIPLIER;
-local PADDING_BOTTOM = 36 * FRAME_SIZE_MULTIPLIER;  -- retail PADDING_BOTTOM: buttons sit this far above the frame bottom
+    M.dividerW = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * scale;
+    M.dividerH = (DIVIDER_ROWS[2] - DIVIDER_ROWS[1]) * scale;
+    M.headerOffsetY = -28 * m;
+    M.paddingH = 26 * m;
+    M.paddingBottom = 36 * m;           -- retail PADDING_BOTTOM: buttons sit this far above the frame bottom
 
-local HEADER_PORTRAIT_SIZE = 34 * FRAME_SIZE_MULTIPLIER;
-local HEADER_PORTRAIT_X = 23 * FRAME_SIZE_MULTIPLIER;
-local HEADER_PORTRAIT_Y = -23 * FRAME_SIZE_MULTIPLIER;
+    M.portraitSize = 34 * m;
+    M.portraitX = 23 * m;
+    M.portraitY = -23 * m;
 
-local FOOTER_COLS = { 0, 736 };
-local FOOTER_ROWS = { 1408, 1472 };
-local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
-local FOOTER_H = RowsToHeight(FOOTER_ROWS);
-local FOOTER_OFFSET_Y = 96; -- first value only; the footer buttons set the real one (button height + padding)
+    M.footerW = (FOOTER_COLS[2] - FOOTER_COLS[1]) * scale;
+    M.footerH = (FOOTER_ROWS[2] - FOOTER_ROWS[1]) * scale;
 
--- Divider shown instead of the Header on the first-contact page (retail HeaderDivider).
-local GOSSIP_DIVIDER_COLS = { 0, 736 };
-local GOSSIP_DIVIDER_ROWS = { 1480, 1544 };
-local GOSSIP_DIVIDER_W = (GOSSIP_DIVIDER_COLS[2] - GOSSIP_DIVIDER_COLS[1]) * SCALE;
-local GOSSIP_DIVIDER_H = (GOSSIP_DIVIDER_ROWS[2] - GOSSIP_DIVIDER_ROWS[1]) * SCALE;
-local GOSSIP_DIVIDER_Y = -42 * FRAME_SIZE_MULTIPLIER;
-local TOPLIGHT_COLS = { 0, 672 };
-local TOPLIGHT_ROWS = { 1336, 1400 };
-local TOPLIGHT_W = (TOPLIGHT_COLS[2] - TOPLIGHT_COLS[1]) * SCALE;
-local TOPLIGHT_H = (TOPLIGHT_ROWS[2] - TOPLIGHT_ROWS[1]) * SCALE;
-local TOPLIGHT_ALPHA = 0.06;
-local TOPLIGHT_OFFSET_Y = -2 * FRAME_SIZE_MULTIPLIER;
+    M.gossipDividerW = (GOSSIP_DIVIDER_COLS[2] - GOSSIP_DIVIDER_COLS[1]) * scale;
+    M.gossipDividerH = (GOSSIP_DIVIDER_ROWS[2] - GOSSIP_DIVIDER_ROWS[1]) * scale;
+    M.gossipDividerY = -42 * m;
+    M.topLightW = (TOPLIGHT_COLS[2] - TOPLIGHT_COLS[1]) * scale;
+    M.topLightH = (TOPLIGHT_ROWS[2] - TOPLIGHT_ROWS[1]) * scale;
+    M.topLightY = -2 * m;
 
-local TITLE_FONT_HEIGHT = 18 * FRAME_SIZE_MULTIPLIER;
-local TITLE_LEFT_X = 53 * FRAME_SIZE_MULTIPLIER;
-local TITLE_RIGHT_X = -8 * FRAME_SIZE_MULTIPLIER;
-local TITLE_Y = 2 * FRAME_SIZE_MULTIPLIER;
-local TITLE_RIGHT_X_WITH_ICON = -56 * FRAME_SIZE_MULTIPLIER;
+    M.titleFontHeight = 18 * m;
+    M.titleLeftX = 53 * m;
+    M.titleRightX = -8 * m;
+    M.titleY = 2 * m;
+    M.titleRightXWithIcon = -56 * m;
 
--- Completed-quest checkmark (retail's WarbandCompleteAlert icon), top right of the header.
-local CHECK_COLS = { 736, 832 };
-local CHECK_ROWS = { 1160, 1256 };
-local CHECK_SIZE = 44 * FRAME_SIZE_MULTIPLIER;
-local CHECK_X = -25 * FRAME_SIZE_MULTIPLIER;
-local CHECK_Y = -20 * FRAME_SIZE_MULTIPLIER;
+    M.checkSize = 44 * m;
+    M.checkX = -25 * m;
+    M.checkY = -20 * m;
+
+    -- The atlas has transparent margins, so the visible paper is narrower than the frame. The text box and the
+    -- footer buttons line up with the header divider instead of retail's 26 x multiplier inset.
+    M.footerInset = (width - M.dividerW) / 2;
+    return M
+end
 
 local ParchmentBackground = {};
 ParchmentBackground.__index = ParchmentBackground;
@@ -96,10 +105,12 @@ function ParchmentBackground:OnPlayUpdate(elapsed)
     local progress = (duration > 0) and min(self.elapsed / duration, 1) or 1;
 
     local frame = self.frame;
-    frame:SetHeight(START_H + (FULL_H - START_H) * progress);
+    local M = self.metrics;
+    frame:SetHeight(M.startH + (M.fullH - M.startH) * progress);
     frame:SetAlpha(progress);
 
     if progress >= 1 then
+        self.playing = false;
         frame:SetScript("OnUpdate", nil);
     end
 end
@@ -108,8 +119,9 @@ function ParchmentBackground:Play(duration)
     local frame = self.frame;
     self.duration = duration or DEFAULT_DURATION;
     self.elapsed = 0;
+    self.playing = true;
 
-    frame:SetHeight(START_H);
+    frame:SetHeight(self.metrics.startH);
     frame:SetAlpha(0);
     frame:SetScript("OnUpdate", function(_, elapsed)
         self:OnPlayUpdate(elapsed);
@@ -128,10 +140,12 @@ end
 function ParchmentBackground:SetCompleteIcon(shown)
     local header = self.FrontFrame.Header;
     local title = header.Title;
-    local rightX = shown and TITLE_RIGHT_X_WITH_ICON or TITLE_RIGHT_X;
+    self.completeIconShown = shown and true or false;
+    local M = self.metrics;
+    local rightX = shown and M.titleRightXWithIcon or M.titleRightX;
     title:ClearAllPoints();
-    title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
-    title:SetPoint("RIGHT", header, "RIGHT", rightX, TITLE_Y);
+    title:SetPoint("LEFT", header, "LEFT", M.titleLeftX, M.titleY);
+    title:SetPoint("RIGHT", header, "RIGHT", rightX, M.titleY);
     if shown then
         header.CompleteIcon:Show();
     else
@@ -163,6 +177,7 @@ function ParchmentBackground:SetListPage(event, page)
 end
 function ParchmentBackground:Hide()
     self:SetCompleteIcon(false);
+    self.playing = false;
     self.frame:SetScript("OnUpdate", nil);
     self.frame:Hide();
 end
@@ -270,14 +285,89 @@ local function MakeMovable(frame, ...)
         EnableDrag((select(i, ...)));
     end
 end
+-- Resizes and re-anchors every part for the current frame size. The open page is not laid out again here
+-- (DialogueUI.lua does that after this). Called at creation and from "FrameSizeChanged".
+function ParchmentBackground:ApplySize()
+    local M = ComputeMetrics(addon.FrameSize:GetMultiplier());
+    self.metrics = M;
+
+    local frame = self.frame;
+    frame:SetWidth(M.width);
+    if not self.playing then
+        frame:SetHeight(M.fullH);       -- while the intro runs, OnPlayUpdate follows the new heights
+    end
+
+    local top, bottom = self.top, self.bottom;
+    top:SetWidth(M.width);
+    top:SetHeight(M.topH);
+    bottom:SetWidth(M.width);
+    bottom:SetHeight(M.bottomH);
+
+    local frontFrame = self.FrontFrame;
+    frontFrame:ClearAllPoints();
+    frontFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", M.paddingH, 0);
+    frontFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -M.paddingH, 0);
+
+    local header = frontFrame.Header;
+    header:SetWidth(M.dividerW);
+    header:SetHeight(M.dividerH);
+    header:ClearAllPoints();
+    header:SetPoint("TOP", frontFrame, "TOP", 0, M.headerOffsetY);
+
+    local divider = header.Divider;
+    divider:SetWidth(M.dividerW);
+    divider:SetHeight(M.dividerH);
+
+    local topLight = header.TopLight;
+    topLight:SetWidth(M.topLightW);
+    topLight:SetHeight(M.topLightH);
+    topLight:ClearAllPoints();
+    topLight:SetPoint("CENTER", divider, "CENTER", 0, M.topLightY);
+
+    FontUtil:SetQuestTitleFontHeight(M.titleFontHeight);
+    self:SetCompleteIcon(self.completeIconShown);       -- title anchors
+
+    local checkIcon = header.CompleteIcon;
+    checkIcon:SetWidth(M.checkSize);
+    checkIcon:SetHeight(M.checkSize);
+    checkIcon:ClearAllPoints();
+    checkIcon:SetPoint("CENTER", header, "TOPRIGHT", M.checkX, M.checkY);
+
+    local portrait = header.Portrait;
+    portrait:SetWidth(M.portraitSize);
+    portrait:SetHeight(M.portraitSize);
+    portrait:ClearAllPoints();
+    portrait:SetPoint("CENTER", header, "TOPLEFT", M.portraitX, M.portraitY);
+
+    local gossipDivider = frontFrame.HeaderDivider;
+    gossipDivider:SetWidth(M.gossipDividerW);
+    gossipDivider:SetHeight(M.gossipDividerH);
+    gossipDivider:ClearAllPoints();
+    gossipDivider:SetPoint("CENTER", frontFrame, "TOP", 0, M.gossipDividerY);
+
+    local footerDivider = frontFrame.FooterDivider;
+    footerDivider:SetWidth(M.footerW);
+    footerDivider:SetHeight(M.footerH);
+
+    -- Footer first: its button height and padding decide the footer offset the text box needs.
+    self.Footer:SetSize(M.width, M.footerInset, M.paddingBottom);
+    self.QuestText:SetSize(M.width, M.multiplier, M.fullH, M.footerInset);
+    self:SetFooterOffset(self.Footer:GetFooterOffset());
+end
+
 local function CreateParchmentBackground(parent)
     local self = setmetatable({}, ParchmentBackground);
     self.elapsed = 0;
     self.duration = DEFAULT_DURATION;
+    self.playing = false;
+    self.completeIconShown = false;
+
+    local M = ComputeMetrics(addon.FrameSize:GetMultiplier());
+    self.metrics = M;
 
     local frame = CreateFrame("Frame", nil, parent or UIParent);
-    frame:SetWidth(FRAME_WIDTH);
-    frame:SetHeight(START_H);
+    frame:SetWidth(M.width);
+    frame:SetHeight(M.startH);
     frame:SetPoint("CENTER", parent or UIParent, "CENTER", 0, 0);
     frame:SetAlpha(0);
     frame:Hide(); -- frames are shown by default in CreateFrame
@@ -286,16 +376,14 @@ local function CreateParchmentBackground(parent)
     local top = frame:CreateTexture(nil, "BACKGROUND");
     ThemeUtil:BindTexture(top, "Parchment.blp");
     top:SetTexCoord(RowsToTexCoord(TOP_ROWS));
-    top:SetWidth(FRAME_WIDTH);
-    top:SetHeight(TOP_H);
     top:SetPoint("CENTER", frame, "TOP", 0, 0);
+    self.top = top;
 
     local bottom = frame:CreateTexture(nil, "BACKGROUND");
     ThemeUtil:BindTexture(bottom, "Parchment.blp");
     bottom:SetTexCoord(RowsToTexCoord(BOTTOM_ROWS));
-    bottom:SetWidth(FRAME_WIDTH);
-    bottom:SetHeight(BOTTOM_H);
     bottom:SetPoint("CENTER", frame, "BOTTOM", 0, 0);
+    self.bottom = bottom;
 
     local middle = frame:CreateTexture(nil, "BACKGROUND");
     ThemeUtil:BindTexture(middle, "Parchment.blp");
@@ -304,12 +392,10 @@ local function CreateParchmentBackground(parent)
     middle:SetPoint("BOTTOMRIGHT", bottom, "TOPRIGHT", 0, 0);
 
     local frontFrame = CreateFrame("Frame", nil, frame);
-    frontFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING_H, 0);
-    frontFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PADDING_H, 0);
     self.FrontFrame = frontFrame;
 
     -- Created before the footer so SetFooterOffset can reach it.
-    self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y, FULL_H);
+    self.QuestText = addon.CreateQuestTextLayout(frame, M.width, M.multiplier, FOOTER_OFFSET_Y, M.fullH, M.footerInset);
     self.QuestText.owner = self;
 
     -- Saved variables are loaded after this file runs, so the saved position is only readable once the DB is ready.
@@ -319,16 +405,11 @@ local function CreateParchmentBackground(parent)
     MakeMovable(frame, self.QuestText.ScrollArea);
 
     local header = CreateFrame("Frame", nil, frontFrame);
-    header:SetWidth(DIVIDER_W);
-    header:SetHeight(DIVIDER_H);
-    header:SetPoint("TOP", frontFrame, "TOP", 0, HEADER_OFFSET_Y);
     frontFrame.Header = header;
 
     local divider = header:CreateTexture(nil, "ARTWORK");
     ThemeUtil:BindTexture(divider, "Parchment.blp");
     divider:SetTexCoord(RectToTexCoord(DIVIDER_COLS, DIVIDER_ROWS));
-    divider:SetWidth(DIVIDER_W);
-    divider:SetHeight(DIVIDER_H);
     divider:SetPoint("TOP", header, "TOP", 0, 0);
     header.Divider = divider;
 
@@ -337,17 +418,12 @@ local function CreateParchmentBackground(parent)
     topLight:SetTexCoord(RectToTexCoord(TOPLIGHT_COLS, TOPLIGHT_ROWS));
     topLight:SetBlendMode("ADD");
     topLight:SetAlpha(TOPLIGHT_ALPHA);
-    topLight:SetWidth(TOPLIGHT_W);
-    topLight:SetHeight(TOPLIGHT_H);
-    topLight:SetPoint("CENTER", divider, "CENTER", 0, TOPLIGHT_OFFSET_Y);
     header.TopLight = topLight;
 
     local title = header:CreateFontString(nil, "OVERLAY");
-    title:SetFontObject(FontUtil:GetQuestTitleFont(TITLE_FONT_HEIGHT));
+    title:SetFontObject(FontUtil:GetQuestTitleFont(M.titleFontHeight));
     title:SetJustifyH("LEFT");
     title:SetJustifyV("BOTTOM");
-    title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
-    title:SetPoint("RIGHT", header, "RIGHT", TITLE_RIGHT_X, TITLE_Y);
     header.Title = title;
 
     -- Quest type pills (Quest / Daily / Weekly, Dungeon / Raid ...) above the title.
@@ -356,35 +432,24 @@ local function CreateParchmentBackground(parent)
     local checkIcon = header:CreateTexture(nil, "ARTWORK");
     ThemeUtil:BindTexture(checkIcon, "Parchment.blp");
     checkIcon:SetTexCoord(RectToTexCoord(CHECK_COLS, CHECK_ROWS));
-    checkIcon:SetWidth(CHECK_SIZE);
-    checkIcon:SetHeight(CHECK_SIZE);
-    checkIcon:SetPoint("CENTER", header, "TOPRIGHT", CHECK_X, CHECK_Y);
     checkIcon:Hide();
     header.CompleteIcon = checkIcon;
 
     local gossipDivider = frontFrame:CreateTexture(nil, "ARTWORK");
     ThemeUtil:BindTexture(gossipDivider, "Parchment.blp");
     gossipDivider:SetTexCoord(RectToTexCoord(GOSSIP_DIVIDER_COLS, GOSSIP_DIVIDER_ROWS));
-    gossipDivider:SetWidth(GOSSIP_DIVIDER_W);
-    gossipDivider:SetHeight(GOSSIP_DIVIDER_H);
-    gossipDivider:SetPoint("CENTER", frontFrame, "TOP", 0, GOSSIP_DIVIDER_Y);
     gossipDivider:Hide();
     frontFrame.HeaderDivider = gossipDivider;
     local footerDivider = frontFrame:CreateTexture(nil, "ARTWORK");
     ThemeUtil:BindTexture(footerDivider, "Parchment.blp");
     footerDivider:SetTexCoord(RectToTexCoord(FOOTER_COLS, FOOTER_ROWS));
-    footerDivider:SetWidth(FOOTER_W);
-    footerDivider:SetHeight(FOOTER_H);
     frontFrame.FooterDivider = footerDivider;
     self:SetFooterOffset(FOOTER_OFFSET_Y);
     -- Fades with the scroll position; hidden while the text does not scroll.
     self.QuestText:SetFooterDivider(footerDivider);
 
     -- Footer buttons. Their height decides the footer offset (retail: button height + padding + 2 gaps).
-    -- The atlas has transparent margins, so the visible paper is narrower than the frame. Like the text box,
-    -- the buttons line up with the header divider (394 wide) instead of retail's 26 x 1.1 inset.
-    local footerInset = (FRAME_WIDTH - DIVIDER_W) / 2;
-    self.Footer = addon.CreateFooterButtons(frame, self, FRAME_WIDTH, footerInset, PADDING_BOTTOM);
+    self.Footer = addon.CreateFooterButtons(frame, self, M.width, M.footerInset, M.paddingBottom);
     self:SetFooterOffset(self.Footer:GetFooterOffset());
     self.QuestText.rewards.onChoiceChanged = function(index)
         self.Footer:OnRewardChoiceChanged();
@@ -397,9 +462,6 @@ local function CreateParchmentBackground(parent)
     end);
 
     local portrait = header:CreateTexture(nil, "ARTWORK");
-    portrait:SetWidth(HEADER_PORTRAIT_SIZE);
-    portrait:SetHeight(HEADER_PORTRAIT_SIZE);
-    portrait:SetPoint("CENTER", header, "TOPLEFT", HEADER_PORTRAIT_X, HEADER_PORTRAIT_Y);
     header.Portrait = portrait;
     -- Warm tint on the Brown theme, none on Dark (as retail).
     local function TintPortrait()
@@ -411,6 +473,11 @@ local function CreateParchmentBackground(parent)
     end
     TintPortrait();
     CallbackRegistry:Register("ThemeChanged", TintPortrait);
+
+    self:ApplySize();
+    CallbackRegistry:Register("FrameSizeChanged", function()
+        self:ApplySize();
+    end);
 
     return self;
 end

@@ -269,6 +269,14 @@ local Schematic = {
                     {dbValue = 2, valueText = L["Theme Dark"]},
                 },
             },
+            {type = "ArrowOption", name = L["Frame Size"], description = L["Frame Size Desc"], dbKey = "FrameSize",
+                choices = {
+                    {dbValue = 0, valueText = L["Size Extra Small"]},
+                    {dbValue = 1, valueText = L["Size Small"]},
+                    {dbValue = 2, valueText = L["Size Medium"]},
+                    {dbValue = 3, valueText = L["Size Large"]},
+                },
+            },
         },
     },
     {   -- Control
