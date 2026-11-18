@@ -350,6 +350,7 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
             {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
             {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
+            {type = "Subheader", name = L["Quest"]},
         },
     },
     {   -- Control
@@ -569,6 +570,48 @@ local function CreateCheckbox(row, optionData)
 end
 
 local OptionLabelFont;
+local SubheaderFont;
+
+-- Retail SetSubheader: the label is upper case in the "disabled" font on a LabelBackground plate (3 x font height
+-- high, text width + 2.2 x font height wide, at least as wide as high). The plate is 204 x 54 texels of a 256 x 64
+-- file with margins 24 / 24 / 24 / 16 (stretched). 24 + 16 is more than the 36 drawn height, so the margins are
+-- scaled down to fit (as the retail slice does).
+local LABEL_BG_FILE = "LabelBackground.blp";
+local LABEL_BG_TEX = { 256, 64 };
+local LABEL_BG_REGION = { 204, 54 };
+local LABEL_BG_MARGINS = { 24, 24, 24, 16 };       -- left, right, top, bottom
+local SUBHEADER_WIDTH = 70;                      -- plate size (retail: 3 x font height high, text width + 2.2 x font height wide)
+local SUBHEADER_HEIGHT = 45;
+
+local function CreateSubheaderBackground(row, label)
+    local height = SUBHEADER_HEIGHT;
+    -- Wider than retail's text + 2.2 x font height: the texture has a transparent rim, so the visible plate is narrower.
+    local textWidth = label:GetStringWidth();
+    local width = max(SUBHEADER_WIDTH, textWidth + FONT_HEIGHT);
+
+    local plate = CreateFrame("Frame", nil, row);
+    plate:SetFrameLevel(row:GetFrameLevel() + 1);
+    plate:SetWidth(width);
+    plate:SetHeight(height);
+    plate:SetPoint("LEFT", label, "LEFT", -FONT_HEIGHT, 0);     -- retail: one font height left of the label; the label keeps the normal option text offset
+
+    local left, right, top, bottom = unpack(LABEL_BG_MARGINS);
+    local s = min(1, height / (top + bottom));
+    local pieces = NineSlice:CreateEdges(plate, ThemeUtil:GetTextureFile(LABEL_BG_FILE), LABEL_BG_TEX,
+        left * s, right * s, top * s, bottom * s, "BACKGROUND");
+
+    -- CreateEdges maps the whole file; the plate is only the top left 204 x 54 region of it.
+    local rw, rh = LABEL_BG_REGION[1], LABEL_BG_REGION[2];
+    local us = { 0, left / rw, 1 - right / rw, 1 };
+    local vs = { 0, top / rh, 1 - bottom / rh, 1 };
+    local uMax, vMax = rw / LABEL_BG_TEX[1], rh / LABEL_BG_TEX[2];
+    for rowIndex = 1, 3 do
+        for col = 1, 3 do
+            pieces[(rowIndex - 1) * 3 + col]:SetTexCoord(us[col] * uMax, us[col + 1] * uMax, vs[rowIndex] * vMax, vs[rowIndex + 1] * vMax);
+        end
+    end
+    ThemeUtil:BindSlice(pieces, LABEL_BG_FILE);
+end
 
 -- A row of the option list: label on the left, the option widget on the right, hover glow behind both.
 local function CreateOptionRow(page, index, optionData)
@@ -585,11 +628,21 @@ local function CreateOptionRow(page, index, optionData)
     row.content = content;
 
     local label = content:CreateFontString(nil, "OVERLAY");
-    label:SetFontObject(OptionLabelFont);
+    label:SetFontObject(optionData.type == "Subheader" and SubheaderFont or OptionLabelFont);
     label:SetJustifyH("LEFT");
     label:SetPoint("LEFT", content, "LEFT", OPTION_LABEL_OFFSET, 0);
-    label:SetText(optionData.name);
+    label:SetText(optionData.type == "Subheader" and upper(optionData.name) or optionData.name);
     row.label = label;
+
+    if optionData.type == "Subheader" then
+        -- Not an option: no hover glow, no click, and the description area stays empty (retail).
+        row.isSubheader = true;
+        CreateSubheaderBackground(row, label);
+        row:SetScript("OnEnter", function() SettingsUI:SetDescription(nil) end);
+        row:SetScript("OnLeave", nil);
+        ForwardDrag(row);
+        return row
+    end
 
     function row:OnEnter()
         SettingsUI:HighlightButton(self, 1);
@@ -722,8 +775,9 @@ local function CreateSettingsFrame()
     NormalTabFont = FontUtil:GetQuestFont("DUI335_SettingsTab", FONT_HEIGHT, { "DarkBrown", "DarkModeGoldDim" });
     SelectedTabFont = FontUtil:GetColoredFont("DUI335_SettingsTabSelected", FONT_HEIGHT, { "Ivory", "DarkModeGold" });
     OptionLabelFont = FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" });
+    SubheaderFont = FontUtil:GetQuestFont("DUI335_SettingsSubheader", FONT_HEIGHT, { "LightBrown", "DarkModeGrey50" });     -- retail DUIFont_Settings_Disabled
 
-    local f = CreateFrame("Frame", "DialogueUI335Settings", addon.UIRoot);
+    local f =CreateFrame("Frame", "DialogueUI335Settings", addon.UIRoot);
     frame = f;
     f:SetFrameStrata("DIALOG");
     f:SetToplevel(true);

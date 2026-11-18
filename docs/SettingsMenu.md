@@ -17,6 +17,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | UI tab: **Show Copy Text Button** checkbox (button + Clipboard window) | written, **not tested in the game**, see "Show Copy Text Button: what was done" |
 | UI tab: **Show NPC Name** checkbox | written, **not tested in the game**, see "Show NPC Name: what was done" |
 | UI tab: **Show Quest Type** checkbox (not in retail) | written, **not tested in the game**, see "Show Quest Type: what was done" |
+| UI tab: **Quest** subheader label after Show Quest Type (new row type **Subheader**, as retail) | written, **not tested in the game**, see "Subheader: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -126,6 +127,15 @@ Not in retail (retail always shows its quest header tags). Here it is a checkbox
 - **Preview border:** retail scales the tiled slice (margin 8) by 768 / screen height, i.e. one texel = one screen pixel. Ours used 1 unit per texel (about 40% thicker at 1080p), now `BACKGROUND_SCALE` (0.75). Affects Theme, Copy Text Button and Quest Type previews.
 - **Preview picture:** `Textures\PreviewPicture\QuestType.blp` (512 x 128). The screenshot was 409 x 124 and was stretched to 512 x 128 for the power of 2, so the option uses `ratio = 409 / 124`. `SetDescription` now takes any `ratio` (width / height; the width is capped at the full preview width, the height follows from the ratio, text and decor move with it), so the picture shows at its original proportions. Ratio 1 and 2 behave as before.
 - To look at: option off (no pills), on (pills), toggling with a quest page open, gossip pages (no pills either way), both themes.
+
+## Subheader: what was done (not tested in the game)
+
+Retail's `{type = "Subheader", name = L["Quest"]}` row (`SetSubheader` in `Settings.lua`): a group label, not an option.
+
+- Schematic: `{type = "Subheader", name = L["Quest"]}` after Show Quest Type (`L["Quest"]` already existed).
+- `CreateOptionRow` (`Settings.lua`): label upper case in `DUI335_SettingsSubheader` (retail `DUIFont_Settings_Disabled`: LightBrown / DarkModeGrey50), no widget, no hover glow, no click, hovering clears the description. Background plate `LabelBackground.blp` (both themes exist): 3 x font height high, text width + 2.2 x font height wide (min = height), starting one font height left of the label, `CreateSubheaderBackground`.
+- The plate is the top left 204 x 54 texels of the 256 x 64 file, margins 24 / 24 / 24 / 16. 24 + 16 > 36, so the margins are scaled by 0.9 to fit (assumed to match retail's slice squeeze, not checked). `CreateEdges` maps the whole file, so its texcoords are overridden for the region.
+- To look at: plate shape and text alignment in both themes, hover on the row (no glow, empty description), the Quest label fits inside the row height.
 
 ## Later options (not planned in detail yet)
 
