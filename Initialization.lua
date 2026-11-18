@@ -29,7 +29,8 @@ local DefaultValues = {
     ShowCopyTextButton = false,                 --Copy Text button in the top right corner (see Clipboard.lua)
     ShowNPCNameOnPage = false,                  --"Name: " in front of the page text (see QuestTextLayout.lua)
     ShowQuestType = false,                      --Quest type pills (Quest / Daily / Dungeon ...) in the header (not in retail, see HeaderTags.lua)
-    FrameOrientation = 2,                   --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
+    QuestDifficultyStyle = 1,                   --0 Off, 1 Level (default), 2 Name, 3 Both (not in retail) (see GossipDataProvider.lua)
+    FrameOrientation = 2,                  --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
 
     --Reward tooltip
     UseBlizzardTooltip = false,

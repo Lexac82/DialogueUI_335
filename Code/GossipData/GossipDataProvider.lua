@@ -52,10 +52,36 @@ local function GetLevelColor(levelDiff)
     return colors.Trivial
 end
 
--- "|cffRRGGBB62|r  Title". Level 0 or nil: just the title.
-local function FormatQuestTitle(row)
+-- Settings > Quest Difficulty (retail QuestDifficultyStyle): 0 Off, 1 Level (coloured level left of the title),
+-- 2 Name (difficulty word on the right of the button when the quest is outside the normal range, -2 .. +2),
+-- 3 Both (not in retail: level on the left and the difficulty word on the right).
+local function GetDifficultyStyle()
+    return addon.GetDBValue("QuestDifficultyStyle") or 1
+end
+
+-- Retail GetQuestDifficultyLabel: nil for Normal.
+local function GetDifficultyLabel(row)
     local level = row.level;
     if not level or level <= 0 then
+        return nil
+    end
+    local diff = level - (UnitLevel("player") or level);
+    if diff > 5 then
+        return L["Quest Difficulty VeryHard"]
+    elseif diff >= 3 then
+        return L["Quest Difficulty Hard"]
+    elseif diff >= -2 then
+        return nil
+    elseif diff >= -5 then
+        return L["Quest Difficulty Easy"]
+    end
+    return L["Quest Difficulty Trivial"]
+end
+
+-- "|cffRRGGBB62|r  Title". Level 0 or nil, or style not Level: just the title.
+local function FormatQuestTitle(row)
+    local level = row.level;
+    if (GetDifficultyStyle() % 2) ~= 1 or not level or level <= 0 then
         return row.title
     end
     local hex;
@@ -75,9 +101,10 @@ local ICON_DAILY = ICON_PATH .. "DailyQuest.blp";
 local ICON_WEEKLY = ICON_PATH .. "WeeklyQuest.blp";
 local ICON_REPEATABLE = ICON_PATH .. "RepeatableQuest.blp";
 local ICON_COMPLETE = ICON_PATH .. "CompleteQuest.blp";
+local ApplyQuestVisual;     -- below; GossipDataProvider:RefreshQuestText needs it
 local ICON_INCOMPLETE = ICON_PATH .. "IncompleteQuest.blp";
 
-local function ApplyQuestVisual(row)
+function ApplyQuestVisual(row)
     if row.kind == "active" then
         row.icon = row.complete and ICON_COMPLETE or ICON_INCOMPLETE;
         row.art = row.complete and 1 or 4;
@@ -94,13 +121,32 @@ local function ApplyQuestVisual(row)
         row.art = (row.weekly or row.daily or row.repeatable) and 2 or 1;
     end
 
-    -- Right-hand note (retail SetQuestTypeText): Trivial, else Repeatable (not for daily / weekly).
-    if row.trivial then
+    -- Right-hand note (retail SetQuestTypeText): difficulty name (style Name), else Trivial, else Repeatable
+    -- (not for daily / weekly).
+    row.note = nil;
+    local style = GetDifficultyStyle();
+    local difficultyLabel = (style == 2 or style == 3) and GetDifficultyLabel(row) or nil;
+    if difficultyLabel then
+        row.note = difficultyLabel;
+    elseif row.trivial then
         row.note = L["Quest Type Trivial"];
     elseif row.repeatable and not (row.daily or row.weekly) then
         row.note = L["Quest Type Repeatable"];
     end
     row.text = FormatQuestTitle(row);
+end
+
+-- Settings > Quest Difficulty changed with a list page open: rebuild the level prefix and the right-hand note of
+-- the stored quest rows (the page's rows are kept, only text and note change).
+function GossipDataProvider:RefreshQuestText(page)
+    if not (page and page.rows) then
+        return
+    end
+    for _, row in ipairs(page.rows) do
+        if row.kind == "available" or row.kind == "active" then
+            ApplyQuestVisual(row);
+        end
+    end
 end
 
 -- Gossip option icons by the 3.3.5a type string. A nil entry falls back to the plain gossip icon.

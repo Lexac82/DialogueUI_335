@@ -146,6 +146,14 @@ addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("SettingChanged.ShowNPCNameOnPage", RedrawPage);    -- text only, the page is kept
 
+-- Settings > Quest Difficulty: level prefix and right-hand note of the quest rows are rebuilt, then the list is redrawn.
+addon.CallbackRegistry:Register("SettingChanged.QuestDifficultyStyle", function()
+    if MainFrame:IsShown() and lastPage and LIST_EVENTS[lastEvent] then
+        addon.GossipDataProvider:RefreshQuestText(lastPage);
+        RedrawPage();
+    end
+end);
+
 -- Settings > Show Quest Type: re-apply the stored page's tags (gossip pages and the Move sample have none).
 addon.CallbackRegistry:Register("SettingChanged.ShowQuestType", function()
     if MainFrame:IsShown() and lastPage and not LIST_EVENTS[lastEvent] then

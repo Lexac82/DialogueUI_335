@@ -18,6 +18,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | UI tab: **Show NPC Name** checkbox | written, **not tested in the game**, see "Show NPC Name: what was done" |
 | UI tab: **Show Quest Type** checkbox (not in retail) | written, **not tested in the game**, see "Show Quest Type: what was done" |
 | UI tab: **Quest** subheader label after Show Quest Type (new row type **Subheader**, as retail) | written, **not tested in the game**, see "Subheader: what was done" |
+| Quest group: **Quest Difficulty** (Off / Level / Name / Both) | written, **not tested in the game**, see "Quest Difficulty: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -136,6 +137,18 @@ Retail's `{type = "Subheader", name = L["Quest"]}` row (`SetSubheader` in `Setti
 - `CreateOptionRow` (`Settings.lua`): label upper case in `DUI335_SettingsSubheader` (retail `DUIFont_Settings_Disabled`: LightBrown / DarkModeGrey50), no widget, no hover glow, no click, hovering clears the description. Background plate `LabelBackground.blp` (both themes exist): 3 x font height high, text width + 2.2 x font height wide (min = height), starting one font height left of the label, `CreateSubheaderBackground`.
 - The plate is the top left 204 x 54 texels of the 256 x 64 file, margins 24 / 24 / 24 / 16. 24 + 16 > 36, so the margins are scaled by 0.9 to fit (assumed to match retail's slice squeeze, not checked). `CreateEdges` maps the whole file, so its texcoords are overridden for the region.
 - To look at: plate shape and text alignment in both themes, hover on the row (no glow, empty description), the Quest label fits inside the row height.
+
+## Quest Difficulty: what was done (not tested in the game)
+
+Retail (`QuestDifficulty.lua`, `QuestDifficultyStyle`): 0 Off, 1 Level (default), 2 Name. **Both** (3) is not in retail: level prefix and difficulty word together. Only applies to the quest rows of the first-contact list (GOSSIP_SHOW / QUEST_GREETING).
+
+- `QuestDifficultyStyle` (default 1) in `DefaultValues`. Option under the Quest subheader, `preview = "QuestDifficultyStyle"`, `ratio = 2`; strings copied from retail's enUS (`Quest Difficulty ...`, `QuestDifficultyStyle ...`).
+- `GossipDataProvider.lua`: **Off** = no level, no difficulty word. **Level** = coloured level left of the title (as before). **Name** = no level; difficulty word as the right-hand note when level minus player level is above 2 or below -2 (> 5 Very Hard, 3..5 Hard, -3..-5 Easy, < -5 Low Level; Normal shows nothing). The note replaces Trivial / Repeatable when there is a difficulty word, as in retail. Quest level comes from `GetAvailableLevel` / `GetGossipAvailableQuests` etc. (3.3.5a gives it directly, so no "level not cached yet" placeholder like retail's `IsQuestLevelCached`).
+- `GossipDataProvider:RefreshQuestText(page)` rebuilds text and note of the stored rows; `DialogueUI.lua` calls it and `RedrawPage` when the setting changes with a list page open.
+- `Settings.lua`: option rows now accept retail's `tooltip` function; it replaces the description with the text of the chosen value (`QuestDifficultyStyle_Tooltip`).
+- Not ported: retail's `validationFunc` (hides the row on clients without the API; 3.3.5a always has it), the "Unfinished" grey of active quests in Name mode (no level colour there anyway).
+- **Texture (converted, in `Textures\PreviewPicture\`):** `QuestDifficultyStyle.blp` (512 x 256, retail's `QuestDifficultyStyle.jpg`).
+- To look at: the three styles on a GOSSIP_SHOW and a QUEST_GREETING list with quests of different levels, switching the style with the list open, note width vs long titles, both themes, preview picture and per-value description.
 
 ## Later options (not planned in detail yet)
 

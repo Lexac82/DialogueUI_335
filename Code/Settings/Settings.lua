@@ -308,6 +308,20 @@ local function IsOptionValid(optionData)
     return true
 end
 
+-- Description of the chosen Quest Difficulty style (retail QuestDifficultyStyle_Tooltip).
+local function QuestDifficultyStyle_Tooltip()
+    local index = addon.GetDBValue("QuestDifficultyStyle");
+    if index == 0 then
+        return L["QuestDifficultyStyle Off Desc"]
+    elseif index == 1 then
+        return L["QuestDifficultyStyle Level Desc"]
+    elseif index == 2 then
+        return L["QuestDifficultyStyle Name Desc"]
+    elseif index == 3 then
+        return L["QuestDifficultyStyle Both Desc"]
+    end
+end
+
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
 local Schematic = {
     {   -- UI
@@ -351,6 +365,14 @@ local Schematic = {
             {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
             {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
             {type = "Subheader", name = L["Quest"]},
+            {type = "ArrowOption", name = L["Quest Difficulty Option"], description = L["Quest Difficulty Option Desc"], tooltip = QuestDifficultyStyle_Tooltip, dbKey = "QuestDifficultyStyle", preview = "QuestDifficultyStyle", ratio = 2,
+                choices = {
+                    {dbValue = 0, valueText = L["QuestDifficultyStyle Off"]},
+                    {dbValue = 1, valueText = L["QuestDifficultyStyle Level"]},
+                    {dbValue = 2, valueText = L["QuestDifficultyStyle Name"]},
+                    {dbValue = 3, valueText = L["QuestDifficultyStyle Both"]},
+                },
+            },
         },
     },
     {   -- Control
@@ -646,7 +668,10 @@ local function CreateOptionRow(page, index, optionData)
 
     function row:OnEnter()
         SettingsUI:HighlightButton(self, 1);
-        SettingsUI:SetDescription(self.optionData.description, self.optionData);
+        -- Retail's optional `tooltip` function gives the description of the current choice.
+        local data = self.optionData;
+        local text = data.tooltip and data.tooltip() or data.description;
+        SettingsUI:SetDescription(text, data);
     end
     function row:OnLeave()
         SettingsUI:HighlightButton(nil);
