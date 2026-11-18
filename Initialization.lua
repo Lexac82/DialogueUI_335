@@ -26,7 +26,8 @@ local DefaultValues = {
     FrameSize = 2,                              --0..3 = 0.9, 1.0, 1.1, 1.25 (retail default 2, see FrameSize.lua)
     FontSizeBase = 1,                           --0..3 = 10, 12, 14, 16 (see FontUtil.lua)
     HideUI = true,                              --Fade out the game UI during a conversation (see HideUI.lua)
-    FrameOrientation = 2,                      --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
+    ShowCopyTextButton = false,                 --Copy Text button in the top right corner (see Clipboard.lua)
+    FrameOrientation = 2,                     --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
 
     --Reward tooltip
     UseBlizzardTooltip = false,

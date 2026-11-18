@@ -41,6 +41,7 @@ end);
 -- event: GOSSIP_SHOW, QUEST_GREETING, QUEST_DETAIL, QUEST_PROGRESS or QUEST_COMPLETE.
 -- Quest text is only valid during its own event, so it is read here.
 function MainFrame:ShowUI(event)
+    addon.Clipboard:CloseIfShown();     -- it shows the previous page
     self.isEditMode = nil;      -- a real conversation replaces the Move sample
     if LIST_EVENTS[event] then
         local page = GossipDataProvider:Read(event);
@@ -143,6 +144,55 @@ local function RedrawPage()
 end
 addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
+
+-- Settings > Show Copy Text Button: a small button in the top right corner opens the page's text in the Clipboard
+-- window. Nothing to copy while no conversation is open (the Move sample).
+local CopyTextButton;
+
+local function CopyTextButton_OnClick(button)
+    if addon.Clipboard:CloseIfFromSameSender(button) then
+        return
+    end
+    local text = addon.ClipboardContent:Build(lastEvent, lastPage);
+    if text then
+        addon.Clipboard:ShowContent(text, button);
+    end
+end
+
+addon.CallbackRegistry:Register("SettingChanged.ShowCopyTextButton", function(value)
+    if value == true then
+        if not CopyTextButton then
+            local frame = MainFrame.frame;
+            CopyTextButton = addon.CreateCopyTextButton(frame, CopyTextButton_OnClick, addon.ThemeUtil:GetThemeID());
+            CopyTextButton:SetFrameLevel(frame:GetFrameLevel() + 20);
+        end
+        MainFrame:AnchorCornerWidget(CopyTextButton);
+        CopyTextButton:Show();
+    else
+        if CopyTextButton then
+            CopyTextButton:Hide();
+        end
+        addon.Clipboard:CloseIfShown();
+    end
+end);
+
+-- ParchmentBackground has already re-measured itself (it registered first).
+addon.CallbackRegistry:Register("FrameSizeChanged", function()
+    if CopyTextButton then
+        MainFrame:AnchorCornerWidget(CopyTextButton);
+    end
+end);
+
+addon.CallbackRegistry:Register("ThemeChanged", function(themeID)
+    if CopyTextButton then
+        CopyTextButton:SetTheme(themeID);
+    end
+end);
+
+-- The window shows the text of the page it was opened on: a new page or the end of the conversation closes it.
+MainFrame.frame:HookScript("OnHide", function()
+    addon.Clipboard:CloseIfShown();
+end);
 
 -- Item data arrived: redraw once (retail re-runs the handler 0.5 s later). A new update restarts the wait.
 function MainFrame:OnItemUpdate()

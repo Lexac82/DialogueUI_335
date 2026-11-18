@@ -38,6 +38,8 @@ local TOPLIGHT_ALPHA = 0.06;
 local CHECK_COLS = { 736, 832 };
 local CHECK_ROWS = { 1160, 1256 };
 
+local CORNER_BUTTON_MARGIN = 10;    -- gap between the paper edge and the Copy Text button
+
 local function RowsToTexCoord(rows)
     return 0, 1, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
 end
@@ -93,6 +95,11 @@ local function ComputeMetrics(m)
     -- The atlas has transparent margins, so the visible paper is narrower than the frame. The text box and the
     -- footer buttons line up with the header divider instead of retail's 26 x multiplier inset.
     M.footerInset = (width - M.dividerW) / 2;
+
+    -- Top right corner of the visible paper, as an offset from the frame's TOPRIGHT (for the Copy Text button). The
+    -- paper ends 135 texels in from the atlas edge and starts 7 texels below the frame top (measured on Parchment).
+    M.cornerButtonX = -(135 * scale + CORNER_BUTTON_MARGIN);
+    M.cornerButtonY = -(7 * scale + CORNER_BUTTON_MARGIN);
     return M
 end
 
@@ -342,6 +349,12 @@ end
 function ParchmentBackground:ResetPosition()
     SetDBValue("ParchmentPosition", nil);
     self.applyPosition();
+end
+
+-- Puts a small widget in the top right corner of the paper (it follows the frame size).
+function ParchmentBackground:AnchorCornerWidget(widget)
+    widget:ClearAllPoints();
+    widget:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT", self.metrics.cornerButtonX, self.metrics.cornerButtonY);
 end
 
 -- Resizes and re-anchors every part for the current frame size. The open page is not laid out again here

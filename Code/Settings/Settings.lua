@@ -47,6 +47,7 @@ local TAB_ENTRIES = {
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
+local PREVIEW_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\PreviewPicture\\";
 local DECOR_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\ParchmentDecor\\Dalaran.blp";
 local DECOR_INSET = 4;                  -- distance from the frame's bottom right corner
 local DECOR_MASK_OFFSET = 24;           -- mask edge below the description text
@@ -311,7 +312,7 @@ end
 local Schematic = {
     {   -- UI
         options = {
-            {type = "ArrowOption", name = L["Theme"], description = L["Theme Desc"], dbKey = "Theme",
+            {type = "ArrowOption", name = L["Theme"], description = L["Theme Desc"], dbKey = "Theme", preview = "Theme", ratio = 2,
                 choices = {
                     {dbValue = 1, valueText = L["Theme Brown"]},
                     {dbValue = 2, valueText = L["Theme Dark"]},
@@ -346,6 +347,7 @@ local Schematic = {
                 onClickFunc = Orientation_Reset_OnClick, validationFunc = OrientationPosition_Validation,
                 requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
             {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
+            {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
         },
     },
     {   -- Control
@@ -589,7 +591,7 @@ local function CreateOptionRow(page, index, optionData)
 
     function row:OnEnter()
         SettingsUI:HighlightButton(self, 1);
-        SettingsUI:SetDescription(self.optionData.description);
+        SettingsUI:SetDescription(self.optionData.description, self.optionData);
     end
     function row:OnLeave()
         SettingsUI:HighlightButton(nil);
@@ -864,8 +866,21 @@ local function CreateSettingsFrame()
     preview:SetWidth(previewWidth);
     preview:SetHeight(0.5 * previewWidth);
     preview:SetPoint("TOP", f, "TOPRIGHT", -rightAreaWidth * 0.5 - previewShrink, -(TAB_HEIGHT + 2.5 * FRAME_PADDING));
-    preview:Hide();                 -- no preview pictures yet
+    preview:Hide();                 -- shown by SetDescription for options that have a picture
     f.preview = preview;
+    f.previewHeight = 0.5 * previewWidth;
+    f.previewFullWidth = previewWidth;
+    f.previewTexture = preview:CreateTexture(nil, "ARTWORK");
+    f.previewTexture:SetAllPoints(preview);
+
+    -- Border 1 px outside the picture (retail PreviewBorder: tiled, margin 8).
+    local borderFrame = CreateFrame("Frame", nil, preview);
+    borderFrame:SetFrameLevel(preview:GetFrameLevel() + 1);
+    borderFrame:SetPoint("TOPLEFT", preview, "TOPLEFT", -1, 1);
+    borderFrame:SetPoint("BOTTOMRIGHT", preview, "BOTTOMRIGHT", 1, -1);
+    f.previewBorder = NineSlice:CreateTiled(borderFrame, ThemeUtil:GetTextureFile("Settings-PreviewBorder.blp"),
+        { 64, 64 }, 8, 1, "OVERLAY");
+    ThemeUtil:BindSlice(f.previewBorder, "Settings-PreviewBorder.blp");
 
     local description = content:CreateFontString(nil, "OVERLAY");
     description:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" }));
@@ -1009,7 +1024,33 @@ CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
 
-function SettingsUI:SetDescription(text)
+-- optionData (optional): when it has `preview` (file name in Textures\PreviewPicture, no extension) and `ratio`
+-- (1 square, 2 twice as wide as high) the picture is shown above the text, as retail.
+function SettingsUI:SetDescription(text, optionData)
+    local preview = frame.preview;
+    local hasPreview = optionData and optionData.preview and true or false;
+
+    if hasPreview then
+        local height = frame.previewHeight;
+        local width = (optionData.ratio == 1) and height or 2 * height;
+        preview:SetWidth(width);
+        frame.previewTexture:SetTexture(PREVIEW_PATH .. optionData.preview .. ".blp");
+        frame.previewBorder:Update(width + 2, height + 2);
+        preview:Show();
+    else
+        preview:Hide();
+    end
+
+    if hasPreview ~= frame.hasPreview then
+        frame.hasPreview = hasPreview;
+        frame.description:ClearAllPoints();
+        if hasPreview then
+            frame.description:SetPoint("TOP", preview, "BOTTOM", 0, -FRAME_PADDING);
+        else
+            frame.description:SetPoint("TOP", preview, "TOP", 0, -8);
+        end
+    end
+
     frame.description:SetText(text or "");
     self:UpdateDecor();
 end
@@ -1021,7 +1062,8 @@ function SettingsUI:UpdateDecor()
     local body, fade, size = decor.body, decor.fade, decor.size;
     local pictureBottom = DECOR_INSET;                  -- from the frame bottom
     local pictureTop = DECOR_INSET + size;
-    local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + 8 + frame.description:GetStringHeight();  -- from the frame top
+    local textOffset = frame.hasPreview and (frame.previewHeight + FRAME_PADDING) or 8;
+    local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + textOffset + frame.description:GetStringHeight();  -- from the frame top
     local edge = decor.frameHeight - descriptionBottom - DECOR_MASK_OFFSET;
     local fadeHeight = size * DECOR_FADE_ROWS;
 

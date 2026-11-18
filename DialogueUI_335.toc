@@ -33,6 +33,8 @@ Code\Widget\FooterButtons.lua
 Code\Widget\HeaderTags.lua
 Code\Widget\ParchmentBackground.lua
 Code\Dialogue\BlizzardFrames.lua
+Code\Dialogue\ClipboardContent.lua
+Code\Dialogue\Clipboard.lua
 Code\Dialogue\DialogueUI.lua
 Code\Dialogue\AlertFrame.lua
 Code\Dialogue\HideUI.lua
