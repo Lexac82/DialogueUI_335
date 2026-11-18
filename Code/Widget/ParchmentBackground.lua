@@ -478,6 +478,10 @@ local function CreateParchmentBackground(parent)
     CallbackRegistry:Register("FrameSizeChanged", function()
         self:ApplySize();
     end);
+    -- Button heights follow the font size, so the footer and the text box have to be measured again.
+    CallbackRegistry:Register("FontSizeChanged", function()
+        self:ApplySize();
+    end);
 
     return self;
 end

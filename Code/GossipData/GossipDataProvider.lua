@@ -22,6 +22,12 @@ local SECTION_SPACING = 2 * 12;                          -- PARAGRAPH_BUTTON_SPA
 local TIGHT_SPACING = 1;
 GossipDataProvider.GAPS = {paragraph = PARAGRAPH_SPACING, section = SECTION_SPACING, tight = TIGHT_SPACING, none = 0};
 
+-- Both follow the font size (retail OnFontSizeChanged). The table is changed in place: QuestTextLayout reads it per page.
+addon.CallbackRegistry:Register("FontSizeChanged", function(baseFontSize)
+    GossipDataProvider.GAPS.paragraph = 4 * baseFontSize * 0.35;
+    GossipDataProvider.GAPS.section = 2 * baseFontSize;
+end);
+
 -- Quest level colours (retail QuestDifficulty.lua): "Bright" on the Brown theme, "Dark" on the Dark theme.
 local DIFFICULTY_COLORS = {
     Bright = {VeryHard = "f85658", Hard = "ff9845", Normal = "e9c21b", Easy = "81c285", Trivial = "b2a6a5", Unfinished = "b3b3b3"},

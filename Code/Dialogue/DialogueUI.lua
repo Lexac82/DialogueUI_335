@@ -63,9 +63,10 @@ function MainFrame:HideUI()
     lastEvent, lastPage = nil, nil;
 end
 
--- The frame size changed (ParchmentBackground has already resized itself): lay out the open page again for the new
--- text width. The page is the one already read, quest text is only valid during its own event.
-addon.CallbackRegistry:Register("FrameSizeChanged", function()
+-- The frame size or the font size changed (ParchmentBackground has already resized itself): lay out the open page
+-- again for the new text width and heights. The page is the one already read, quest text is only valid during its
+-- own event.
+local function RedrawPage()
     if not lastEvent then
         return
     end
@@ -79,7 +80,9 @@ addon.CallbackRegistry:Register("FrameSizeChanged", function()
         end
     end
     MainFrame.QuestText:StopReveal();               -- no fade-in again
-end);
+end
+addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
+addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
 
 -- Item data arrived: redraw once (retail re-runs the handler 0.5 s later). A new update restarts the wait.
 function MainFrame:OnItemUpdate()

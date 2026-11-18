@@ -21,7 +21,7 @@ local PARAGRAPH_SPACING = 4 * TEXT_SPACING;
 
 local SUBHEADER_PADDING_H = 8;
 local SUBHEADER_PADDING_V = 4;
-local SUBHEADER_HEIGHT = 12 + 2 * SUBHEADER_PADDING_V;
+local SUBHEADER_HEIGHT = FONT_SIZE + 2 * SUBHEADER_PADDING_V;
 local SUBHEADER_SIZE = SUBHEADER_HEIGHT + SUBHEADER_PADDING_V + TEXT_SPACING;
 local SUBHEADER_TEX_WIDTH = 128;                    -- SubHeaderBackground.blp
 local SUBHEADER_CAP = 8;                            -- left/right cap width in the texture
@@ -221,25 +221,21 @@ function QuestTextLayout:AcquireSubHeader()
     local subHeader = self.subHeaders[count];
     if not subHeader then
         local frame = CreateFrame("Frame", nil, self.ContentFrame);
-        frame:SetHeight(SUBHEADER_HEIGHT);
 
         -- Three horizontal pieces: left cap, stretched middle, right cap.
         local left = frame:CreateTexture(nil, "BORDER");
         ThemeUtil:BindTexture(left, SUBHEADER_TEX_NAME);
         left:SetTexCoord(0, SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 0, 1);
         left:SetWidth(SUBHEADER_CAP);
-        left:SetHeight(SUBHEADER_HEIGHT);
 
         local middle = frame:CreateTexture(nil, "BORDER");
         ThemeUtil:BindTexture(middle, SUBHEADER_TEX_NAME);
         middle:SetTexCoord(SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 1 - SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 0, 1);
-        middle:SetHeight(SUBHEADER_HEIGHT);
 
         local right = frame:CreateTexture(nil, "BORDER");
         ThemeUtil:BindTexture(right, SUBHEADER_TEX_NAME);
         right:SetTexCoord(1 - SUBHEADER_CAP / SUBHEADER_TEX_WIDTH, 1, 0, 1);
         right:SetWidth(SUBHEADER_CAP);
-        right:SetHeight(SUBHEADER_HEIGHT);
 
         local text = frame:CreateFontString(nil, "ARTWORK");
 
@@ -247,6 +243,11 @@ function QuestTextLayout:AcquireSubHeader()
         self.subHeaders[count] = subHeader;
     end
 
+    -- The height follows the font size, so it is set on every use (pooled sub-headers keep an old one otherwise).
+    subHeader.frame:SetHeight(SUBHEADER_HEIGHT);
+    subHeader.left:SetHeight(SUBHEADER_HEIGHT);
+    subHeader.middle:SetHeight(SUBHEADER_HEIGHT);
+    subHeader.right:SetHeight(SUBHEADER_HEIGHT);
     subHeader.text:SetFontObject(self.subHeaderFont);
     subHeader.text:SetJustifyH("LEFT");
     subHeader.text:SetJustifyV("TOP");
@@ -460,6 +461,17 @@ local function CreateQuestTextLayout(parent, width, scale, footerOffset, fullHei
 
     self.paragraphSpacing = PARAGRAPH_SPACING;
     self.rewards = addon.CreateRewardLayout(self);
+
+    -- Spacing follows the font size (retail DialogueUI.lua OnFontSizeChanged). The open page is laid out again by
+    -- DialogueUI.lua, after this.
+    addon.CallbackRegistry:Register("FontSizeChanged", function(baseFontSize)
+        FONT_SIZE = baseFontSize;
+        TEXT_SPACING = FONT_SIZE * 0.35;
+        PARAGRAPH_SPACING = 4 * TEXT_SPACING;
+        SUBHEADER_HEIGHT = FONT_SIZE + 2 * SUBHEADER_PADDING_V;
+        SUBHEADER_SIZE = SUBHEADER_HEIGHT + SUBHEADER_PADDING_V + TEXT_SPACING;
+        self.paragraphSpacing = PARAGRAPH_SPACING;
+    end);
 
     return self
 end

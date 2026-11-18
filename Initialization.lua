@@ -24,6 +24,7 @@ local DefaultValues = {
     --Appearance
     Theme = 1,                                  --1 Brown, 2 Dark
     FrameSize = 2,                              --0..3 = 0.9, 1.0, 1.1, 1.25 (retail default 2, see FrameSize.lua)
+    FontSizeBase = 1,                           --0..3 = 10, 12, 14, 16 (see FontUtil.lua)
 
     --Reward tooltip
     UseBlizzardTooltip = false,

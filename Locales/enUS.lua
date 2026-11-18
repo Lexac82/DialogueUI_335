@@ -32,6 +32,8 @@ L["Size Extra Small"] = "Extra Small";
 L["Size Small"] = "Small";
 L["Size Medium"] = "Medium";
 L["Size Large"] = "Large";
+L["Font Size"] = "Font Size";
+L["Font Size Desc"] = "Set the font size for the UI.\n\nDefault: 12";
 
 -- Quest types and tags
 L["Quest"] = "Quest";

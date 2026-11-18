@@ -277,6 +277,14 @@ local Schematic = {
                     {dbValue = 3, valueText = L["Size Large"]},
                 },
             },
+            {type = "ArrowOption", name = L["Font Size"], description = L["Font Size Desc"], dbKey = "FontSizeBase",
+                choices = {
+                    {dbValue = 0, valueText = "10"},
+                    {dbValue = 1, valueText = "12"},
+                    {dbValue = 2, valueText = "14"},
+                    {dbValue = 3, valueText = "16"},
+                },
+            },
         },
     },
     {   -- Control

@@ -26,6 +26,17 @@ local HIGHLIGHT_FRONT_WIDTH = 18;
 
 local ICON_SIZE = 14;               -- retail BUTTON_ICON_SIZE
 local ICON_PADDING = 6;             -- retail ICON_PADDING_H
+
+-- These follow the font size, with retail's formulas (UITemplates.lua OnFontSizeChanged). At 12: 20, 8, 12, 14.
+addon.CallbackRegistry:Register("FontSizeChanged", function(baseFontSize)
+    local buttonHeight = 3 * baseFontSize;
+    FONT_SIZE = baseFontSize;
+    HOTKEY_SIZE = baseFontSize + 8;
+    ICON_SIZE = baseFontSize + 2;
+    HOTKEY_PADDING = min(8, (buttonHeight - HOTKEY_SIZE) / 2);
+    BUTTON_PADDING = (2 * HOTKEY_PADDING + HOTKEY_SIZE - baseFontSize) / 2;
+    HOTKEY_ICON_SIZE = HOTKEY_SIZE - 6;
+end);
 local PADDING_SMALL = 6;            -- retail BUTTON_PADDING_SMALL (gossip option rows)
 local NOTE_PADDING = 8;             -- right-hand note: distance from the right edge
 local GOSSIP_GLOW = "ButtonHighlight-Gossip.blp";
@@ -95,7 +106,11 @@ local function CreateHotkey(button)
 
     -- key: "SPACE" shows the space bar icon, anything else is printed as text ("Esc").
     function f:SetKey(key)
+        self.key = key;
         local width = HOTKEY_SIZE;
+        self:SetHeight(HOTKEY_SIZE);
+        self.icon:SetWidth(HOTKEY_ICON_SIZE);
+        self.icon:SetHeight(HOTKEY_ICON_SIZE);
         if key == "SPACE" then
             self.icon:SetTexture(ThemeUtil:GetKeyTextureFile("SPACE.blp"));
             self.icon:Show();
@@ -274,7 +289,10 @@ end
 function OptionButtonMixin:Layout()
     local padding = self.padding or BUTTON_PADDING;
     local iconOffset, nameOffset = padding, padding;
-    if self.hasHotkey then
+    if self.hasHotkey and self.hotkey.key then
+        -- Size and position follow the font size: apply them again, the key may have changed since SetKey.
+        self.hotkey:SetKey(self.hotkey.key);
+        self.hotkey:SetPoint("TOPLEFT", self.content, "TOPLEFT", HOTKEY_PADDING, -HOTKEY_PADDING);
         iconOffset = HOTKEY_PADDING + self.hotkey:GetWidth() + HOTKEY_PADDING;
         nameOffset = iconOffset;
     end

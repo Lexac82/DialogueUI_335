@@ -19,7 +19,12 @@ local ICON_SIZE = 28;                     -- retail: 32 with a 6 px inset on the
 local ICON_TEXCOORD = {0.0625, 0.9275, 0.0625, 0.9275};
 local NAME_LEFT = 40;
 local NAME_RIGHT = 8;
-local TWO_LINE_MAX_HEIGHT = 32;           -- 10 pt font: two lines ~ 27, three ~ 39
+local TWO_LINE_MAX_HEIGHT = 32;           -- 10 pt font: two lines ~ 27, three ~ 39 (3.2 x the font height, see below)
+
+-- The item font follows the font size (HEIGHT_2 in FontUtil: base - 2): the limit scales with it.
+addon.CallbackRegistry:Register("FontSizeChanged", function(baseFontSize)
+    TWO_LINE_MAX_HEIGHT = 3.2 * (baseFontSize - 2);
+end);
 
 local BACKGROUND_NORMAL = "ItemButtonBackground.blp";    -- 64x64, slice margin 16
 local BACKGROUND_CHOOSE = "RewardChoice-Pending.blp";    -- 256x64, slice margin 16
