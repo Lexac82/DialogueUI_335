@@ -25,6 +25,7 @@ local GetRewardTalents = GetRewardTalents;
 local GetRewardTitle = GetRewardTitle;
 local GetRewardSpell = GetRewardSpell;
 local GetQuestMoneyToGet = GetQuestMoneyToGet;
+local IsQuestCompletable = IsQuestCompletable;
 local GetSuggestedGroupNum = GetSuggestedGroupNum;
 
 -- Order numbers and "small row" flags from retail's QuestRewards.lua BuildRewardList.
@@ -162,6 +163,7 @@ local PAGE_READERS = {
             title = GetTitleText(),
             body = GetProgressText(),
             required = {},
+            completable = IsQuestCompletable() and true or false,   -- enables the Continue button
         };
         local numItems = GetNumQuestItems() or 0;
         for i = 1, numItems do

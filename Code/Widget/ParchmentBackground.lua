@@ -45,6 +45,7 @@ local DIVIDER_W = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * SCALE;
 local DIVIDER_H = RowsToHeight(DIVIDER_ROWS);
 local HEADER_OFFSET_Y = -28 * FRAME_SIZE_MULTIPLIER;
 local PADDING_H = 26 * FRAME_SIZE_MULTIPLIER;
+local PADDING_BOTTOM = 36 * FRAME_SIZE_MULTIPLIER;  -- retail PADDING_BOTTOM: buttons sit this far above the frame bottom
 
 local HEADER_PORTRAIT_SIZE = 34 * FRAME_SIZE_MULTIPLIER;
 local HEADER_PORTRAIT_X = 23 * FRAME_SIZE_MULTIPLIER;
@@ -54,7 +55,7 @@ local FOOTER_COLS = { 0, 736 };
 local FOOTER_ROWS = { 1408, 1472 };
 local FOOTER_W = (FOOTER_COLS[2] - FOOTER_COLS[1]) * SCALE;
 local FOOTER_H = RowsToHeight(FOOTER_ROWS);
-local FOOTER_OFFSET_Y = 96; -- retail default; depends on button height once buttons exist
+local FOOTER_OFFSET_Y = 96; -- first value only; the footer buttons set the real one (button height + padding)
 
 local TOPLIGHT_COLS = { 0, 672 };
 local TOPLIGHT_ROWS = { 1336, 1400 };
@@ -111,6 +112,25 @@ function ParchmentBackground:Hide()
     self.frame:Hide();
 end
 
+-- fn() is called when the player closes the conversation (Goodbye, Cancel, Esc, right click). It should close
+-- the game side (CloseQuest / CloseGossip). The parchment hides itself afterwards.
+function ParchmentBackground:SetCloseHandler(fn)
+    self.onClose = fn;
+end
+
+function ParchmentBackground:RequestClose()
+    if self.onClose then
+        self.onClose();
+    end
+    self:Hide();
+end
+
+-- Sets the buttons for the page: event is the opening event (QUEST_DETAIL, ...), page is QuestData:GetPage(event).
+-- Call after SetQuestText, because the Complete button looks at the reward choice.
+function ParchmentBackground:SetPage(event, page)
+    self.Footer:SetPage(event, page);
+end
+
 -- Header portrait: the NPC in the conversation, or the player as a fallback (same as retail).
 -- An explicit unit can be passed (e.g. "target" for testing).
 function ParchmentBackground:UpdatePortrait(unit)
@@ -142,7 +162,7 @@ end
 
 -- fn(choiceIndex) is called when the player picks a reward.
 function ParchmentBackground:SetRewardChoiceHandler(fn)
-    self.QuestText.rewards.onChoiceChanged = fn;
+    self.userChoiceHandler = fn;
 end
 
 -- For the Complete button: clicked while no reward is chosen -> flash the choices.
@@ -234,6 +254,22 @@ local function CreateParchmentBackground(parent)
     self:SetFooterOffset(FOOTER_OFFSET_Y);
     -- Fades with the scroll position; hidden while the text does not scroll.
     self.QuestText:SetFooterDivider(footerDivider);
+
+    -- Footer buttons. Their height decides the footer offset (retail: button height + padding + 2 gaps).
+    -- The atlas has transparent margins, so the visible paper is narrower than the frame. Like the text box,
+    -- the buttons line up with the header divider (394 wide) instead of retail's 26 x 1.1 inset.
+    local footerInset = (FRAME_WIDTH - DIVIDER_W) / 2;
+    self.Footer = addon.CreateFooterButtons(frame, self, FRAME_WIDTH, footerInset, PADDING_BOTTOM);
+    self:SetFooterOffset(self.Footer:GetFooterOffset());
+    self.QuestText.rewards.onChoiceChanged = function(index)
+        self.Footer:OnRewardChoiceChanged();
+        if self.userChoiceHandler then
+            self.userChoiceHandler(index);
+        end
+    end;
+    frame:SetScript("OnHide", function()
+        self.Footer:ClearKeys();
+    end);
 
     local portrait = header:CreateTexture(nil, "ARTWORK");
     portrait:SetWidth(HEADER_PORTRAIT_SIZE);

@@ -70,6 +70,19 @@ function FontUtil:GetColoredFont(name, height, color)
     return fontObject;
 end
 
+-- Same per-alphabet font with an outline. Used for the quest accepted alert (retail DUIFont_AlertFont).
+function FontUtil:GetOutlinedFont(name, height, color)
+    local fontObject = fontObjects[name];
+    if not fontObject then
+        local file = TITLE_FONT_FILE[GetAlphabetForClient()] or TITLE_FONT_FILE.roman;
+        fontObject = CreateFont(name);
+        fontObject:SetFont(file, height, "OUTLINE");
+        fontObject:SetTextColor(color[1], color[2], color[3]);
+        fontObjects[name] = fontObject;
+    end
+    return fontObject;
+end
+
 -- Item stack count font: retail uses ARIALN 10 with outline. The client's own copy is used here.
 function FontUtil:GetCountFont()
     local name = "DUI335_ItemCount";

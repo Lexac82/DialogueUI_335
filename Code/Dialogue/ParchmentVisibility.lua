@@ -14,6 +14,18 @@ local eventFrame = CreateFrame("Frame");
 
 -- Last page shown, so QUEST_ITEM_UPDATE can redraw it when item data arrives late.
 local lastEvent, lastPage;
+
+-- Goodbye, Cancel, Esc and right click end up here: close the game side, then the parchment hides itself.
+-- Nothing is open in the test page (lastEvent is nil), so only the parchment closes.
+parchment:SetCloseHandler(function()
+    if lastEvent == "GOSSIP_SHOW" then
+        CloseGossip();
+    elseif lastEvent then
+        CloseQuest();
+    end
+    lastEvent, lastPage = nil, nil;
+end);
+
 local retryFrame = CreateFrame("Frame");
 local retryElapsed = 0;
 local RETRY_DELAY = 0.5;
@@ -139,6 +151,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
                 local testPage = BuildTestPage();
                 parchment:SetTitle(testPage.title);
                 parchment:SetQuestText(testPage.body, testPage.objective, testPage);
+                parchment:SetPage("QUEST_COMPLETE", testPage);
             end
         end);
     end
@@ -149,6 +162,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:UpdatePortrait();
         parchment:SetTitle(page.title);
         parchment:SetQuestText(page.body, page.objective, page);
+        parchment:SetPage(event, page);
         lastEvent, lastPage = event, page;
     elseif HIDE_EVENTS[event] then
         parchment:Hide();
@@ -164,6 +178,9 @@ eventFrame:SetScript("OnEvent", function(self, event)
                     if lastEvent then
                         local page = QuestData:GetPage(lastEvent);
                         parchment:SetQuestText(page.body, page.objective, page);
+                        if lastEvent == "QUEST_COMPLETE" then
+                            parchment:SetPage(lastEvent, page);     -- the redraw clears the reward choice
+                        end
                         lastPage = page;
                     end
                 end

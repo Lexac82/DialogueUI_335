@@ -171,6 +171,57 @@ function TiledSlice:Update(width, height)
     end
 end
 
+-- Swaps the texture file (the crop coordinates stay the same).
+function TiledSlice:SetTexture(file)
+    self.file = file;
+    for i = 1, 4 do
+        self.corners[i]:SetTexture(file);
+    end
+    for i = 1, #self.tiles do
+        self.tiles[i]:SetTexture(file);
+    end
+end
+
+-- Stretched 9-slice with a different margin on each side (retail TextureSliceMargins left/right/top/bottom).
+-- The margins are in texture px and are drawn 1:1. Returns the 9 textures, same order as Create.
+function NineSlice:CreateEdges(frame, file, texSize, left, right, top, bottom, layer)
+    local tw, th = texSize[1], texSize[2];
+    local us = { {0, left / tw}, {left / tw, 1 - right / tw}, {1 - right / tw, 1} };
+    local vs = { {0, top / th}, {top / th, 1 - bottom / th}, {1 - bottom / th, 1} };
+
+    local pieces = {};
+    for row = 1, 3 do
+        for col = 1, 3 do
+            local tex = frame:CreateTexture(nil, layer or "BACKGROUND");
+            tex:SetTexture(file);
+            tex:SetTexCoord(us[col][1], us[col][2], vs[row][1], vs[row][2]);
+            pieces[#pieces + 1] = tex;
+        end
+    end
+
+    pieces[1]:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0);
+    pieces[1]:SetWidth(left); pieces[1]:SetHeight(top);
+    pieces[3]:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0);
+    pieces[3]:SetWidth(right); pieces[3]:SetHeight(top);
+    pieces[7]:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0);
+    pieces[7]:SetWidth(left); pieces[7]:SetHeight(bottom);
+    pieces[9]:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0);
+    pieces[9]:SetWidth(right); pieces[9]:SetHeight(bottom);
+
+    pieces[2]:SetPoint("TOPLEFT", pieces[1], "TOPRIGHT", 0, 0);
+    pieces[2]:SetPoint("BOTTOMRIGHT", pieces[3], "BOTTOMLEFT", 0, 0);
+    pieces[8]:SetPoint("TOPLEFT", pieces[7], "TOPRIGHT", 0, 0);
+    pieces[8]:SetPoint("BOTTOMRIGHT", pieces[9], "BOTTOMLEFT", 0, 0);
+    pieces[4]:SetPoint("TOPLEFT", pieces[1], "BOTTOMLEFT", 0, 0);
+    pieces[4]:SetPoint("BOTTOMRIGHT", pieces[7], "TOPRIGHT", 0, 0);
+    pieces[6]:SetPoint("TOPLEFT", pieces[3], "BOTTOMLEFT", 0, 0);
+    pieces[6]:SetPoint("BOTTOMRIGHT", pieces[9], "TOPRIGHT", 0, 0);
+    pieces[5]:SetPoint("TOPLEFT", pieces[1], "BOTTOMRIGHT", 0, 0);
+    pieces[5]:SetPoint("BOTTOMRIGHT", pieces[9], "TOPLEFT", 0, 0);
+
+    return pieces
+end
+
 -- Shared helpers for a table returned by Create.
 function NineSlice:SetVertexColor(pieces, r, g, b, a)
     for i = 1, #pieces do
