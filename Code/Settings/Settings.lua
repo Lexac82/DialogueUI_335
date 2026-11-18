@@ -750,8 +750,29 @@ local function CreateSettingsFrame()
     background:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", BACKGROUND_SHADOW, -BACKGROUND_SHADOW);
     f.backgroundSlice = NineSlice:CreateTiled(background, ThemeUtil:GetTextureFile("GenericFrame-Tiled-Large.blp"),
         { 512, 512 }, 80, BACKGROUND_SCALE, "BACKGROUND");
-    f.backgroundSlice:Update(frameWidth + 2 * BACKGROUND_SHADOW, frameHeight + 2 * BACKGROUND_SHADOW);
     ThemeUtil:BindSlice(f.backgroundSlice, "GenericFrame-Tiled-Large.blp");
+
+    -- Retail draws this texture pixel-perfect (1 texel = 1 screen pixel). Fixed 0.75 units land on fractional
+    -- pixels and blur, so the texel size is recomputed from the real resolution and UI scale each time it shows.
+    local function UpdateBackgroundScale()
+        local _, physHeight = string.match(GetCVar("gxResolution") or "", "(%d+)x(%d+)");
+        physHeight = tonumber(physHeight);
+        local effScale = f:GetEffectiveScale();
+        local texel = BACKGROUND_SCALE;
+        if physHeight and physHeight > 0 and effScale and effScale > 0 then
+            texel = 768 / physHeight / effScale;
+        end
+        local shadow = 16 * texel;
+        background:ClearAllPoints();
+        background:SetPoint("TOPLEFT", f, "TOPLEFT", -shadow, shadow);
+        background:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", shadow, -shadow);
+        local slice = f.backgroundSlice;
+        slice.scale = texel;
+        slice.width = nil;                      -- force a re-layout
+        slice:Update(frameWidth + 2 * shadow, frameHeight + 2 * shadow);
+    end
+    f.UpdateBackgroundScale = UpdateBackgroundScale;
+    UpdateBackgroundScale();
 
     -- Dividers and description sit on one frame above the background.
     local content = CreateFrame("Frame", nil, f);
@@ -868,6 +889,7 @@ local function CreateSettingsFrame()
 
     -- Keys while the window is open: Esc and F1 close it.
     f:SetScript("OnShow", function()
+        f.UpdateBackgroundScale();
         SettingsUI:MoveToBestPosition();
         SettingsUI:RefreshTab(f.tabID);         -- a setting may have changed by other means (/run)
         SettingsUI:UpdateKeys();
