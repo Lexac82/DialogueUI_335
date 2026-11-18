@@ -32,3 +32,4 @@ Code\Widget\ParchmentBackground.lua
 Code\Dialogue\BlizzardFrames.lua
 Code\Dialogue\ParchmentVisibility.lua
 Code\Dialogue\QuestAlert.lua
+Code\Widget\QuestItemDisplay.lua

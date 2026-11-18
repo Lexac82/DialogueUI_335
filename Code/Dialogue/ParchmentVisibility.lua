@@ -10,6 +10,7 @@ local QuestData = addon.QuestData;
 local GossipData = addon.GossipData;
 
 local parchment = CreateParchmentBackground(UIParent);
+addon.Parchment = parchment;   -- read by QuestItemDisplay (defers readable items while talking)
 
 local eventFrame = CreateFrame("Frame");
 

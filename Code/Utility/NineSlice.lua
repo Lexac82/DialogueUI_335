@@ -59,11 +59,27 @@ end
 -- the centre repeat the texture instead of stretching it. 3.3.5a can only repeat a whole texture, not a
 -- sub-rectangle, so the repeats are separate textures cropped with SetTexCoord (pooled, re-laid by Update).
 -- margin: slice margin in texture px. scale: drawn size of one texel (0.75 = a 32 px corner is 24 units).
+-- sheet (optional): {x, y, sheetWidth, sheetHeight} when the slice is only a region of a bigger texture sheet.
+-- Then texSize is the size of that region and x, y its top left corner, all in px.
 local TiledSlice = {};
 TiledSlice.__index = TiledSlice;
 
-function NineSlice:CreateTiled(frame, file, texSize, margin, scale, layer)
+-- Converts a 0..1 coordinate inside the slice region to a coordinate of the whole texture file.
+function TiledSlice:U(u)
+    local sheet = self.sheet;
+    if not sheet then return u end;
+    return (sheet[1] + u * self.tw) / sheet[3];
+end
+
+function TiledSlice:V(v)
+    local sheet = self.sheet;
+    if not sheet then return v end;
+    return (sheet[2] + v * self.th) / sheet[4];
+end
+
+function NineSlice:CreateTiled(frame, file, texSize, margin, scale, layer, sheet)
     local self = setmetatable({}, TiledSlice);
+    self.sheet = sheet;
     self.frame, self.file, self.layer = frame, file, layer or "BACKGROUND";
     self.tw, self.th, self.margin, self.scale = texSize[1], texSize[2], margin, scale;
     self.tiles, self.used = {}, 0;
@@ -76,7 +92,7 @@ function NineSlice:CreateTiled(frame, file, texSize, margin, scale, layer)
     local function Corner(point, l, r, t, b)
         local tex = frame:CreateTexture(nil, self.layer);
         tex:SetTexture(file);
-        tex:SetTexCoord(l, r, t, b);
+        tex:SetTexCoord(self:U(l), self:U(r), self:V(t), self:V(b));
         tex:SetPoint(point, frame, point, 0, 0);
         return tex
     end
@@ -106,7 +122,7 @@ end
 -- Places one tile of size (w, h) at (x, y) from the frame's top left, showing texture rectangle l..r, t..b.
 function TiledSlice:PlaceTile(x, y, w, h, l, r, t, b)
     local tex = self:AcquireTile();
-    tex:SetTexCoord(l, r, t, b);
+    tex:SetTexCoord(self:U(l), self:U(r), self:V(t), self:V(b));
     tex:SetPoint("TOPLEFT", self.frame, "TOPLEFT", x, -y);
     tex:SetWidth(w);
     tex:SetHeight(h);
