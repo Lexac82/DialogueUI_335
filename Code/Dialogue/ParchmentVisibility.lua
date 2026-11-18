@@ -121,6 +121,10 @@ local function BuildTestPage()
         body = TEST_BODY,
         objective = TEST_OBJECTIVE,
         suggested = 3,
+        tags = {
+            {kind = "type", text = "Daily", icon = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\DailyQuest.blp"},
+            {kind = "tag", text = "Dungeon (3)", icon = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\QuestTag-Dungeon.blp"},
+        },
         moneyToGet = 25000,
         required = {TestItem("required", 1, 2589, 10, 1)},
         rewards = rewards,
@@ -150,6 +154,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
                 parchment:UpdatePortrait(UnitExists(TEST_PORTRAIT_UNIT) and TEST_PORTRAIT_UNIT or nil);
                 local testPage = BuildTestPage();
                 parchment:SetTitle(testPage.title);
+                parchment:SetTags(testPage.tags);
                 parchment:SetCompleteIcon(true);
                 parchment:SetQuestText(testPage.body, testPage.objective, testPage);
                 parchment:SetPage("QUEST_COMPLETE", testPage);
@@ -162,6 +167,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         parchment:Show();
         parchment:UpdatePortrait();
         parchment:SetTitle(page.title);
+        parchment:SetTags(page.tags);
         parchment:SetCompleteIcon(event == "QUEST_COMPLETE");
         parchment:SetQuestText(page.body, page.objective, page);
         parchment:SetPage(event, page);

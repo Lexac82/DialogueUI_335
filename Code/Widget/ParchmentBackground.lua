@@ -166,6 +166,11 @@ function ParchmentBackground:SetTitle(text)
     self.FrontFrame.Header.Title:SetText(text or "");
 end
 
+-- tags: page.tags from QuestData (nil or empty clears the pills, e.g. on gossip pages).
+function ParchmentBackground:SetTags(tags)
+    self.HeaderTags:SetTags(tags);
+end
+
 function ParchmentBackground:SetFooterOffset(y)
     local divider = self.FrontFrame.FooterDivider;
     divider:ClearAllPoints();
@@ -268,6 +273,9 @@ local function CreateParchmentBackground(parent)
     title:SetPoint("LEFT", header, "LEFT", TITLE_LEFT_X, TITLE_Y);
     title:SetPoint("RIGHT", header, "RIGHT", TITLE_RIGHT_X, TITLE_Y);
     header.Title = title;
+
+    -- Quest type pills (Quest / Daily / Weekly, Dungeon / Raid ...) above the title.
+    self.HeaderTags = addon.CreateHeaderTags(header, title);
 
     local checkIcon = header:CreateTexture(nil, "ARTWORK");
     checkIcon:SetTexture(file);

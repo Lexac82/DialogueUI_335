@@ -26,6 +26,7 @@ Code\Widget\RewardLayout.lua
 Code\Widget\QuestTextLayout.lua
 Code\Widget\OptionButton.lua
 Code\Widget\FooterButtons.lua
+Code\Widget\HeaderTags.lua
 Code\Widget\ParchmentBackground.lua
 Code\Dialogue\ParchmentVisibility.lua
 Code\Dialogue\QuestAlert.lua

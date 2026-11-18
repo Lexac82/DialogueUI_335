@@ -142,6 +142,67 @@ local function ReadRewards(page, canChoose)
     end
 end
 
+-- Quest type pills for the header. Each entry: {kind = "type"|"tag", text = label, icon = texture or nil}.
+-- The dialogue APIs (valid during the quest event) tell daily / weekly / PvP. The Dungeon / Raid / Elite /
+-- Heroic / Group tag exists only in the quest log, so it is found by title and is missing on the accept page
+-- of a quest the player has not taken yet. 3.3.5a has no legendary / campaign / important quest types.
+local ICON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\";
+local ICON_AVAILABLE = ICON_PATH .. "AvailableQuest.blp";
+local ICON_DAILY = ICON_PATH .. "DailyQuest.blp";
+local ICON_WEEKLY = ICON_PATH .. "WeeklyQuest.blp";
+
+local QUEST_TAG_ICON = {
+    Dungeon = ICON_PATH .. "QuestTag-Dungeon.blp",
+    Heroic = ICON_PATH .. "QuestTag-Dungeon.blp",
+    Raid = ICON_PATH .. "QuestTag-Raid.blp",
+};
+
+local QUEST_TAG_LABEL = {
+    Dungeon = "Dungeon",
+    Raid = "Raid",
+    Heroic = "Heroic",
+    Elite = "Elite",
+    Group = "Group",
+    PVP = "PvP",
+};
+
+local function FindLogEntry(title)
+    if not title or title == "" then return end
+    for i = 1, GetNumQuestLogEntries() do
+        local name, _, tag, suggestedGroup, isHeader, _, _, isDaily = GetQuestLogTitle(i);
+        if name == title and not isHeader then
+            return tag, suggestedGroup, isDaily
+        end
+    end
+end
+
+local function ReadTags(page)
+    local tags = {};
+    local logTag, logGroup, logDaily = FindLogEntry(page.title);
+
+    if QuestIsWeekly and QuestIsWeekly() then
+        tags[#tags + 1] = {kind = "type", text = "Weekly", icon = ICON_WEEKLY};
+    elseif (QuestIsDaily and QuestIsDaily()) or logDaily then
+        tags[#tags + 1] = {kind = "type", text = "Daily", icon = ICON_DAILY};
+    else
+        tags[#tags + 1] = {kind = "type", text = "Quest", icon = ICON_AVAILABLE};
+    end
+
+    local label = logTag and QUEST_TAG_LABEL[logTag];
+    if not label and QuestFlagsPVP and QuestFlagsPVP() then
+        label = QUEST_TAG_LABEL.PVP;
+    end
+    if label then
+        local group = logGroup and logGroup > 1 and logGroup or page.suggested;
+        if group and group > 1 then
+            label = label .. " (" .. group .. ")";
+        end
+        tags[#tags + 1] = {kind = "tag", text = label, icon = logTag and QUEST_TAG_ICON[logTag]};
+    end
+
+    page.tags = tags;
+end
+
 local PAGE_READERS = {
     -- Accept/decline page: title, quest body, objective and the rewards on offer.
     QUEST_DETAIL = function()
@@ -154,6 +215,7 @@ local PAGE_READERS = {
         if suggested and suggested > 1 then
             page.suggested = suggested;
         end
+        ReadTags(page);
         ReadRewards(page, false);
         return page
     end,
@@ -165,6 +227,7 @@ local PAGE_READERS = {
             required = {},
             completable = IsQuestCompletable() and true or false,   -- enables the Continue button
         };
+        ReadTags(page);
         local numItems = GetNumQuestItems() or 0;
         for i = 1, numItems do
             local item = ReadItem("required", i);
@@ -185,6 +248,7 @@ local PAGE_READERS = {
             title = GetTitleText(),
             body = GetRewardText(),
         };
+        ReadTags(page);
         ReadRewards(page, true);
         return page
     end,
