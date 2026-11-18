@@ -19,6 +19,7 @@ local max = math.max;
 local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
+local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
 
 local L = addon.L;
 
@@ -193,9 +194,15 @@ function Footer:UpdateKeys()
         SetOverrideBindingClick(self.keyOwner, true, "SPACE", ACCEPT_NAME, "LeftButton");
         spaceUsed = true;
     end
-    if exit:IsShown() and exit.isEnabled and exit.hasHotkey then
+    -- Esc belongs to the settings window while it is open (it binds Esc itself).
+    local settings = addon.SettingsUI;
+    local settingsOpen = settings and settings:IsShown();
+    if exit:IsShown() and exit.isEnabled and exit.hasHotkey and not settingsOpen then
         SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", EXIT_NAME, "LeftButton");
     end
+
+    -- F1 opens the settings while the dialogue is shown (it is "target self" in the game otherwise).
+    SetOverrideBindingClick(self.keyOwner, true, "F1", SETTINGS_TOGGLE_NAME, "LeftButton");
 
     -- First-contact page: keys 1-9 click the rows in order. Space takes the first row (retail "Confirm"),
     -- or says goodbye when the page has no rows.
@@ -245,6 +252,14 @@ local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom
     self:ApplyExit();
     self.footerOffset = Round(self.exit:GetHeight() + paddingBottom + BUTTON_GAP * 2);
     self.accept:Hide();
+
+    -- Esc changes hands when the settings window opens or closes.
+    addon.CallbackRegistry:Register("SettingsUI.Show", function()
+        self:UpdateKeys();
+    end);
+    addon.CallbackRegistry:Register("SettingsUI.Hide", function()
+        self:UpdateKeys();
+    end);
 
     -- Key bindings cannot change in combat: apply them when it ends.
     self.events = CreateFrame("Frame");

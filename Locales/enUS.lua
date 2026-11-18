@@ -16,6 +16,11 @@ L["Decline"] = DECLINE or "Decline";
 L["Cancel"] = CANCEL or "Cancel";
 L["Goodbye"] = GOODBYE or "Goodbye";
 
+-- Settings window
+L["UI"] = "UI";
+L["Control"] = "Control";
+L["Gameplay"] = "Gameplay";
+
 -- Quest types and tags
 L["Quest"] = "Quest";
 L["Quest Frequency Daily"] = "Daily";

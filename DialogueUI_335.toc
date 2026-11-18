@@ -38,5 +38,6 @@ Code\Book\BookFormatter.lua
 Code\Book\BookItem.lua
 Code\Book\BookUI.lua
 Code\Book\BookEvents.lua
+Code\Settings\Settings.lua
 Code\Core.lua
 Code\Utility\DevTool.lua
