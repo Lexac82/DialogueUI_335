@@ -75,6 +75,8 @@ function RewardLayout:ReleaseAll()
     self.choiceButtons = {};
     self.chosen = nil;
     self.page = nil;
+    self.upgradeRetried = false;
+    self.upgradeTimer:SetScript("OnUpdate", nil);
 end
 
 ---------------------------------------------------------------------------
@@ -213,6 +215,7 @@ function RewardLayout:Layout(offsetY, page)
     end
 
     self:UpdateSellMarker();
+    self:UpdateUpgradeMarkers();
 
     -- Load every item's data now, so the tooltip is complete the moment the player hovers.
     local entries = {};
@@ -271,6 +274,51 @@ function RewardLayout:UpdateSellMarker()
         end);
     elseif not missing then
         self.priceRetried = false;
+    end
+end
+
+---------------------------------------------------------------------------
+-- Upgrade arrow
+---------------------------------------------------------------------------
+
+-- Retail RequestItemUpgrade: an item not in the cache gives no item level, so ask once more later.
+function RewardLayout:UpdateUpgradeMarkers()
+    local page = self.page;
+    if not page then
+        return
+    end
+
+    local enabled = GetDBBool("ShowUpgradeArrow");
+    local animate = page.canChoose;
+    local missing = false;
+
+    for i = 1, self.bigCount do
+        local button = self.bigPool[i];
+        local entry = button.entry;
+        local show = false;
+        if enabled and entry and entry.kind == "item" and entry.itemType ~= "required" and entry.isUsable and entry.link then
+            local isUpgrade, isReady = addon.TooltipCompare:IsUpgrade(entry.link);
+            if isReady then
+                show = isUpgrade;
+            else
+                missing = true;
+            end
+        end
+        button:SetUpgradeMarker(show, animate);
+    end
+
+    if missing and not self.upgradeRetried then
+        self.upgradeRetried = true;
+        local elapsed = 0;
+        self.upgradeTimer:SetScript("OnUpdate", function(frame, dt)
+            elapsed = elapsed + dt;
+            if elapsed >= PRICE_RETRY_DELAY then
+                frame:SetScript("OnUpdate", nil);
+                if self.page == page then
+                    self:UpdateUpgradeMarkers();
+                end
+            end
+        end);
     end
 end
 
@@ -418,6 +466,11 @@ local function CreateRewardLayout(host)
     self.bigCount, self.smallCount = 0, 0;
     self.choiceButtons = {};
     self.timerFrame = CreateFrame("Frame", nil, host.ContentFrame);
+    self.upgradeTimer = CreateFrame("Frame", nil, host.ContentFrame);
+    -- Turning the option on or off with a page open applies at once (no redraw, a reward choice stays).
+    addon.CallbackRegistry:Register("SettingChanged.ShowUpgradeArrow", function()
+        self:UpdateUpgradeMarkers();
+    end);
     return self
 end
 

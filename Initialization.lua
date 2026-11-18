@@ -38,6 +38,7 @@ local DefaultValues = {
 
     --Quest rewards
     MarkHighestSellPrice = true,                --Retail: false
+    ShowUpgradeArrow = true,                    --Green arrow on reward items with a higher item level than the equipped one (see RewardLayout.lua)
 
     --Quest Item Display
     QuestItemDisplay = true,                    --Retail: false

@@ -76,6 +76,45 @@ function TooltipCompare:GetReplacedItem(link)
     return bestLink, bestLevel
 end
 
+-- Retail's ItemEvaluator (item level based): true when the item is better than what is in one of its slots.
+-- Returns isUpgrade, isReady (false while an item is not in the cache yet: ask again later).
+-- An empty slot counts as an upgrade, except the second slot of a one-hand weapon (retail skips it too,
+-- and ignores a shield / held item there).
+function TooltipCompare:IsUpgrade(link)
+    local slots, equipSlot = GetEquipSlots(link);
+    if not slots then
+        return false, true
+    end
+    local level = select(4, GetItemInfo(link));
+    if not level then
+        return false, false
+    end
+
+    local ready = true;
+    local maxDelta;
+    local isOneHand = (equipSlot == "INVTYPE_WEAPON");
+    for i = 1, #slots do
+        local equipped = GetInventoryItemLink("player", slots[i]);
+        local delta;
+        if equipped then
+            local _, _, _, equippedLevel, _, _, _, _, equippedSlot = GetItemInfo(equipped);
+            if i == 2 and isOneHand and equippedSlot ~= "INVTYPE_WEAPON" and equippedSlot ~= "INVTYPE_WEAPONOFFHAND" then
+                delta = nil;
+            elseif equippedLevel then
+                delta = level - equippedLevel;
+            else
+                ready = false;
+            end
+        elseif not (i == 2 and isOneHand) then
+            delta = level;
+        end
+        if delta and (not maxDelta or delta > maxDelta) then
+            maxDelta = delta;
+        end
+    end
+    return (maxDelta ~= nil and maxDelta > 0), ready
+end
+
 -- Item level difference against the replaced item, or nil when there is nothing to compare.
 function TooltipCompare:GetItemLevelDelta(link)
     local level = select(4, GetItemInfo(link));

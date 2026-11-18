@@ -373,6 +373,7 @@ local Schematic = {
                     {dbValue = 3, valueText = L["QuestDifficultyStyle Both"]},
                 },
             },
+            {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], dbKey = "ShowUpgradeArrow"},
         },
     },
     {   -- Control

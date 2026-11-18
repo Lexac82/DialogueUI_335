@@ -33,6 +33,12 @@ local BORDER_CHOOSE = "RewardChoice-ItemBorder.blp";
 local OVERLAY_FILE = "ItemOverlays.blp";                 -- 8x8 grid of 64 px cells
 local SHEEN_FILE = "RewardChoice-Sheen.blp";
 local COIN_FILE = "Coin-Gold.blp";
+local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
+local UPGRADE_SIZE = 32;
+-- Retail IconAnimation_FlyUp: starts 0.5 s late, rises 12 px over 0.5 s (outSine), fades in at 4 per second.
+local UPGRADE_DELAY = 0.5;
+local UPGRADE_DURATION = 0.5;
+local UPGRADE_RISE = 12;
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
 
@@ -150,6 +156,7 @@ function RewardItemButton:SetEntry(entry)
     self:SetCount(count);
     SetOverlay(self.overlay, overlay);
     self:SetSellMarker(false);
+    self:SetUpgradeMarker(false);
     self.frame:SetAlpha(1);
     self.targetAlpha = 1;
 end
@@ -168,6 +175,60 @@ function RewardItemButton:SetSellMarker(shown)
         self.coin:Show();
     elseif self.coin then
         self.coin:Hide();
+    end
+end
+
+-- Green arrow at the bottom left of the icon: the item is an upgrade (retail ShowUpgradeIcon).
+-- animate: fly up (retail does it while the player is choosing a reward).
+function RewardItemButton:SetUpgradeMarker(shown, animate)
+    local marker = self.upgradeFrame;
+    if not shown then
+        if marker then
+            marker:SetScript("OnUpdate", nil);
+            marker:Hide();
+        end
+        return
+    end
+
+    if not marker then
+        marker = CreateFrame("Frame", nil, self.frame);
+        marker:SetFrameLevel(self.frame:GetFrameLevel() + 4);
+        marker:SetWidth(UPGRADE_SIZE);
+        marker:SetHeight(UPGRADE_SIZE);
+        marker:SetPoint("CENTER", self.icon, "BOTTOMLEFT", 1, 5);
+        marker.texture = marker:CreateTexture(nil, "OVERLAY");
+        marker.texture:SetWidth(UPGRADE_SIZE);
+        marker.texture:SetHeight(UPGRADE_SIZE);
+        marker.texture:SetTexture(UPGRADE_FILE);
+        marker.texture:SetPoint("CENTER", marker, "CENTER", 0, 0);
+        self.upgradeFrame = marker;
+    end
+    if marker:IsShown() then
+        return                  -- already up (a refresh must not replay the animation)
+    end
+    marker:Show();
+    marker.texture:ClearAllPoints();
+    marker.texture:SetPoint("CENTER", marker, "CENTER", 0, 0);
+    marker:SetAlpha(1);
+    marker:SetScript("OnUpdate", nil);
+
+    if animate then
+        local t, alpha = -UPGRADE_DELAY, 0;
+        marker:SetAlpha(0);
+        marker:SetScript("OnUpdate", function(f, elapsed)
+            t = t + elapsed;
+            if t <= 0 then
+                return
+            end
+            alpha = min(1, alpha + 4 * elapsed);
+            f:SetAlpha(alpha);
+            local progress = min(1, t / UPGRADE_DURATION);
+            f.texture:ClearAllPoints();
+            f.texture:SetPoint("CENTER", f, "CENTER", 0, -UPGRADE_RISE * (1 - math.sin(progress * math.pi / 2)));
+            if progress >= 1 and alpha >= 1 then
+                f:SetScript("OnUpdate", nil);
+            end
+        end);
     end
 end
 
@@ -232,6 +293,7 @@ function RewardItemButton:Release()
     self.sheenFrame:SetScript("OnUpdate", nil);
     self.sheen:Hide();
     self.entry = nil;
+    self:SetUpgradeMarker(false);
     self.frame:ClearAllPoints();
     self.frame:Hide();
 end
