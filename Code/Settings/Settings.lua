@@ -61,6 +61,13 @@ local SettingsUI = {};
 addon.SettingsUI = SettingsUI;
 
 local frame;
+local ScrollFrameMixin = {};
+
+-- A row half scrolled out of the list keeps its full size for the mouse (3.3.5a does not clip mouse input), so
+-- rows only react while the pointer is inside the list itself.
+local function IsPointerInList()
+    return frame.list:IsMouseOver()
+end
 
 
 ---------------------------------------------------------------------------
@@ -322,6 +329,12 @@ local function QuestDifficultyStyle_Tooltip()
     end
 end
 
+-- Description with the arrow drawn inline (retail ItemEvaluatorTooltip uses UpgradeArrowSmall the same way).
+local UPGRADE_ARROW_ICON = "|TInterface\\AddOns\\DialogueUI_335\\Textures\\Shared\\UpgradeArrowSmall.blp:0:0:0:-6|t";     -- retail's numbers (0 = font height)
+local function UpgradeArrow_Tooltip()
+    return L["Show Upgrade Arrow Desc"]:format(UPGRADE_ARROW_ICON)
+end
+
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
 local Schematic = {
     {   -- UI
@@ -373,7 +386,7 @@ local Schematic = {
                     {dbValue = 3, valueText = L["QuestDifficultyStyle Both"]},
                 },
             },
-            {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], dbKey = "ShowUpgradeArrow"},
+            {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow"},
         },
     },
     {   -- Control
@@ -457,6 +470,9 @@ local function CreateArrowOption(row, optionData)
             self.arrow:SetPoint("CENTER", self, "CENTER", 0, 0);
         end);
         button:SetScript("OnClick", function(self)
+            if not IsPointerInList() then
+                return
+            end
             widget:SelectByDelta(self.delta);
         end);
     end
@@ -586,7 +602,9 @@ local function CreateCheckbox(row, optionData)
 
     row:RegisterForClicks("LeftButtonUp");
     row:SetScript("OnClick", function()
-        widget:Toggle();
+        if IsPointerInList() then
+            widget:Toggle();
+        end
     end);
 
     return widget
@@ -668,6 +686,9 @@ local function CreateOptionRow(page, index, optionData)
     end
 
     function row:OnEnter()
+        if not IsPointerInList() then
+            return
+        end
         SettingsUI:HighlightButton(self, 1);
         -- Retail's optional `tooltip` function gives the description of the current choice.
         local data = self.optionData;
@@ -690,6 +711,9 @@ local function CreateOptionRow(page, index, optionData)
         -- A plain button row (retail: branch mark when it depends on another option, icon, then the label).
         row:RegisterForClicks("LeftButtonUp");
         row:SetScript("OnClick", function(self)
+            if not IsPointerInList() then
+                return
+            end
             PlaySound("igMainMenuOptionCheckBoxOn");
             if optionData.onClickFunc then
                 optionData.onClickFunc(self);
@@ -762,6 +786,94 @@ function SettingsUI:RefreshToggles()
     end
 end
 
+---------------------------------------------------------------------------
+-- Scrolling (retail ScrollFrameMixin: view size, content height -> scroll range, offset in units from the top)
+---------------------------------------------------------------------------
+
+function ScrollFrameMixin:SetViewSize(height)
+    self.viewSize = height;
+end
+
+function ScrollFrameMixin:GetViewSize()
+    return self.viewSize or 0
+end
+
+-- Negative range: everything fits, the scroll bar hides and the vertical divider is back.
+function ScrollFrameMixin:SetScrollRange(range)
+    if range < 0 then
+        range = 0;
+    end
+    self.maxScrollOffset = range;
+    if range > 0 then
+        frame.verticalDivider:Hide();
+    else
+        frame.verticalDivider:Show();
+    end
+    self.scrollBar:UpdateThumbSize();     -- shows or hides the bar
+end
+
+function ScrollFrameMixin:GetScrollRange()
+    return self.maxScrollOffset or 0
+end
+
+function ScrollFrameMixin:SetContentHeight(contentHeight)
+    self.scrollChild:SetHeight(max(contentHeight, self:GetViewSize()));
+    self:SetScrollRange(contentHeight - self:GetViewSize());
+end
+
+function ScrollFrameMixin:GetScrollOffset()
+    return self.scrollOffset or 0
+end
+
+function ScrollFrameMixin:SetScrollOffset(scrollOffset)
+    scrollOffset = API.Clamp(scrollOffset, 0, self:GetScrollRange());
+    if scrollOffset ~= self.scrollOffset then
+        self.scrollOffset = scrollOffset;
+        self:SetVerticalScroll(scrollOffset);
+        self.scrollBar:UpdateThumbPosition();
+        SettingsUI:QueueHoverRefresh();
+    end
+end
+
+function ScrollFrameMixin:ScrollBy(offset)
+    self:SetScrollOffset(self:GetScrollOffset() + offset);
+end
+
+function ScrollFrameMixin:OnMouseWheel(delta)
+    if delta > 0 then
+        self:ScrollBy(-OPTIONBUTTON_HEIGHT);
+    else
+        self:ScrollBy(OPTIONBUTTON_HEIGHT);
+    end
+end
+
+-- The row under the cursor changes when the list scrolls without the mouse moving. The rows' new positions are
+-- known a frame later, so the hover is re-evaluated in the next OnUpdate.
+local function HoverRefresh_OnUpdate(self)
+    self:SetScript("OnUpdate", nil);
+    SettingsUI:RefreshHover();
+end
+
+function SettingsUI:QueueHoverRefresh()
+    frame.list:SetScript("OnUpdate", HoverRefresh_OnUpdate);
+end
+
+function SettingsUI:RefreshHover()
+    if not IsPointerInList() then
+        return
+    end
+    local rows = frame.rows[frame.tabID];
+    for i = 1, #rows do
+        local row = rows[i];
+        if row:IsShown() and row:IsMouseOver() then
+            row:GetScript("OnEnter")(row);
+            return
+        end
+    end
+    self:HighlightButton(nil);
+    self:SetDescription(nil);
+end
+
 -- Shows the rows whose requirements are met, stacked from the top.
 function SettingsUI:LayoutRows(tabID)
     local rows = frame.rows[tabID];
@@ -779,6 +891,11 @@ function SettingsUI:LayoutRows(tabID)
         end
     end
     self:RefreshToggles();
+    -- Rows may have appeared or gone: the scroll range follows (the offset is clamped to it).
+    if tabID == frame.tabID then
+        frame.list:SetContentHeight(shown * OPTION_ROW_HEIGHT);
+        frame.list:SetScrollOffset(frame.list:GetScrollOffset());
+    end
 end
 
 function SettingsUI:RefreshTab(tabID)
@@ -910,18 +1027,29 @@ local function CreateSettingsFrame()
     f.headerDivider:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -TAB_BUTTON_GAP);
     f.headerDivider:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", 0, -TAB_BUTTON_GAP);
 
-    -- Option list (left). One page per tab; the options will be placed on the pages.
-    local list = CreateFrame("Frame", nil, f);
+    -- Option list (left). Retail's ScrollFrame clips its children; here it is a real ScrollFrame whose scroll child
+    -- holds one page per tab. The scroll bar is made by Code\Scroll\Scroll_Bar.lua.
+    local list = CreateFrame("ScrollFrame", nil, f);
     list:SetFrameLevel(baseLevel + 2);
     list:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -GAP_TO_HEADER);
     list:SetWidth(listWidth);
     list:SetHeight(listHeight);
+    list:EnableMouseWheel(true);
+    API.Mixin(list, ScrollFrameMixin);
+    list:SetViewSize(listHeight);
+    list:SetScript("OnMouseWheel", ScrollFrameMixin.OnMouseWheel);
     f.list = list;
+
+    local scrollChild = CreateFrame("Frame", nil, list);
+    scrollChild:SetWidth(listWidth);
+    scrollChild:SetHeight(listHeight);
+    list:SetScrollChild(scrollChild);
+    list.scrollChild = scrollChild;
 
     f.pages = {};
     for i = 1, #TAB_ENTRIES do
-        local page = CreateFrame("Frame", nil, list);
-        page:SetAllPoints(list);
+        local page = CreateFrame("Frame", nil, scrollChild);
+        page:SetAllPoints(scrollChild);
         page:Hide();
         f.pages[i] = page;
     end
@@ -935,7 +1063,17 @@ local function CreateSettingsFrame()
         end
     end
 
-    -- Line between the list and the description. Retail anchors it to the scroll bar (list right + 4).
+    -- Scroll bar: 4 right of the list (retail OPTIONBUTTON_FROM_Y). Only shown when the tab needs scrolling, and
+    -- then it takes the place of the vertical divider.
+    local scrollBar = addon.CreateScrollBar(f);
+    scrollBar:SetFrameLevel(baseLevel + 3);
+    scrollBar:SetPoint("TOPLEFT", list, "TOPRIGHT", 4, 0);
+    scrollBar:SetOwner(list);
+    scrollBar:Hide();
+    list.scrollBar = scrollBar;
+    f.scrollBar = scrollBar;
+
+    -- Line between the list and the description. Retail anchors it to the scroll bar (bar center - 2 = list right + 8).
     f.verticalDivider = CreateDivider(content, "Settings-Divider-V.blp", true);
     f.verticalDivider:SetPoint("TOPLEFT", list, "TOPRIGHT", 8, 0);
     f.verticalDivider:SetPoint("BOTTOMLEFT", list, "BOTTOMRIGHT", 8, 0);
@@ -1023,6 +1161,8 @@ function SettingsUI:HighlightButton(button, levelOffset)
     f.highlightFrame:ClearAllPoints();
     -- The selected tab already has the dark plate.
     if button and not button.isSelected then
+        -- Same parent as the button, so the glow of a row is clipped with the list.
+        f.highlightFrame:SetParent(button:GetParent());
         f.highlightFrame:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0);
         f.highlightFrame:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0);
         f.highlightFrame:SetFrameLevel(button:GetFrameLevel() + (levelOffset or -1));
@@ -1036,7 +1176,11 @@ function SettingsUI:SelectTab(tabID, silent)
     if tabID == f.tabID then
         return
     end
+    if f.tabID then
+        f["tabOffset" .. f.tabID] = f.list:GetScrollOffset();       -- each tab keeps its scroll position (retail)
+    end
     f.tabID = tabID;
+    f.list.scrollOffset = nil;                                      -- force the offset to be applied below
 
     for i, button in ipairs(f.tabButtons) do
         local selected = (i == tabID);
@@ -1059,6 +1203,7 @@ function SettingsUI:SelectTab(tabID, silent)
     self:HighlightButton(nil);
     self:SetDescription(nil);
     self:RefreshTab(tabID);
+    f.list:SetScrollOffset(f["tabOffset" .. tabID] or 0);
     CallbackRegistry:Trigger("SettingsUI.TabChanged", tabID);
 
     if not silent and f:IsVisible() then

@@ -43,7 +43,7 @@ Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\Personal
 - Arrow option bars: 16x4 piece of `Settings-ArrowOption` (x 0-16, y 124-128), tiled slice with 1 texel margins, height tuned by eye (`ARROWOPTION_BAR_HEIGHT`).
 - The decor picture has no mask in 3.3.5a: it is a body plus a fade band (`SetGradientAlpha`) that follow the description height (`SettingsUI:UpdateDecor`).
 - Preview pictures (retail `Art/PreviewPicture`): an option with `preview = "Name"` and `ratio` (1 square, 2 twice as wide as high) shows `Textures\PreviewPicture\Name.blp` above its description, with the tiled `Settings-PreviewBorder` 1 px outside; the text and the decor picture move down (`SettingsUI:SetDescription(text, optionData)`). Written, **not tested in the game**. Used by Theme and Show Copy Text Button. Converted and in `Textures\PreviewPicture\`: `Theme.blp` (512 x 256), `CopyTextButton.blp` (256 x 256). Every further option picture is a retail JPG to convert the same way.
-- Not ported: the scroll bar (needed when a tab has more than ~10 rows), gamepad support.
+- Scrolling: see "Scrolling: what was done". Not ported: gamepad support.
 
 ## Frame Size: what was done (not tested in the game)
 
@@ -162,6 +162,16 @@ Retail (`ItemEvaluator.lua`, `API.lua` item level delta, `ItemButtonSharedMixin:
 - Not ported: cosmetic items (no such thing in 3.3.5a), third-party evaluators, the small reward rows, the Quest Item Display.
 - **Texture (converted, in `Textures\Shared\`):** `ItemIsUpgrade.blp` (64 x 64, retail's `Art/Icons/ItemIsUpgrade.png`).
 - To look at: arrow on choices and on fixed rewards, both themes, a ring / trinket / one-hand weapon with empty and full slots, a shield equipped with a one-hand weapon reward, toggling the checkbox with a quest page open, items not cached yet (arrow appears after ~1 s), arrow vs the quality triangle and count text.
+
+## Scrolling: what was done (not tested in the game)
+
+Retail: `ScrollFrame` (clips children) + `ScrollFrameMixin` (view size, content height -> range, offset, wheel = one row) + `addon.CreateScrollBar` (`Scroll_Bar.lua`). Same here.
+
+- `Code/Scroll/Scroll_Bar.lua` (new, in the .toc): up / down arrows (hold repeats), rail, thumb that widens from 4 to 12 on hover / drag (retail's expand / shrink animation) and shrinks back, Brown / Dark vertex colors as retail, textures `ScrollBar-Vertical-*.blp` (already converted). No scroll-to-bottom arrow or new-message dot.
+- `Settings.lua`: the list is a real `ScrollFrame` (3.3.5a has no `clipChildren`) with a scroll child that holds the pages. The bar sits 4 right of the list and replaces the vertical divider while the tab scrolls (retail). `LayoutRows` sets the content height, so Move / Reset rows appearing or hiding change the range. Each tab keeps its own offset. Wheel moves one row (36), instantly, as retail.
+- 3.3.5a clips drawing but not mouse input: rows react only while the pointer is inside the list (`IsPointerInList`), the hover glow is parented to the row's page so it is clipped, and the hover is re-evaluated one frame after a scroll.
+- Not ported: `AdjustScrollToObject` (keybinding / gamepad only).
+- To look at: add enough rows to scroll (the UI tab has 14 at Custom), wheel, arrows (hold), thumb drag, hover animation, both themes, tab switch keeps the offset, glow and description of the row under the pointer after scrolling, rows half visible at the bottom edge, bar and divider swap when Move / Reset appear.
 
 ## Later options (not planned in detail yet)
 

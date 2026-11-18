@@ -24,6 +24,7 @@ Code\Tooltip\TooltipModel.lua
 Code\Tooltip\TooltipCompare.lua
 Code\Tooltip\TooltipItem.lua
 Code\Scroll\Scroll_EasySmooth.lua
+Code\Scroll\Scroll_Bar.lua
 Code\Widget\RewardItemButton.lua
 Code\Widget\RewardSmallButton.lua
 Code\Widget\RewardLayout.lua
