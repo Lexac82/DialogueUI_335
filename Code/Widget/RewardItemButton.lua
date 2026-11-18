@@ -5,7 +5,7 @@ local _, addon = ...;
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
-local MathUtil = addon.MathUtil;
+local Clamp = addon.API.Clamp;
 
 local CreateFrame = CreateFrame;
 local GetItemCount = GetItemCount;
@@ -200,9 +200,9 @@ function RewardItemButton:PlaySheen()
             return
         end
         local rise = min(1, t / 0.2);
-        local fall = 1 - MathUtil.Clamp((t - 0.1) / 0.45, 0, 1);
+        local fall = 1 - Clamp((t - 0.1) / 0.45, 0, 1);
         sheen:SetAlpha(min(rise, fall));
-        local progress = MathUtil.Clamp(t / SHEEN_TRAVEL_TIME, 0, 1);
+        local progress = Clamp(t / SHEEN_TRAVEL_TIME, 0, 1);
         local eased = 1 - (1 - progress) * (1 - progress);      -- smoothing "OUT"
         sheen:ClearAllPoints();
         sheen:SetPoint("LEFT", self.frame, "LEFT", SHEEN_TRAVEL * eased, 0);

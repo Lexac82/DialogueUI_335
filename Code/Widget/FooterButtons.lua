@@ -2,7 +2,7 @@ local _, addon = ...;
 
 -- The two buttons under the quest text, their text and action for each page, and the Space / Esc keys.
 -- Port of retail's AcquireAcceptButton / AcquireExitButton and the Handle* functions (DialogueUI.lua).
-local Round = addon.MathUtil.Round;
+local Round = addon.API.Round;
 
 local CreateFrame = CreateFrame;
 local InCombatLockdown = InCombatLockdown;
@@ -20,10 +20,7 @@ local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
 
--- Blizzard strings (FrameXML, not in wow-docs): used when present, English otherwise.
-local function Str(key, fallback)
-    return _G[key] or fallback
-end
+local L = addon.L;
 
 -- Continue is locked while the quest takes gold: 1 s, or 4 s above 500g or 5% of the player's money.
 local function CalculateLockDuration(copper)
@@ -83,11 +80,11 @@ function Footer:GetAcceptConfig()
     local event, page = self.event, self.page or {};
 
     if event == "QUEST_DETAIL" then
-        return {type = "accept", text = Str("ACCEPT", "Accept"), art = 1, key = "SPACE", onClick = OnClick_Accept}
+        return {type = "accept", text = L["Accept"], art = 1, key = "SPACE", onClick = OnClick_Accept}
     elseif event == "QUEST_PROGRESS" then
-        local text = Str("CONTINUE", "Continue");
+        local text = L["Continue"];
         if not page.completable then
-            return {type = "continue", text = Str("INCOMPLETE", "Incomplete"), art = 3, enabled = false}
+            return {type = "continue", text = L["Incomplete"], art = 3, enabled = false}
         end
         local lock;
         if page.moneyToGet and self.unlockedPage ~= page then
@@ -95,7 +92,7 @@ function Footer:GetAcceptConfig()
         end
         return {type = "continue", text = text, art = 1, key = "SPACE", onClick = OnClick_Continue, lock = lock}
     elseif event == "QUEST_COMPLETE" then
-        local text = Str("COMPLETE", "Complete Quest");
+        local text = L["Complete Quest"];
         if self.owner:GetRewardChoice() == nil then
             return {type = "complete", text = text, art = 3, enabled = false, onClick = OnClick_Complete}
         end
@@ -107,11 +104,11 @@ end
 function Footer:GetExitConfig()
     local event = self.event;
     if event == "QUEST_DETAIL" then
-        return {type = "decline", text = Str("DECLINE", "Decline"), art = 4, key = "Esc", onClick = OnClick_Decline}
+        return {type = "decline", text = L["Decline"], art = 4, key = "Esc", onClick = OnClick_Decline}
     elseif event == "QUEST_PROGRESS" or event == "QUEST_COMPLETE" then
-        return {type = "cancel", text = Str("CANCEL", "Cancel"), art = 4, key = "Esc", onClick = OnClick_Close}
+        return {type = "cancel", text = L["Cancel"], art = 4, key = "Esc", onClick = OnClick_Close}
     end
-    return {type = "goodbye", text = Str("GOODBYE", "Goodbye"), art = 4, key = "Esc", onClick = OnClick_Close}
+    return {type = "goodbye", text = L["Goodbye"], art = 4, key = "Esc", onClick = OnClick_Close}
 end
 
 function Footer:ApplyAccept()

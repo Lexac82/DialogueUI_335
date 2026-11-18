@@ -7,20 +7,21 @@
 ## SavedVariables: DialogueUI_335_DB
 
 Initialization.lua
+Locales\enUS.lua
+Code\CallbackRegistry.lua
+API.lua
 Code\Utility\ThemeUtil.lua
 Code\Utility\FontUtil.lua
-Code\Utility\MathUtil.lua
-Code\Utility\TextUtil.lua
-Code\Utility\NineSlice.lua
+Code\Utility\TextureSlice.lua
 Code\Utility\MoneyUtil.lua
 Code\Dialogue\QuestData.lua
-Code\Dialogue\GossipData.lua
+Code\GossipData\GossipDataProvider.lua
 Code\Tooltip\TooltipFrame.lua
 Code\Tooltip\TooltipScan.lua
 Code\Tooltip\TooltipModel.lua
 Code\Tooltip\TooltipCompare.lua
 Code\Tooltip\TooltipItem.lua
-Code\Widget\SmoothScrollFrame.lua
+Code\Scroll\Scroll_EasySmooth.lua
 Code\Widget\RewardItemButton.lua
 Code\Widget\RewardSmallButton.lua
 Code\Widget\RewardLayout.lua
@@ -30,10 +31,12 @@ Code\Widget\FooterButtons.lua
 Code\Widget\HeaderTags.lua
 Code\Widget\ParchmentBackground.lua
 Code\Dialogue\BlizzardFrames.lua
-Code\Dialogue\ParchmentVisibility.lua
-Code\Dialogue\QuestAlert.lua
-Code\Widget\QuestItemDisplay.lua
+Code\Dialogue\DialogueUI.lua
+Code\Dialogue\AlertFrame.lua
+Code\Widget\Widget_QuestItemDisplay.lua
 Code\Book\BookFormatter.lua
 Code\Book\BookItem.lua
 Code\Book\BookUI.lua
 Code\Book\BookEvents.lua
+Code\Core.lua
+Code\Utility\DevTool.lua

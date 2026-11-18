@@ -1,5 +1,8 @@
-local addonName, addon = ...;
+local _, addon = ...;
 
+local CallbackRegistry = addon.CallbackRegistry;
+local GetDBValue = addon.GetDBValue;
+local SetDBValue = addon.SetDBValue;
 local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
 
@@ -148,7 +151,7 @@ function ParchmentBackground:SetListMode(isList)
     end
 end
 
--- First-contact page: greeting text and the quest / option rows (GossipData:Read). Replaces SetTitle,
+-- First-contact page: greeting text and the quest / option rows (GossipDataProvider:Read). Replaces SetTitle,
 -- SetTags, SetQuestText and SetPage for GOSSIP_SHOW and QUEST_GREETING.
 function ParchmentBackground:SetListPage(event, page)
     self:SetCompleteIcon(false);
@@ -228,14 +231,9 @@ function ParchmentBackground:FlashRewardChoices()
     self.QuestText.rewards:FlashChoices();
 end
 
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
-end
-
 -- Puts the frame back where the player left it (UIParent offsets), else the default CENTER.
 local function RestorePosition(frame)
-    local pos = GetDB().ParchmentPosition;
+    local pos = GetDBValue("ParchmentPosition");
     if pos and pos.point and pos.x and pos.y then
         frame:ClearAllPoints();
         frame:SetPoint(pos.point, UIParent, pos.relativePoint or pos.point, pos.x, pos.y);
@@ -245,7 +243,7 @@ end
 local function SavePosition(frame)
     local point, _, relativePoint, x, y = frame:GetPoint(1);
     if point then
-        GetDB().ParchmentPosition = { point = point, relativePoint = relativePoint, x = x, y = y };
+        SetDBValue("ParchmentPosition", { point = point, relativePoint = relativePoint, x = x, y = y });
     end
 end
 
@@ -316,14 +314,9 @@ local function CreateParchmentBackground(parent)
     self.QuestText = addon.CreateQuestTextLayout(frame, FRAME_WIDTH, FRAME_SIZE_MULTIPLIER, FOOTER_OFFSET_Y, FULL_H);
     self.QuestText.owner = self;
 
-    -- Saved variables are loaded after this file runs, so the saved position is only readable on ADDON_LOADED.
-    local loader = CreateFrame("Frame");
-    loader:RegisterEvent("ADDON_LOADED");
-    loader:SetScript("OnEvent", function(f, event, name)
-        if name == addonName then
-            f:UnregisterEvent("ADDON_LOADED");
-            RestorePosition(frame);
-        end
+    -- Saved variables are loaded after this file runs, so the saved position is only readable once the DB is ready.
+    CallbackRegistry:Register("ADDON_LOADED", function()
+        RestorePosition(frame);
     end);
     MakeMovable(frame, self.QuestText.ScrollArea);
 

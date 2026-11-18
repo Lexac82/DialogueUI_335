@@ -3,6 +3,9 @@ local _, addon = ...;
 -- Reward tooltip: builds the content for a reward entry and shows it in our own tooltip frame.
 -- Port of retail's RewardTooltipCode.lua CustomTooltip_OnEnter plus Tooltip_Private.lua extras
 -- (sell price, item level delta, comparison), using only 3.3.5a APIs.
+local L = addon.L;
+local GetDBBool = addon.GetDBBool;
+local FlipDBBool = addon.FlipDBBool;
 local TooltipScan = addon.TooltipScan;
 local TooltipCompare = addon.TooltipCompare;
 local TooltipModel = addon.TooltipModel;
@@ -38,11 +41,6 @@ local function GetQualityColor(quality)
     end
     local r, g, b = GetItemQualityColor(quality or 1);
     return r, g, b
-end
-
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
 end
 
 local tooltip;
@@ -104,7 +102,7 @@ local function RenderScannedLines(tip, lines, entry, link)
             end
             tip:SetTitle(line.left, r, g, b);
             if needLevelLine then
-                local label = _G.ITEM_LEVEL and _G.ITEM_LEVEL:format(itemLevel) or ("Item Level " .. itemLevel);
+                local label = L["Format Item Level"]:format(itemLevel);
                 tip:AddLine(deltaText ~= "" and (label .. " " .. deltaText) or label, GOLD[1], GOLD[2], GOLD[3]);
             end
         elseif line.right then
@@ -124,15 +122,15 @@ local function AddComparison(tip, link)
     end
     tip:AddBlankLine();
     local equippedName = GetItemInfo(equipped);
-    tip:AddLine("Replace " .. (equippedName or "equipped item"), GOLD[1], GOLD[2], GOLD[3]);
+    tip:AddLine(L["Format Replace Item"]:format(equippedName or L["Equipped Item"]), GOLD[1], GOLD[2], GOLD[3]);
 
     if TooltipCompare:IsDifferentType(link) then
-        tip:AddLine("Different item type than the equipped one.", RED[1], RED[2], RED[3]);
+        tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
     end
 
     local statLines, identical = TooltipCompare:GetStatLines(link);
     if identical then
-        tip:AddLine("Identical Stats", GOLD[1], GOLD[2], GOLD[3]);
+        tip:AddLine(L["Identical Stats"], GOLD[1], GOLD[2], GOLD[3]);
     end
     for i = 1, #statLines do
         tip:AddLine(statLines[i], 1, 1, 1);
@@ -144,9 +142,9 @@ local function AddItemExtras(tip, entry, link)
     if entry.itemType == "required" and link then
         local have = GetItemCount(link) or 0;
         local withBank = GetItemCount(link, true) or 0;
-        local text = "- You have |cffffffff" .. have .. "|r";
+        local text = L["Format You Have"]:format(have);
         if withBank > have then
-            text = text .. " (|cffffffff" .. (withBank - have) .. "|r in bank)";
+            text = text .. L["Format In Bank"]:format(withBank - have);
         end
         tip:AddBlankLine();
         tip:AddLine(text, GOLD[1], GOLD[2], GOLD[3]);
@@ -157,17 +155,16 @@ local function AddItemExtras(tip, entry, link)
         local price = select(11, GetItemInfo(link));
         if price and price > 0 then
             local total = price * (entry.count or 1);
-            local label = _G.SELL_PRICE or "Sell Price";      -- FrameXML string, not in wow-docs
-            tip:AddLine(label .. ":  " .. GetCoinTextureString(total), 1, 1, 1);
+            tip:AddLine(L["Sell Price"] .. ":  " .. GetCoinTextureString(total), 1, 1, 1);
         end
     end
 
     if link and TooltipCompare:IsEquippable(link) then
-        local db = GetDB();
-        if db.TooltipShowItemComparison then
+        local showComparison = GetDBBool("TooltipShowItemComparison");
+        if showComparison then
             AddComparison(tip, link);
         end
-        tip:AddHotkey("Shift", db.TooltipShowItemComparison and "Hide Comparison" or "Show Comparison");
+        tip:AddHotkey("Shift", showComparison and L["Hide Comparison"] or L["Show Comparison"]);
     end
 
     if link and TooltipModel:CanPreview(link) then
@@ -217,22 +214,22 @@ local function Render(tip, entry)
             end
         end
     elseif entry.kind == "title" then
-        tip:SetTitle("Title");
-        tip:AddLine("You will be granted the title \"" .. (entry.name or "") .. "\".");
+        tip:SetTitle(L["Title"]);
+        tip:AddLine(L["Format Reward Title"]:format(entry.name or ""));
     elseif entry.kind == "honor" then
-        tip:SetTitle("Honor");
-        tip:AddLine("You will receive " .. entry.amount .. " honor points.");
+        tip:SetTitle(L["Honor Points"]);
+        tip:AddLine(L["Format Reward Honor"]:format(entry.amount));
     elseif entry.kind == "talents" then
-        tip:SetTitle("Talent Points");
-        tip:AddLine("You will receive " .. entry.amount .. " talent point" .. (entry.amount == 1 and "" or "s") .. ".");
+        tip:SetTitle(L["Talent Points"]);
+        tip:AddLine(L[entry.amount == 1 and "Format Reward Talent Point" or "Format Reward Talent Points"]:format(entry.amount));
     elseif entry.kind == "arena" then
-        tip:SetTitle("Arena Points");
-        tip:AddLine("You will receive " .. entry.amount .. " arena points.");
+        tip:SetTitle(L["Arena Points"]);
+        tip:AddLine(L["Format Reward Arena"]:format(entry.amount));
     elseif entry.kind == "xp" then
-        tip:SetTitle("Experience");
+        tip:SetTitle(L["Experience"]);
         local max = UnitXPMax("player");
-        local percent = (max and max > 0) and (" (" .. floor(entry.amount / max * 100 + 0.5) .. "% of your level)") or "";
-        tip:AddLine("You will gain " .. entry.amount .. " experience" .. percent .. ".");
+        local percent = (max and max > 0) and L["Format Of Your Level"]:format(floor(entry.amount / max * 100 + 0.5)) or "";
+        tip:AddLine(L["Format Reward Experience"]:format(entry.amount, percent));
     else
         return false
     end
@@ -327,8 +324,7 @@ end
 
 -- owner: the hovered button. anchor: frame the tooltip sits on (the icon). entry: reward entry from QuestData.
 function RewardTooltip:Show(owner, anchor, entry)
-    local db = GetDB();
-    if db.UseBlizzardTooltip then
+    if GetDBBool("UseBlizzardTooltip") then
         self:ShowBlizzard(owner, anchor, entry);
         return
     end
@@ -360,8 +356,7 @@ function RewardTooltip:Show(owner, anchor, entry)
     tip.onModifier = function(key, state)
         if state == 1 and (key == "LSHIFT" or key == "RSHIFT") and entry.kind == "item" and entry.link
             and TooltipCompare:IsEquippable(entry.link) then
-            local d = GetDB();
-            d.TooltipShowItemComparison = not d.TooltipShowItemComparison;
+            FlipDBBool("TooltipShowItemComparison", true);
             Render(tip, entry);
         end
     end;
@@ -372,7 +367,7 @@ function RewardTooltip:Hide()
     if tooltip then
         tooltip:Hide();
     end
-    if GetDB().UseBlizzardTooltip then
+    if GetDBBool("UseBlizzardTooltip") then
         GameTooltip:Hide();
     end
 end

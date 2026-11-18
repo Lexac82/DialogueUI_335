@@ -9,12 +9,15 @@ local _, addon = ...;
 -- BookEvents.lua feeds it from the ITEM_TEXT_* events.
 
 local FontUtil = addon.FontUtil;
-local MathUtil = addon.MathUtil;
+local API = addon.API;
+local GetDBValue = addon.GetDBValue;
+local GetDBBool = addon.GetDBBool;
+local SetDBValue = addon.SetDBValue;
 local BookFormatter = addon.BookFormatter;
 local BookItem = addon.BookItem;
 
-local Round = MathUtil.Round;
-local Clamp = MathUtil.Clamp;
+local Round = API.Round;
+local Clamp = API.Clamp;
 
 local CreateFrame = CreateFrame;
 local InCombatLockdown = InCombatLockdown;
@@ -32,27 +35,14 @@ local frame;        -- main frame, created on first use (Book:Init)
 
 
 -- Settings ------------------------------------------------------------------------------------------------
--- Saved in DialogueUI_335_DB. Change with /run, they apply the next time a book opens. Defaults in brackets.
---   BookSizeIndex [1]       frame size 0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
---   BookFontSize [12]       paragraph font size (8..24); headings follow
---   BookDarkenScreen [true] dark vignette at the left of the screen
---   BookShowLocation [true] zone and coordinates for books standing in the world
---   BookUIItemDescription [true]  item icon and flavor text above the book
---   BookKeepUIOpen [false]  keep the book open when the game closes the readable (walking away)
+-- Defaults are in Initialization.lua. They apply the next time a book opens.
+--   BookUISize              frame size 0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
+--   BookFontSize            paragraph font size (8..24); headings follow
+--   BookDarkenScreen        dark vignette at the left of the screen
+--   BookShowLocation        zone and coordinates for books standing in the world
+--   BookUIItemDescription   item icon and flavor text above the book
+--   BookKeepUIOpen          keep the book open when the game closes the readable (walking away)
 --   BookPosition            saved frame position (left-drag)
-
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
-end
-
-local function GetSetting(key, default)
-    local value = GetDB()[key];
-    if value == nil then
-        return default
-    end
-    return value
-end
 
 local SIZE_SCALES = { [0] = 0.9, [1] = 1.0, [2] = 1.1, [3] = 1.25, [4] = 1.4 };
 
@@ -108,10 +98,10 @@ local cs = {};          -- converted sizes (frame units)
 local Metrics = {};     -- font dependent spacing
 
 local function CalculateSizeData()
-    local base = GetSetting("BookFontSize", 12);
+    local base = GetDBValue("BookFontSize");
     base = Clamp(tonumber(base) or 12, 8, 24);
 
-    local a = PIXEL_SCALE * (SIZE_SCALES[GetSetting("BookSizeIndex", 1)] or 1.0);
+    local a = PIXEL_SCALE * (SIZE_SCALES[GetDBValue("BookUISize")] or 1.0);
     for k, v in pairs(RawSize) do
         cs[k] = a * v;
     end
@@ -336,7 +326,7 @@ local function ApplyAnchor(offsetY)
 end
 
 local function RestorePosition()
-    local pos = GetDB().BookPosition;
+    local pos = GetDBValue("BookPosition");
     if pos and pos.point and pos.x and pos.y then
         anchor.point, anchor.relPoint, anchor.x, anchor.y = pos.point, pos.relativePoint or pos.point, pos.x, pos.y;
     else
@@ -358,7 +348,7 @@ local function MakeMovable(...)
         local point, _, relativePoint, x, y = frame:GetPoint(1);
         if point then
             anchor.point, anchor.relPoint, anchor.x, anchor.y = point, relativePoint, x, y;
-            GetDB().BookPosition = { point = point, relativePoint = relativePoint, x = x, y = y };
+            SetDBValue("BookPosition", { point = point, relativePoint = relativePoint, x = x, y = y });
         end
     end
     local function Enable(target)
@@ -1206,14 +1196,14 @@ function Book:UpdateSourceButton()
     local info = Cache.itemInfo;
     if info then
         -- An item from the bags: flavor text above the book, sender line for the Plain Letter.
-        if GetSetting("BookUIItemDescription", true) then
+        if GetDBBool("BookUIItemDescription") then
             local icon, text = BookItem:GetDescription(info);
             if icon and text then
                 self:ShowSource(icon, text);
             end
         end
         self:SetLocation(BookItem:GetLetterSender(info));
-    elseif GetSetting("BookShowLocation", true) then
+    elseif GetDBBool("BookShowLocation") then
         -- A readable standing in the world.
         self:SetLocation(BookItem:GetLocation());
     end
@@ -1221,6 +1211,17 @@ end
 
 
 -- Show / hide ------------------------------------------------------------------------------------------------
+
+-- Size and font settings are read again every time a book is built, so only the vignette needs a live update.
+addon.CallbackRegistry:Register("SettingChanged.BookDarkenScreen", function(state)
+    if Book.vignette and Book:IsShown() then
+        if state then
+            Book.vignette:Show();
+        else
+            Book.vignette:Hide();
+        end
+    end
+end);
 
 -- Distance still to go (1 at the start, 0 at the end), out-quart easing.
 local function OutQuart(t, duration)
@@ -1243,7 +1244,7 @@ end
 
 -- Shows the frame. The fly-in plays only when the book was not open yet.
 function Book:ShowUI()
-    if GetSetting("BookDarkenScreen", true) then
+    if GetDBBool("BookDarkenScreen") then
         self.vignette:Show();
     else
         self.vignette:Hide();

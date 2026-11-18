@@ -6,7 +6,8 @@ local _, addon = ...;
 local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
 local NineSlice = addon.NineSlice;
-local Round = addon.MathUtil.Round;
+local API = addon.API;
+local Round = API.Round;
 
 local CreateFrame = CreateFrame;
 local min = math.min;
@@ -156,7 +157,7 @@ end
 -- Button
 ---------------------------------------------------------------------------
 
-local OptionButton = {};
+local OptionButtonMixin = {};
 
 local function Anim_Shift(button, elapsed)
     button.t = button.t + elapsed;
@@ -169,7 +170,7 @@ local function Anim_Shift(button, elapsed)
     button.content:SetPoint("TOPLEFT", button, "TOPLEFT", button.offset, button.pushOffsetY);
 end
 
-function OptionButton:StartShift(to)
+function OptionButtonMixin:StartShift(to)
     self.t = 0;
     self.animFrom = self.offset;
     self.animTo = to;
@@ -177,7 +178,7 @@ function OptionButton:StartShift(to)
 end
 
 -- Hover: the text slides right, the glow appears. Disabled buttons do nothing.
-function OptionButton:ShowHover()
+function OptionButtonMixin:ShowHover()
     if self.hovered or not self.isEnabled then
         return
     end
@@ -189,7 +190,7 @@ function OptionButton:ShowHover()
     end
 end
 
-function OptionButton:HideHover()
+function OptionButtonMixin:HideHover()
     if not self.hovered then
         return
     end
@@ -199,7 +200,7 @@ function OptionButton:HideHover()
 end
 
 -- Back to the resting state (page change).
-function OptionButton:ResetVisual()
+function OptionButtonMixin:ResetVisual()
     self:SetScript("OnUpdate", nil);
     self.hovered = false;
     self.offset = 0;
@@ -208,7 +209,7 @@ function OptionButton:ResetVisual()
     self.highlight:Hide();
 end
 
-function OptionButton:SetArt(id)
+function OptionButtonMixin:SetArt(id)
     local art = ART[id];
     self.artID = id;
     if art.noBackground then
@@ -245,14 +246,14 @@ function OptionButton:SetArt(id)
     end
 end
 
-function OptionButton:SetButtonWidth(width)
+function OptionButtonMixin:SetButtonWidth(width)
     self:SetWidth(width);
     self.baseWidth = width;
 end
 
 -- Lays out badge, icon, label and right-hand note, then sizes the button to the (wrapped) label.
 -- The width is set before the text so the wrap height is right.
-function OptionButton:Layout()
+function OptionButtonMixin:Layout()
     local padding = self.padding or BUTTON_PADDING;
     local iconOffset, nameOffset = padding, padding;
     if self.hasHotkey then
@@ -302,7 +303,7 @@ function OptionButton:Layout()
 end
 
 -- Shows or hides the key badge and re-lays the label (the Complete button shows its key only once a reward is chosen).
-function OptionButton:SetHotkeyShown(shown)
+function OptionButtonMixin:SetHotkeyShown(shown)
     self.hasHotkey = shown and true or false;
     if self.hasHotkey then
         self.hotkey:Show();
@@ -315,7 +316,7 @@ end
 -- cfg: text, art (0-4), key ("SPACE", "Esc", "1".."9" or nil), enabled (default true), onClick(button), type.
 -- List rows also use: icon (texture path), iconSize (default 14), note (small grey text on the right), padding (default 12).
 -- A disabled button is only drawn differently: it still receives the mouse so the Complete button can flash the rewards.
-function OptionButton:Configure(cfg)
+function OptionButtonMixin:Configure(cfg)
     self.lock:Clear();
     self:ResetVisual();
 
@@ -341,19 +342,19 @@ function OptionButton:Configure(cfg)
 end
 
 -- Disables the button for `duration` seconds with a progress bar, then runs callback (retail ButtonLock).
-function OptionButton:StartLock(duration, callback)
+function OptionButtonMixin:StartLock(duration, callback)
     self.lock:Start(duration, callback);
 end
 
-function OptionButton:OnEnter()
+function OptionButtonMixin:OnEnter()
     self:ShowHover();
 end
 
-function OptionButton:OnLeave()
+function OptionButtonMixin:OnLeave()
     self:HideHover();
 end
 
-function OptionButton:OnMouseDown(button)
+function OptionButtonMixin:OnMouseDown(button)
     if button ~= "LeftButton" then
         return
     end
@@ -365,12 +366,12 @@ function OptionButton:OnMouseDown(button)
     end
 end
 
-function OptionButton:OnMouseUp()
+function OptionButtonMixin:OnMouseUp()
     self.pushOffsetY = 0;
     self.content:SetPoint("TOPLEFT", self, "TOPLEFT", self.offset, 0);
 end
 
-function OptionButton:OnClick(button)
+function OptionButtonMixin:OnClick(button)
     if button == "RightButton" then
         if self.owner then
             self.owner:RequestClose();
@@ -390,9 +391,7 @@ end
 -- name: global name (needed so a key binding can click the button). owner: the parchment (RequestClose, FlashRewardChoices).
 local function CreateOptionButton(parent, name, owner)
     local button = CreateFrame("Button", name, parent);
-    for key, fn in pairs(OptionButton) do
-        button[key] = fn;
-    end
+    API.Mixin(button, OptionButtonMixin);
     button.owner = owner;
     button.offset = 0;
     button.pushOffsetY = 0;

@@ -7,7 +7,7 @@ local _, addon = ...;
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
-local MathUtil = addon.MathUtil;
+local API = addon.API;
 
 local CreateFrame = CreateFrame;
 local max = math.max;
@@ -214,7 +214,7 @@ function TooltipFrame:Layout()
     if self.hotkey then
         hotkeyFrame.keyText:SetText(self.hotkey.key);
         hotkeyFrame.description:SetText(self.hotkey.description);
-        local keyWidth = max(24, MathUtil.Round(hotkeyFrame.keyText:GetStringWidth() + 16));
+        local keyWidth = max(24, API.Round(hotkeyFrame.keyText:GetStringWidth() + 16));
         hotkeyFrame:SetWidth(keyWidth);
         hotkeyFrame.keyWidth = keyWidth;
         local hotkeyRowWidth = keyWidth + 6 + hotkeyFrame.description:GetStringWidth();

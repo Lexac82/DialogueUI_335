@@ -2,6 +2,7 @@ local _, addon = ...;
 
 -- Small reward row (money, XP, honor, talent and arena points, required money).
 -- Port of retail's DUIDialogSmallItemButtonMixin (UITemplates.lua 1981-2131, DialogueUI.xml 289-326).
+local L = addon.L;
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
@@ -61,13 +62,13 @@ function RewardSmallButton:SetEntry(entry)
         end
     elseif kind == "honor" then
         icon = ICON_HONOR[UnitFactionGroup("player")] or ICON_HONOR.Horde;
-        text = MoneyUtil.Thousands(entry.amount) .. " Honor";
+        text = MoneyUtil.Thousands(entry.amount) .. " " .. L["Honor Points"];
     elseif kind == "arena" then
         icon = ICON_ARENA;
-        text = MoneyUtil.Thousands(entry.amount) .. " Arena Points";
+        text = MoneyUtil.Thousands(entry.amount) .. " " .. L["Arena Points"];
     elseif kind == "talents" then
         icon = ICON_TALENTS;
-        text = "+" .. entry.amount .. " Talent Point" .. (entry.amount == 1 and "" or "s");
+        text = L[entry.amount == 1 and "Format Talent Point Row" or "Format Talent Points Row"]:format(entry.amount);
     else
         icon, text = "", "";
     end

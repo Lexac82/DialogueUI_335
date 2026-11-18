@@ -7,8 +7,8 @@ local _, addon = ...;
 local BookFormatter = {};
 addon.BookFormatter = BookFormatter;
 
-local SplitParagraph = addon.TextUtil.SplitParagraph;
-local Round = addon.MathUtil.Round;
+local SplitParagraph = addon.API.SplitParagraph;
+local Round = addon.API.Round;
 
 local match = string.match;
 local find = string.find;

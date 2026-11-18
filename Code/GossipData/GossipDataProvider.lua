@@ -3,8 +3,10 @@ local _, addon = ...;
 -- Reads the first-contact page: greeting text plus the list of rows (quests and gossip options).
 -- Port of retail's HandleGossip / HandleQuestGreeting row building (DialogueUI.lua:1242, :1917), 3.3.5a APIs only.
 -- Each call is valid only during its own event (GOSSIP_SHOW / QUEST_GREETING).
-local GossipData = {};
-addon.GossipData = GossipData;
+local L = addon.L;
+
+local GossipDataProvider = {};
+addon.GossipDataProvider = GossipDataProvider;
 
 local UnitLevel = UnitLevel;
 local UnitFactionGroup = UnitFactionGroup;
@@ -18,7 +20,7 @@ local CLIENT_ICON_PATH = "Interface\\GossipFrame\\";     -- client files, not in
 local PARAGRAPH_SPACING = 4 * 12 * 0.35;                 -- text to options
 local SECTION_SPACING = 2 * 12;                          -- PARAGRAPH_BUTTON_SPACING
 local TIGHT_SPACING = 1;
-GossipData.GAPS = {paragraph = PARAGRAPH_SPACING, section = SECTION_SPACING, tight = TIGHT_SPACING, none = 0};
+GossipDataProvider.GAPS = {paragraph = PARAGRAPH_SPACING, section = SECTION_SPACING, tight = TIGHT_SPACING, none = 0};
 
 -- Quest level colours (retail QuestDifficulty.lua, "Bright" set, used on the red and grey buttons).
 local COLOR_VERY_HARD = "f85658";
@@ -85,9 +87,9 @@ local function ApplyQuestVisual(row)
 
     -- Right-hand note (retail SetQuestTypeText): Trivial, else Repeatable (not for daily / weekly).
     if row.trivial then
-        row.note = "Trivial";
+        row.note = L["Quest Type Trivial"];
     elseif row.repeatable and not (row.daily or row.weekly) then
-        row.note = "Repeatable";
+        row.note = L["Quest Type Repeatable"];
     end
     row.text = FormatQuestTitle(row);
 end
@@ -229,7 +231,7 @@ local function SortQuests(a, b)
 end
 
 local function DebugDump(event, ...)
-    if DialogueUI_335_DB and DialogueUI_335_DB.DebugGossip then
+    if addon.GetDBBool("DebugGossip") then
         local count = select("#", ...);
         local parts = {};
         for i = 1, count do
@@ -404,7 +406,7 @@ local function BuildRows(quests, options)
 end
 
 -- event: "GOSSIP_SHOW" or "QUEST_GREETING". Returns {body, rows}.
-function GossipData:Read(event)
+function GossipDataProvider:Read(event)
     local quests, options = {}, {};
     local body;
     if event == "QUEST_GREETING" then

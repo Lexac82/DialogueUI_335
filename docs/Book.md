@@ -45,10 +45,10 @@ Scale: `0.53333` px per atlas px times the frame size setting. Frame 409.6 × up
 - **Skin:** Parchment (dark brown text) or Metal (grey text with shadow). Page-number colours and the small print follow the skin.
 - **Layout:** text is cut into blocks (`p`, `h1`–`h3`, images), measured with a hidden FontString (`GetStringHeight`) and stacked. If everything fits, the frame shrinks to the text (two-piece background). If not, it is full height and scrolls.
 - **Multi-page books:** all pages are cached first (`ItemTextNextPage` on every READY), then shown as one scrolling text with page-number buttons (up to 9; with more pages the first and last stay and the current page is centred). If all pages fit without scrolling, no buttons. Clicking a button scrolls to the page. Shift + wheel jumps to the previous / next page.
-- **Scrolling:** `SmoothScrollFrame` (shared with the parchment). Wheel moves by `round(4 × (font size + line spacing))`. The bottom divider fades with the distance to the end, the header overlap fades in once the text moved under the title.
+- **Scrolling:** `InitSmoothScrollFrame` in `Code/Scroll/Scroll_EasySmooth.lua` (shared with the parchment). Wheel moves by `round(4 × (font size + line spacing))`. The bottom divider fades with the distance to the end, the header overlap fades in once the text moved under the title.
 - **Title:** biggest of 18 / 16 / 14 that fits on one line, otherwise 14 on two lines. Friz Quadrata (retail uses Trajan, which is not in this addon).
 - **Remembered position:** reopening the same book scrolls back to where the player stopped (session only). The book is identified by title, first-page length and the first 24 characters.
-- **Movable:** left-drag moves the book, position saved in `DialogueUI_335_DB.BookPosition`.
+- **Movable:** left-drag moves the book, position saved in `BookPosition`.
 - **Closing:** close button, right click, Esc, bag keys, talking to an NPC, a cinematic or movie, or when the game closes the readable (walking away), unless `BookKeepUIOpen` is true.
 - **Esc:** override binding on `ESCAPE` to the close button while the book is open (3.3.5a has no `SetPropagateKeyboardInput`). It cannot change in combat, so it is re-applied on `PLAYER_REGEN_ENABLED`.
 - **Blizzard frame:** `ItemTextFrame:UnregisterAllEvents()`. Turned back on if the module is disabled.
@@ -61,8 +61,8 @@ Scale: `0.53333` px per atlas px times the frame size setting. Frame 409.6 × up
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `BookUIEnabled` | true | Off switch: `/run DialogueUI_335_DB.BookUIEnabled = false` then `/reload` |
-| `BookSizeIndex` | 1 | 0 to 4 = 0.9, 1.0, 1.1, 1.25, 1.4 times |
+| `BookUIEnabled` | true | Off switch: `/run DialogueUI_335_DB.BookUIEnabled = false` then `/reload`. The old key `BookSizeIndex` is migrated to `BookUISize` |
+| `BookUISize` | 1 | 0 to 4 = 0.9, 1.0, 1.1, 1.25, 1.4 times |
 | `BookFontSize` | 12 | Paragraph size 8–24 (headings are +4 / +6, small print −2) |
 | `BookDarkenScreen` | true | Dark vignette |
 | `BookShowLocation` | true | Zone and coordinates for world objects |
@@ -93,7 +93,7 @@ Scale: `0.53333` px per atlas px times the frame size setting. Frame 409.6 × up
 - The Plain Letter tooltip layout (second white line).
 - `SetPortraitToTexture` with a texture region as first argument (docs name it `frameName`).
 - `SetToplevel`, `FontString:SetWidth(0)` meaning "no wrap", `ClearOverrideBindings` with a frame as owner.
-- `GetContainerItemInfo` fifth return value (`readable`), already relied on by `QuestItemDisplay.lua`.
+- `GetContainerItemInfo` fifth return value (`readable`), already relied on by `Widget_QuestItemDisplay.lua`.
 - Blizzard's own tooltip flavor text being the last quoted (`"`) line.
 
 ## Open questions

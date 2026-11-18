@@ -2,6 +2,8 @@ local _, addon = ...;
 
 -- Reads quest text and rewards for the current conversation step, using 3.3.5a APIs only.
 -- Each call is valid only during its own event; call it right after the event fires.
+local L = addon.L;
+
 local QuestData = {};
 addon.QuestData = QuestData;
 
@@ -160,12 +162,12 @@ local QUEST_TAG_ICON = {
 };
 
 local QUEST_TAG_LABEL = {
-    Dungeon = "Dungeon",
-    Raid = "Raid",
-    Heroic = "Heroic",
-    Elite = "Elite",
-    Group = "Group",
-    PVP = "PvP",
+    Dungeon = L["Quest Type Dungeon"],
+    Raid = L["Quest Type Raid"],
+    Heroic = L["Quest Type Heroic"],
+    Elite = L["Quest Type Elite"],
+    Group = L["Quest Type Group"],
+    PVP = L["Quest Type PvP"],
 };
 
 local function FindLogEntry(title)
@@ -185,11 +187,11 @@ local function ReadTags(page, stateIcon)
     local logTag, logGroup, logDaily = FindLogEntry(page.title);
 
     if QuestIsWeekly and QuestIsWeekly() then
-        tags[#tags + 1] = {kind = "type", text = "Weekly", icon = ICON_WEEKLY};
+        tags[#tags + 1] = {kind = "type", text = L["Quest Frequency Weekly"], icon = ICON_WEEKLY};
     elseif (QuestIsDaily and QuestIsDaily()) or logDaily then
-        tags[#tags + 1] = {kind = "type", text = "Daily", icon = ICON_DAILY};
+        tags[#tags + 1] = {kind = "type", text = L["Quest Frequency Daily"], icon = ICON_DAILY};
     else
-        tags[#tags + 1] = {kind = "type", text = "Quest", icon = stateIcon or ICON_AVAILABLE};
+        tags[#tags + 1] = {kind = "type", text = L["Quest"], icon = stateIcon or ICON_AVAILABLE};
     end
 
     local label = logTag and QUEST_TAG_LABEL[logTag];

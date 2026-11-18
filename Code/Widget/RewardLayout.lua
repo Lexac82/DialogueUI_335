@@ -23,15 +23,8 @@ local PRICE_RETRY_DELAY = 0.8;
 local HIGHLIGHT_FRONT = "RewardChoice-Highlight.blp";
 local HIGHLIGHT_BACK = "RewardChoice-Highlight-Back.blp";
 
--- Blizzard strings (FrameXML, not in wow-docs): used when present, English otherwise.
-local function Str(key, fallback)
-    return _G[key] or fallback
-end
-
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
-end
+local L = addon.L;
+local GetDBBool = addon.GetDBBool;
 
 local RewardLayout = {};
 RewardLayout.__index = RewardLayout;
@@ -202,16 +195,15 @@ function RewardLayout:Layout(offsetY, page)
     if #rewards > 0 or #choices > 0 then
         offsetY = offsetY + spacing;
         local entryCount = #rewards + (#choices > 0 and 1 or 0);
-        offsetY = host:InsertSubHeader(offsetY, entryCount == 1 and "Reward" or "Rewards");
+        offsetY = host:InsertSubHeader(offsetY, entryCount == 1 and L["Reward"] or L["Rewards"]);
 
         if #choices > 0 then
-            local header = page.canChoose and Str("REWARD_CHOOSE", "Choose your reward:")
-                or Str("REWARD_CHOICES", "You will be able to choose one of these rewards:");
+            local header = page.canChoose and L["Reward Choose"] or L["Reward Choices"];
             offsetY = host:FormatParagraph(offsetY, header) + GAP;
             offsetY = self:PlaceChoices(offsetY, choices, itemWidth);
             if #rewards > 0 then
                 offsetY = offsetY + spacing;
-                offsetY = host:FormatParagraph(offsetY, Str("REWARD_ITEMS", "You will also receive:")) + GAP;
+                offsetY = host:FormatParagraph(offsetY, L["Reward Items"]) + GAP;
             end
         end
 
@@ -243,8 +235,8 @@ function RewardLayout:UpdateSellMarker()
     if not self.page or not self.page.canChoose or #buttons < 2 then
         return
     end
-    -- Retail keeps this off by default. Here it is on unless the setting is false.
-    if GetDB().MarkHighestSellPrice == false then
+    -- Retail keeps this off by default. Here it is on by default (see Initialization.lua).
+    if not GetDBBool("MarkHighestSellPrice") then
         return
     end
 

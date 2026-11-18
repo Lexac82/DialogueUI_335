@@ -2,6 +2,7 @@ local _, addon = ...;
 
 -- "Quest accepted: <title>" at the top right of the screen. Port of the QUEST_ACCEPTED part of retail's
 -- AlertFrame.lua (fade in 0.25 s, hold for the reading time, fade out 0.25 s). One message at a time: a new one replaces the old.
+local L = addon.L;
 local FontUtil = addon.FontUtil;
 
 local GetQuestLogTitle = GetQuestLogTitle;
@@ -56,7 +57,6 @@ events:SetScript("OnEvent", function(_, event, questLogIndex)
     -- UNVERIFIED: wow-docs does not list the arguments of QUEST_ACCEPTED. In 3.3.5a the first is the quest log index.
     local title = questLogIndex and GetQuestLogTitle(questLogIndex);
     if title and title ~= "" then
-        -- ERR_QUEST_ACCEPTED_S is a Blizzard string (not in wow-docs): "Quest accepted: %s".
-        ShowMessage((_G.ERR_QUEST_ACCEPTED_S or "Quest accepted: %s"):format(title));
+        ShowMessage(L["Quest Accepted Alert"]:format(title));
     end
 end);

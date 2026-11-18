@@ -3,11 +3,9 @@ local _, addon = ...;
 -- Eased vertical scrolling for a ScrollFrame.
 -- Port of retail's Scroll_EasySmooth.lua, without recycling, pagination and joystick scrolling.
 
-local MathUtil = addon.MathUtil;
-local DeltaLerp = MathUtil.DeltaLerp;
-local Clamp = MathUtil.Clamp;
-
-local pairs = pairs;
+local API = addon.API;
+local DeltaLerp = API.DeltaLerp;
+local Clamp = API.Clamp;
 
 local SCROLL_BLEND_SPEED = 0.15;
 local SCROLL_PER_WHEEL = 96;        -- retail offsetPerScroll
@@ -114,9 +112,7 @@ end
 
 -- footerDivider: texture whose alpha follows the distance to the bottom (may be set later).
 local function InitSmoothScrollFrame(scrollFrame, footerDivider)
-    for key, func in pairs(ScrollMixin) do
-        scrollFrame[key] = func;
-    end
+    API.Mixin(scrollFrame, ScrollMixin);
 
     scrollFrame.value = 0;
     scrollFrame.scrollTarget = 0;

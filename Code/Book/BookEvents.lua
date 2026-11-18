@@ -1,4 +1,4 @@
-local addonName, addon = ...;
+local _, addon = ...;
 
 -- Connects the book frame to the game: ITEM_TEXT_* events, page caching, closing rules, Blizzard's own
 -- ItemTextFrame. Port of the EventListener section of retail's BookUI.lua.
@@ -7,6 +7,8 @@ local addonName, addon = ...;
 -- next page, ItemTextNextPage() fires READY again. When the last page is cached the whole book is laid out
 -- and shown at once. CLOSED ends it.
 
+local CallbackRegistry = addon.CallbackRegistry;
+local GetDBBool = addon.GetDBBool;
 local Book = addon.Book;
 local BookItem = addon.BookItem;
 
@@ -50,11 +52,6 @@ local enabled = false;
 local begun = false;        -- between BEGIN and CLOSED
 local caching = false;      -- pages are still being read
 local showText = false;     -- READY arrived after the last CLOSED
-
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
-end
 
 local function StopPageTurn()
     turnFrame:SetScript("OnUpdate", nil);
@@ -106,7 +103,7 @@ local function ScheduleCloseCheck()
             return
         end
         frame:SetScript("OnUpdate", nil);
-        if (not showText) and Book:IsShown() and GetDB().BookKeepUIOpen ~= true then
+        if (not showText) and Book:IsShown() and not GetDBBool("BookKeepUIOpen") then
             Book:Hide();
         end
     end);
@@ -125,9 +122,6 @@ local function OnClosed()
 end
 
 events:SetScript("OnEvent", function(_, event)
-    if event == "ADDON_LOADED" then
-        return
-    end
     if event == "ITEM_TEXT_BEGIN" then
         OnBegin();
     elseif event == "ITEM_TEXT_READY" then
@@ -165,9 +159,9 @@ local function SetBlizzardFrameEvents(state)
     end
 end
 
+-- Applies the BookUIEnabled setting. Change the setting with SetDBValue("BookUIEnabled", state), not by calling this.
 function Book:SetEnabled(state)
     state = state and true or false;
-    GetDB().BookUIEnabled = state;
     if state == enabled then
         return
     end
@@ -200,12 +194,7 @@ for _, name in ipairs(BAG_FUNCTIONS) do
     end
 end
 
--- Saved variables are available after ADDON_LOADED.
-local loader = CreateFrame("Frame");
-loader:RegisterEvent("ADDON_LOADED");
-loader:SetScript("OnEvent", function(frame, _, name)
-    if name == addonName then
-        frame:UnregisterEvent("ADDON_LOADED");
-        Book:SetEnabled(GetDB().BookUIEnabled ~= false);
-    end
+-- Fires once when the saved variables load, and again on every change.
+CallbackRegistry:Register("SettingChanged.BookUIEnabled", function(state)
+    Book:SetEnabled(state);
 end);

@@ -6,8 +6,13 @@ local _, addon = ...;
 -- Differences from retail:
 --   * no C_TooltipInfo / GetItemInfoInstant: the item is detected from its tooltip text (TooltipScan);
 --   * no mask textures: the auto close countdown is a thin bar along the bottom edge instead of a circular swipe;
---   * no settings window: options are saved in DialogueUI_335_DB and changed with /duiqid;
+--   * no settings window yet: options are saved in DialogueUI_335_DB;
 --   * no widget chain (this is the only popup), no edit mode (use /duiqid test, then drag).
+local L = addon.L;
+local API = addon.API;
+local GetDBValue = addon.GetDBValue;
+local SetDBValue = addon.SetDBValue;
+local After = API.After;
 local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
 local NineSlice = addon.NineSlice;
@@ -84,68 +89,26 @@ AddLine(READABLE_LINES, _G.ITEM_READABLE);
 AddLine(READABLE_LINES, "<Right Click to Read>");
 local START_QUEST_TEXT = _G.ITEM_STARTS_QUEST or "This Item Begins a Quest";
 local QUEST_ITEM_TEXT = _G.ITEM_BIND_QUEST or "Quest Item";
-local CLICK_TO_READ = "Left Click to Read";
-local BEGINS_QUEST = "Begins a Quest";
+local CLICK_TO_READ = L["Click To Read"];
+local BEGINS_QUEST = L["Begins A Quest"];
 
 -- Items that drop again and again: shown once even when "ignore seen items" is off.
 local ONE_TIME_ITEM = {
     [29433] = true,     -- Grisly Trophy
 };
 
--- Saved options (DialogueUI_335_DB).
-local DEFAULTS = {
-    QuestItemDisplayEnabled = true,
-    QuestItemDisplayHideSeen = false,
-    QuestItemDisplayAwaitWorldMap = false,
-    QuestItemDisplayFontSize = 14,
-};
-
-local function GetDB()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    return DialogueUI_335_DB
-end
-
-local function GetOption(key)
-    local value = GetDB()[key];
-    if value == nil then
-        return DEFAULTS[key]
-    end
-    return value
-end
-
+-- Saved options: QuestItemDisplay, QuestItemDisplayHideSeen, QuestItemDisplayAwaitWorldMap, QuestItemDisplayFontSize,
+-- QuestItemDisplayPosition and QuestItems (defaults in Initialization.lua).
 local function GetSeenItems()
-    local db = GetDB();
-    if type(db.QuestItems) ~= "table" then
-        db.QuestItems = {};
+    local seen = GetDBValue("QuestItems");
+    if type(seen) ~= "table" then
+        seen = {};
+        SetDBValue("QuestItems", seen);
     end
-    return db.QuestItems
+    return seen
 end
 
 local SEEN_SESSION = {};
-
--- Simple timer (3.3.5a has no C_Timer).
-local After;
-do
-    local timers = {};
-    local timerFrame = CreateFrame("Frame");
-    local function OnUpdate(frame, elapsed)
-        for i = #timers, 1, -1 do
-            local timer = timers[i];
-            timer.delay = timer.delay - elapsed;
-            if timer.delay <= 0 then
-                table.remove(timers, i);
-                timer.func();
-            end
-        end
-        if #timers == 0 then
-            frame:SetScript("OnUpdate", nil);
-        end
-    end
-    After = function(delay, func)
-        timers[#timers + 1] = { delay = delay, func = func };
-        timerFrame:SetScript("OnUpdate", OnUpdate);
-    end
-end
 
 local function CountLetters(text)
     if not text then return 0 end;
@@ -172,14 +135,14 @@ local TitleFont, DescFont, ButtonFont;
 local GetBagPosition;       -- defined below, used by the button click
 
 local function UpdateFonts()
-    local size = GetOption("QuestItemDisplayFontSize");
+    local size = GetDBValue("QuestItemDisplayFontSize");
     TitleFont = FontUtil:GetColoredFont("DUI335_QID_Title" .. size, size, COLOR_TEXT);
     DescFont = FontUtil:GetColoredFont("DUI335_QID_Desc" .. size, max(size - 2, 8), COLOR_TEXT);
     ButtonFont = FontUtil:GetColoredFont("DUI335_QID_Button" .. size, max(size - 2, 8), COLOR_BUTTON);
 end
 
 local function GetMaxTextWidth()
-    local size = GetOption("QuestItemDisplayFontSize");
+    local size = GetDBValue("QuestItemDisplayFontSize");
     if size > 16 then
         return math.floor(BASE_TEXT_WIDTH * size / 16 + 0.5)
     end
@@ -430,7 +393,7 @@ end
 -- Position
 
 function QuestItemDisplay:LoadPosition()
-    local pos = GetDB().QuestItemDisplayPosition;
+    local pos = GetDBValue("QuestItemDisplayPosition");
     if pos and pos[1] and pos[2] then
         self.base = { "LEFT", UIParent, "BOTTOMLEFT", pos[1], pos[2] };
     else
@@ -451,15 +414,15 @@ function QuestItemDisplay:SavePosition()
     local left = self:GetLeft();
     local _, centerY = self:GetCenter();
     if not (left and centerY) then return end;
-    GetDB().QuestItemDisplayPosition = { floor(left + 0.5), floor(centerY + 0.5) };
+    SetDBValue("QuestItemDisplayPosition", { floor(left + 0.5), floor(centerY + 0.5) });
 end
 
 function QuestItemDisplay:IsUsingCustomPosition()
-    return GetDB().QuestItemDisplayPosition ~= nil
+    return GetDBValue("QuestItemDisplayPosition") ~= nil
 end
 
 function QuestItemDisplay:ResetPosition()
-    GetDB().QuestItemDisplayPosition = nil;
+    SetDBValue("QuestItemDisplayPosition", nil);
     self:LoadPosition();
 end
 
@@ -678,10 +641,10 @@ function QuestItemDisplay:OpenQuestLog(logIndex)
     end
 end
 
--- addon.Parchment is the parchment object, the frame is parchment.frame.
+-- addon.DialogueUI is the dialogue frame object, the frame itself is DialogueUI.frame.
 local function IsDialogueShown()
-    local parchment = addon.Parchment;
-    return parchment ~= nil and parchment.frame ~= nil and parchment.frame:IsShown()
+    local dialogue = addon.DialogueUI;
+    return dialogue ~= nil and dialogue.frame ~= nil and dialogue.frame:IsShown()
 end
 
 function QuestItemDisplay:GetDeferReason(isReadable)
@@ -914,6 +877,13 @@ function QuestItemDisplay:Clear()
     self:Hide();
 end
 
+-- Turning the popup off removes whatever is showing or waiting.
+addon.CallbackRegistry:Register("SettingChanged.QuestItemDisplay", function(state)
+    if not state then
+        QuestItemDisplay:Clear();
+    end
+end);
+
 function QuestItemDisplay:OnHide()
     if self.isMoving then
         self:StopMovingOrSizing();
@@ -954,7 +924,7 @@ end
 -- World map (optional): hide behind the map and pause the countdown while it is open.
 
 function QuestItemDisplay:ApplyWorldMapState()
-    local open = GetOption("QuestItemDisplayAwaitWorldMap") and WorldMapFrame and WorldMapFrame:IsShown();
+    local open = GetDBValue("QuestItemDisplayAwaitWorldMap") and WorldMapFrame and WorldMapFrame:IsShown();
     if open then
         self.worldMapOpen = true;
         self:SetAlpha(0);
@@ -1047,7 +1017,7 @@ function QuestItemDisplay:OnItemLooted(itemID, isRetry)
     if not isLore then return end;
 
     local seen = GetSeenItems();
-    if (GetOption("QuestItemDisplayHideSeen") or ONE_TIME_ITEM[itemID]) and seen[itemID] then
+    if (GetDBValue("QuestItemDisplayHideSeen") or ONE_TIME_ITEM[itemID]) and seen[itemID] then
         return
     end
     seen[itemID] = true;
@@ -1058,7 +1028,7 @@ local events = CreateFrame("Frame");
 local function OnEvent(_, event, ...)
     if event == "CHAT_MSG_LOOT" then
         local text, playerName = ...;
-        if not GetOption("QuestItemDisplayEnabled") then return end;
+        if not GetDBValue("QuestItemDisplay") then return end;
         if not text or not IsOwnLoot(text, playerName) then return end;
         local itemID = match(text, "item:(%d+)");
         itemID = itemID and tonumber(itemID);
@@ -1091,7 +1061,7 @@ events:RegisterEvent("PLAY_MOVIE");
 events:RegisterEvent("PLAYER_ENTERING_WORLD");
 
 ---------------------------------------------------------------------------------------------------------------
--- Test slash command. Options live in DialogueUI_335_DB (QuestItemDisplay*) and have no UI for now.
+-- Test slash command. Options are the QuestItemDisplay* settings and have no UI for now.
 --   /duiqid test <itemID>   show the popup for an item
 --   /duiqid reset           reset the popup position
 
@@ -1108,7 +1078,7 @@ SlashCmdList["DUIQID"] = function(message)
         if QuestItemDisplay.Init == nil then
             QuestItemDisplay:ResetPosition();
         else
-            GetDB().QuestItemDisplayPosition = nil;
+            SetDBValue("QuestItemDisplayPosition", nil);
         end
     end
 end

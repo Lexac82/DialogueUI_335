@@ -2,15 +2,15 @@ local _, addon = ...;
 
 -- Quest description (body + objectives) inside the parchment.
 -- Port of retail's FormatParagraph, AcquireAndSetSubHeader and UseQuestLayout.
--- Scrolling: ScrollArea is a ScrollFrame (SmoothScrollFrame.lua), ContentFrame is its scroll child.
+-- Scrolling: ScrollArea is a ScrollFrame (Scroll_EasySmooth.lua), ContentFrame is its scroll child.
 
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
-local MathUtil = addon.MathUtil;
-local TextUtil = addon.TextUtil;
+local L = addon.L;
+local API = addon.API;
 
-local Round = MathUtil.Round;
-local SplitParagraph = TextUtil.SplitParagraph;
+local Round = API.Round;
+local SplitParagraph = API.SplitParagraph;
 
 local CreateFrame = CreateFrame;
 
@@ -32,7 +32,6 @@ local SUBHEADER_TEX_NAME = "SubHeaderBackground.blp";
 
 local PARAGRAPH_FONT_NAME = "DUI335_Quest_Paragraph";
 local SUBHEADER_FONT_NAME = "DUI335_Quest_SubHeader";
-local SUBHEADER_LABEL = "Objectives";               -- retail uses OBJECTIVES_LABEL, not in wow-docs
 
 -- Smooth reveal, like Blizzard's quest frame. Skipped when "Instant Quest Text" is on.
 local INSTANT_TEXT_CVAR = "questFadingDisable";        -- UNVERIFIED name: not in wow-docs
@@ -140,7 +139,7 @@ function QuestTextLayout:SetFooterOffset(y)
     end
 end
 
--- The divider whose alpha follows the scroll position (see SmoothScrollFrame.lua).
+-- The divider whose alpha follows the scroll position (see Scroll_EasySmooth.lua).
 function QuestTextLayout:SetFooterDivider(texture)
     self.ScrollArea.footerDivider = texture;
     self.ScrollArea:UpdateDivider(self.ScrollArea.value);
@@ -328,13 +327,13 @@ local function OnClick_Row(button)
 end
 
 -- First-contact page (GOSSIP_SHOW, QUEST_GREETING): greeting text, then one button per quest or option.
--- page: GossipData:Read(event). Rows 1-9 get a key (the badge on quests, "N. " in front of option text).
+-- page: GossipDataProvider:Read(event). Rows 1-9 get a key (the badge on quests, "N. " in front of option text).
 function QuestTextLayout:SetListPage(page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
     self:SetScrollTop(self.listScrollTop);
 
-    local gaps = addon.GossipData.GAPS;
+    local gaps = addon.GossipDataProvider.GAPS;
     local offsetY = PARAGRAPH_SPACING;
     local body = page.body;
     if body and body ~= "" then
@@ -386,16 +385,14 @@ function QuestTextLayout:SetQuestText(body, objective, page)
 
     if objective and objective ~= "" then
         offsetY = offsetY + PARAGRAPH_SPACING;
-        offsetY = self:InsertSubHeader(offsetY, SUBHEADER_LABEL);
+        offsetY = self:InsertSubHeader(offsetY, L["Quest Objectives"]);
         offsetY = self:FormatParagraph(offsetY, objective);
     end
 
     if page then
         if page.suggested then
-            -- QUEST_SUGGESTED_GROUP_NUM is a FrameXML string ("Suggested Players [%d]"), not in wow-docs.
-            local format = _G.QUEST_SUGGESTED_GROUP_NUM or "Suggested Players [%d]";
             offsetY = offsetY + PARAGRAPH_SPACING;
-            offsetY = self:FormatParagraph(offsetY, format:format(page.suggested));
+            offsetY = self:FormatParagraph(offsetY, L["Format Suggested Players"]:format(page.suggested));
         end
         offsetY = self.rewards:Layout(offsetY, page);
     end
