@@ -27,7 +27,9 @@ local DefaultValues = {
     FontSizeBase = 1,                           --0..3 = 10, 12, 14, 16 (see FontUtil.lua)
     HideUI = true,                              --Fade out the game UI during a conversation (see HideUI.lua)
     ShowCopyTextButton = false,                 --Copy Text button in the top right corner (see Clipboard.lua)
-    FrameOrientation = 2,                     --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
+    ShowNPCNameOnPage = false,                  --"Name: " in front of the page text (see QuestTextLayout.lua)
+    ShowQuestType = false,                      --Quest type pills (Quest / Daily / Dungeon ...) in the header (not in retail, see HeaderTags.lua)
+    FrameOrientation = 2,                   --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
 
     --Reward tooltip
     UseBlizzardTooltip = false,

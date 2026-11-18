@@ -15,6 +15,8 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | UI tab: **Orientation** (Left / Right / Custom) with **Move Position** and **Reset Position** rows under Custom | written, **not tested in the game**, see "Orientation: what was done" |
 | UI tab: **Hide UI** checkbox (new row type **Checkbox**) | written, **not tested in the game**, see "Hide UI: what was done" |
 | UI tab: **Show Copy Text Button** checkbox (button + Clipboard window) | written, **not tested in the game**, see "Show Copy Text Button: what was done" |
+| UI tab: **Show NPC Name** checkbox | written, **not tested in the game**, see "Show NPC Name: what was done" |
+| UI tab: **Show Quest Type** checkbox (not in retail) | written, **not tested in the game**, see "Show Quest Type: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -104,6 +106,27 @@ Retail (`Clipboard.lua`, `DialogueUI.lua` Clipboard section): a 24 px button in 
 - **Textures (converted, in `Textures\Shared\`):** `CopyTextButton.blp` (256 x 32), `ClipboardBackground.blp` (128 x 128). The scroll bar uses `Theme_Brown\ScrollBar-Vertical-*.blp`.
 - To look at: button position at all four frame sizes (against the check mark on QUEST_COMPLETE), both themes (icon slot 1 and 2), tooltip position, opening on every page type, Ctrl+A / Ctrl+C in the box, scrolling a long quest (wheel, thumb, drag-select), click outside / on the button / Esc, closing with the dialogue, Hide UI on (window and tooltip must stay visible), toggling the checkbox with a dialogue open.
 
+## Show NPC Name: what was done (not tested in the game)
+
+Retail (`DialogueUI.lua` `ConcatenateNPCName`): with `ShowNPCNameOnPage` on and `UnitExists("npc")`, the page's main text becomes `Name: text` (gossip welcome text, quest text of every page type, quest greeting). Changing the option with a page open redraws it.
+
+- `ShowNPCNameOnPage` (default false, as retail) in `DefaultValues`; checkbox after Show Copy Text Button; strings `Show NPC Name On Page (Desc)` in `Locales/enUS.lua`.
+- `QuestTextLayout.lua`: local `ConcatenateNPCName`, used in `SetListPage` and `SetQuestText` (only when a page is given, so the Move sample is untouched). It runs at layout time, so the stored page, the Clipboard text and the Frame / Font Size redraws keep the plain body. Not applied to the objective text, as in retail.
+- `DialogueUI.lua`: `SettingChanged.ShowNPCNameOnPage` calls `RedrawPage` (no reveal fade, QUEST_COMPLETE reward choice is cleared by the redraw like for the size changes).
+- Not done: preview picture (`Art/PreviewPicture`), translated strings for other locales (only enUS exists here).
+- To look at: gossip, quest greeting, quest detail / progress / complete with the option on; toggling with a page open; name when the NPC has no name; Frame Size change keeps the prefix; Copy Text content has no extra prefix.
+
+## Show Quest Type: what was done (not tested in the game)
+
+Not in retail (retail always shows its quest header tags). Here it is a checkbox, **off by default**: off means nothing is shown above the title.
+
+- `ShowQuestType` (default false) in `DefaultValues`; checkbox after Show NPC Name with `preview = "QuestType"`, `ratio = 2`; strings `Show Quest Type (Desc)` in `Locales/enUS.lua`.
+- `ParchmentBackground:SetTags` passes nil to `HeaderTags` when the option is off. `DialogueUI.lua`: `SettingChanged.ShowQuestType` re-applies the stored page's tags (quest pages only).
+- The temporary hardcoded Weekly + Dungeon (5) tags in `QuestData.lua` were removed after the screenshot.
+- **Preview border:** retail scales the tiled slice (margin 8) by 768 / screen height, i.e. one texel = one screen pixel. Ours used 1 unit per texel (about 40% thicker at 1080p), now `BACKGROUND_SCALE` (0.75). Affects Theme, Copy Text Button and Quest Type previews.
+- **Preview picture:** `Textures\PreviewPicture\QuestType.blp` (512 x 128). The screenshot was 409 x 124 and was stretched to 512 x 128 for the power of 2, so the option uses `ratio = 409 / 124`. `SetDescription` now takes any `ratio` (width / height; the width is capped at the full preview width, the height follows from the ratio, text and decor move with it), so the picture shows at its original proportions. Ratio 1 and 2 behave as before.
+- To look at: option off (no pills), on (pills), toggling with a quest page open, gossip pages (no pills either way), both themes.
+
 ## Later options (not planned in detail yet)
 
-From retail's UI tab: Font, Hide UI sub-options, Show NPC Name On Page, then the Quest group (Mark Highest Sell Price, Use Blizzard Tooltip, ...), Readables (Book size and options). Control and Gameplay tabs follow `Settings_Definitions` in retail. Open questions from `SettingsMenu-Questions.md` (items 2, 5, 6): which options to include, live vs reload, and the two tooltip settings.
+From retail's UI tab: Font, Hide UI sub-options, then the Quest group (Mark Highest Sell Price, Use Blizzard Tooltip, ...), Readables (Book size and options). Control and Gameplay tabs follow `Settings_Definitions` in retail. Open questions from `SettingsMenu-Questions.md` (items 2, 5, 6): which options to include, live vs reload, and the two tooltip settings.

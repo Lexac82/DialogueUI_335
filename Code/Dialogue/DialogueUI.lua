@@ -144,6 +144,14 @@ local function RedrawPage()
 end
 addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
+addon.CallbackRegistry:Register("SettingChanged.ShowNPCNameOnPage", RedrawPage);    -- text only, the page is kept
+
+-- Settings > Show Quest Type: re-apply the stored page's tags (gossip pages and the Move sample have none).
+addon.CallbackRegistry:Register("SettingChanged.ShowQuestType", function()
+    if MainFrame:IsShown() and lastPage and not LIST_EVENTS[lastEvent] then
+        MainFrame:SetTags(lastPage.tags);
+    end
+end);
 
 -- Settings > Show Copy Text Button: a small button in the top right corner opens the page's text in the Clipboard
 -- window. Nothing to copy while no conversation is open (the Move sample).

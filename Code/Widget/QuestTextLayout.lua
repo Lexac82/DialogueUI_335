@@ -323,6 +323,18 @@ local function OnClick_Row(button)
     end
 end
 
+-- Settings > Show NPC Name (retail ConcatenateNPCName): "Name: text" in front of the page's main text.
+-- Done when the text is laid out, so the stored page (Clipboard, redraws) keeps the plain text.
+local function ConcatenateNPCName(text)
+    if text and text ~= "" and addon.GetDBBool("ShowNPCNameOnPage") and UnitExists("npc") then
+        local name = UnitName("npc");
+        if name and name ~= "" then
+            return name .. ": " .. text
+        end
+    end
+    return text
+end
+
 -- First-contact page (GOSSIP_SHOW, QUEST_GREETING): greeting text, then one button per quest or option.
 -- page: GossipDataProvider:Read(event). Rows 1-9 get a key (the badge on quests, "N. " in front of option text).
 function QuestTextLayout:SetListPage(page)
@@ -333,7 +345,7 @@ function QuestTextLayout:SetListPage(page)
 
     local gaps = addon.GossipDataProvider.GAPS;
     local offsetY = PARAGRAPH_SPACING;
-    local body = page.body;
+    local body = ConcatenateNPCName(page.body);
     if body and body ~= "" then
         offsetY = self:FormatParagraph(offsetY, body);
     end
@@ -377,6 +389,9 @@ function QuestTextLayout:SetQuestText(body, objective, page)
 
     local offsetY = self.topOffset;
 
+    if page then    -- no page: the Move sample, not a conversation
+        body = ConcatenateNPCName(body);
+    end
     if body and body ~= "" then
         offsetY = offsetY + PARAGRAPH_SPACING;
         offsetY = self:FormatParagraph(offsetY, body);

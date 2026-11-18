@@ -227,6 +227,9 @@ end
 
 -- tags: page.tags from QuestData (nil or empty clears the pills, e.g. on gossip pages).
 function ParchmentBackground:SetTags(tags)
+    if not addon.GetDBBool("ShowQuestType") then
+        tags = nil;     -- Settings > Show Quest Type is off: nothing in the header
+    end
     self.HeaderTags:SetTags(tags);
 end
 

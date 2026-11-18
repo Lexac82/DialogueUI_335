@@ -348,6 +348,8 @@ local Schematic = {
                 requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
             {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
             {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
+            {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
+            {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
         },
     },
     {   -- Control
@@ -873,13 +875,15 @@ local function CreateSettingsFrame()
     f.previewTexture = preview:CreateTexture(nil, "ARTWORK");
     f.previewTexture:SetAllPoints(preview);
 
-    -- Border 1 px outside the picture (retail PreviewBorder: tiled, margin 8).
+    -- Border 1 px outside the picture (retail PreviewBorder: tiled, margin 8). Retail scales the slice by
+    -- 768 / screen height (API.UpdateTextureSliceScale), so one texel is one screen pixel: BACKGROUND_SCALE here
+    -- (0.75 units per pixel, ~0.71 in retail at 1080p). Scale 1 made the border ~40% too thick.
     local borderFrame = CreateFrame("Frame", nil, preview);
     borderFrame:SetFrameLevel(preview:GetFrameLevel() + 1);
     borderFrame:SetPoint("TOPLEFT", preview, "TOPLEFT", -1, 1);
     borderFrame:SetPoint("BOTTOMRIGHT", preview, "BOTTOMRIGHT", 1, -1);
     f.previewBorder = NineSlice:CreateTiled(borderFrame, ThemeUtil:GetTextureFile("Settings-PreviewBorder.blp"),
-        { 64, 64 }, 8, 1, "OVERLAY");
+        { 64, 64 }, 8, BACKGROUND_SCALE, "OVERLAY");
     ThemeUtil:BindSlice(f.previewBorder, "Settings-PreviewBorder.blp");
 
     local description = content:CreateFontString(nil, "OVERLAY");
@@ -1031,9 +1035,13 @@ function SettingsUI:SetDescription(text, optionData)
     local hasPreview = optionData and optionData.preview and true or false;
 
     if hasPreview then
-        local height = frame.previewHeight;
-        local width = (optionData.ratio == 1) and height or 2 * height;
+        -- ratio = width / height of the picture as it should look (any number; wider than 2 uses the full width)
+        local ratio = optionData.ratio or 2;
+        local width = math.min(frame.previewFullWidth, frame.previewHeight * ratio);
+        local height = width / ratio;
+        frame.currentPreviewHeight = height;
         preview:SetWidth(width);
+        preview:SetHeight(height);
         frame.previewTexture:SetTexture(PREVIEW_PATH .. optionData.preview .. ".blp");
         frame.previewBorder:Update(width + 2, height + 2);
         preview:Show();
@@ -1062,7 +1070,7 @@ function SettingsUI:UpdateDecor()
     local body, fade, size = decor.body, decor.fade, decor.size;
     local pictureBottom = DECOR_INSET;                  -- from the frame bottom
     local pictureTop = DECOR_INSET + size;
-    local textOffset = frame.hasPreview and (frame.previewHeight + FRAME_PADDING) or 8;
+    local textOffset = frame.hasPreview and ((frame.currentPreviewHeight or frame.previewHeight) + FRAME_PADDING) or 8;
     local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + textOffset + frame.description:GetStringHeight();  -- from the frame top
     local edge = decor.frameHeight - descriptionBottom - DECOR_MASK_OFFSET;
     local fadeHeight = size * DECOR_FADE_ROWS;
