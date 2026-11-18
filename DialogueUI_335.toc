@@ -10,6 +10,7 @@ Initialization.lua
 Locales\enUS.lua
 Code\CallbackRegistry.lua
 API.lua
+Code\Utility\UIRoot.lua
 Code\Utility\ThemeUtil.lua
 Code\Utility\FrameSize.lua
 Code\Utility\FontUtil.lua
@@ -34,6 +35,7 @@ Code\Widget\ParchmentBackground.lua
 Code\Dialogue\BlizzardFrames.lua
 Code\Dialogue\DialogueUI.lua
 Code\Dialogue\AlertFrame.lua
+Code\Dialogue\HideUI.lua
 Code\Widget\Widget_QuestItemDisplay.lua
 Code\Book\BookFormatter.lua
 Code\Book\BookItem.lua

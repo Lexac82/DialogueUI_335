@@ -12,7 +12,7 @@ local After = API.After;
 local CloseGossip = CloseGossip;
 local CloseQuest = CloseQuest;
 
-local MainFrame = addon.CreateParchmentBackground(UIParent);
+local MainFrame = addon.CreateParchmentBackground(addon.UIRoot);     -- on UIRoot so Hide UI can hide UIParent
 addon.DialogueUI = MainFrame;   -- read by QuestItemDisplay (defers readable items while talking) and DevTool
 
 -- First-contact pages: greeting text plus a list of quests and options (no quest header).

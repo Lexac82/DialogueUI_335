@@ -305,7 +305,7 @@ local function CreateTooltipFrame()
     self.rowCount = 0;
     self.fonts = GetFonts();
 
-    local frame = CreateFrame("Frame", nil, UIParent);
+    local frame = CreateFrame("Frame", nil, addon.UIRoot);
     frame:SetFrameStrata("TOOLTIP");
     frame:SetClampedToScreen(true);
     frame:SetClampRectInsets(-4, 4, 4, -4);
@@ -340,7 +340,7 @@ local function CreateTooltipFrame()
     -- Show delay (retail SetShowDelay(0.25)). The frame stays hidden during the delay and appears at full
     -- alpha: inline coin icons in the text ignore the frame's alpha, so a fade or alpha 0 would show the coins
     -- before the text and background. The driver is a separate frame, because a hidden frame gets no OnUpdate.
-    local driver = CreateFrame("Frame", nil, UIParent);
+    local driver = CreateFrame("Frame", nil, addon.UIRoot);
     driver:SetScript("OnUpdate", function(_, elapsed)
         if not self.waiting then
             return

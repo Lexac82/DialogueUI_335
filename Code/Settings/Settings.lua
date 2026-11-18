@@ -345,6 +345,7 @@ local Schematic = {
             {type = "Custom", name = L["Reset Position"], description = L["Reset Position Desc"], icon = "Settings-Reset.blp",
                 onClickFunc = Orientation_Reset_OnClick, validationFunc = OrientationPosition_Validation,
                 requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
+            {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
         },
     },
     {   -- Control
@@ -510,6 +511,59 @@ local function CreateArrowOption(row, optionData)
     return widget
 end
 
+-- Retail's checkbox: a 24 px box from Settings-Checkbox (top left cell empty, top right cell ticked background) and
+-- a 12 px tick on top (bottom left cell). Clicking anywhere on the row toggles it.
+local CHECKBOX_FILE = "Settings-Checkbox.blp";
+
+local function CreateCheckbox(row, optionData)
+    local widget = CreateFrame("Frame", nil, row.content);
+    widget:SetWidth(OPTION_WIDGET_SIZE);
+    widget:SetHeight(OPTION_WIDGET_SIZE);
+    widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
+    widget.dbKey = optionData.dbKey;
+
+    local background = widget:CreateTexture(nil, "BACKGROUND");
+    background:SetAllPoints(widget);
+    ThemeUtil:BindTexture(background, CHECKBOX_FILE);
+
+    local check = widget:CreateTexture(nil, "OVERLAY");
+    check:SetWidth(OPTION_WIDGET_SIZE * 0.5);
+    check:SetHeight(OPTION_WIDGET_SIZE * 0.5);
+    check:SetPoint("CENTER", widget, "CENTER", 0, 0);
+    ThemeUtil:BindTexture(check, CHECKBOX_FILE);
+    check:SetTexCoord(0.0625, 0.4375, 0.5625, 0.9375);
+
+    function widget:SetChecked(state)
+        self.checked = state;
+        if state then
+            background:SetTexCoord(0.5, 1, 0, 0.5);
+            check:Show();
+        else
+            background:SetTexCoord(0, 0.5, 0, 0.5);
+            check:Hide();
+        end
+    end
+
+    function widget:Refresh()
+        self:SetChecked(GetDBValue(self.dbKey) == true);
+    end
+
+    function widget:Toggle()
+        self:SetChecked(not self.checked);
+        SetDBValue(self.dbKey, self.checked, true);
+        SettingsUI:LayoutRows(frame.tabID);     -- sub-options may depend on this one
+        PlaySound(self.checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff");
+        row:OnEnter();
+    end
+
+    row:RegisterForClicks("LeftButtonUp");
+    row:SetScript("OnClick", function()
+        widget:Toggle();
+    end);
+
+    return widget
+end
+
 local OptionLabelFont;
 
 -- A row of the option list: label on the left, the option widget on the right, hover glow behind both.
@@ -547,6 +601,8 @@ local function CreateOptionRow(page, index, optionData)
 
     if optionData.type == "ArrowOption" then
         row.widget = CreateArrowOption(row, optionData);
+    elseif optionData.type == "Checkbox" then
+        row.widget = CreateCheckbox(row, optionData);
     elseif optionData.type == "Custom" then
         -- A plain button row (retail: branch mark when it depends on another option, icon, then the label).
         row:RegisterForClicks("LeftButtonUp");
@@ -663,7 +719,7 @@ local function CreateSettingsFrame()
     SelectedTabFont = FontUtil:GetColoredFont("DUI335_SettingsTabSelected", FONT_HEIGHT, { "Ivory", "DarkModeGold" });
     OptionLabelFont = FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" });
 
-    local f = CreateFrame("Frame", "DialogueUI335Settings", UIParent);
+    local f = CreateFrame("Frame", "DialogueUI335Settings", addon.UIRoot);
     frame = f;
     f:SetFrameStrata("DIALOG");
     f:SetToplevel(true);

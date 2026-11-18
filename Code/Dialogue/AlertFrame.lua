@@ -12,7 +12,7 @@ local HOLD_BASE = 2;                -- seconds
 local HOLD_PER_CHAR = 0.04;
 local OFFSET = 36;                  -- retail alertFrameOffset
 
-local alert = CreateFrame("Frame", nil, UIParent);
+local alert = CreateFrame("Frame", nil, addon.UIRoot);
 alert:SetFrameStrata("DIALOG");
 alert:SetWidth(64);
 alert:SetHeight(12);

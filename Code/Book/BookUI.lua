@@ -419,7 +419,7 @@ function Book:Init()
     InitFonts();
     ApplyFontSizes();
 
-    frame = CreateFrame("Frame", "DUI335BookFrame", UIParent);
+    frame = CreateFrame("Frame", "DUI335BookFrame", addon.UIRoot);
     self.frame = frame;
     frame:SetFrameStrata("DIALOG");
     frame:SetToplevel(true);

@@ -494,9 +494,6 @@ local function CreateParchmentBackground(parent)
     frame:HookScript("OnShow", function()
         CallbackRegistry:Trigger("ParchmentShown");
     end);
-    frame:HookScript("OnHide", function()
-        CallbackRegistry:Trigger("ParchmentHidden");
-    end);
 
     local header = CreateFrame("Frame", nil, frontFrame);
     frontFrame.Header = header;
@@ -551,8 +548,10 @@ local function CreateParchmentBackground(parent)
             self.userChoiceHandler(index);
         end
     end;
+    -- SetScript replaces what HookScript added earlier, so ParchmentHidden is triggered here and not from a hook.
     frame:SetScript("OnHide", function()
         self.Footer:ClearKeys();
+        CallbackRegistry:Trigger("ParchmentHidden");
     end);
 
     local portrait = header:CreateTexture(nil, "ARTWORK");
