@@ -7,6 +7,7 @@ local ThemeUtil = addon.ThemeUtil;
 local FontUtil = addon.FontUtil;
 
 local min = math.min;
+local Round = addon.API.Round;
 
 local ATLAS_WIDTH = 1024;
 local ATLAS_HEIGHT = 2048;
@@ -115,8 +116,13 @@ function ParchmentBackground:OnPlayUpdate(elapsed)
     end
 end
 
+function ParchmentBackground:IsShown()
+    return self.frame:IsShown()
+end
+
 function ParchmentBackground:Play(duration)
     local frame = self.frame;
+    self.applyPosition();       -- the screen size may have changed since the last time
     self.duration = duration or DEFAULT_DURATION;
     self.elapsed = 0;
     self.playing = true;
@@ -247,12 +253,46 @@ function ParchmentBackground:FlashRewardChoices()
 end
 
 -- Puts the frame back where the player left it (UIParent offsets), else the default CENTER.
-local function RestorePosition(frame)
+-- FrameOrientation: 1 Left, 2 Right, 3 Custom. Left / Right put the frame centered at 1/4 of the screen width from
+-- the middle (retail FRAME_OFFSET_RATIO = 3/4); Custom uses the dragged position (ParchmentPosition).
+local ORIENTATION_LEFT, ORIENTATION_RIGHT, ORIENTATION_CUSTOM = 1, 2, 3;
+local FRAME_OFFSET_RATIO = 3/4;
+local MOVE_MARK_SIZE = 48;          -- the Settings Move icon is 24, shown at double size
+
+local function GetCustomPosition()
     local pos = GetDBValue("ParchmentPosition");
     if pos and pos.point and pos.x and pos.y then
-        frame:ClearAllPoints();
-        frame:SetPoint(pos.point, UIParent, pos.relativePoint or pos.point, pos.x, pos.y);
+        return pos
     end
+end
+
+-- Puts the frame where the orientation says: the saved spot (Custom) or the left / right side.
+local function ApplyPosition(frame)
+    frame:ClearAllPoints();
+    local orientation = GetDBValue("FrameOrientation");
+
+    if orientation == ORIENTATION_CUSTOM then
+        local pos = GetCustomPosition();
+        if pos then
+            frame:SetPoint(pos.point, UIParent, pos.relativePoint or pos.point, pos.x, pos.y);
+            return
+        end
+        orientation = ORIENTATION_RIGHT;        -- nothing dragged yet
+    end
+
+    -- Retail measures the viewport as min(width, 16:9 of the height). UIParent units, so the offset matches SetPoint.
+    local viewportWidth = min(UIParent:GetWidth(), UIParent:GetHeight() * 16/9);
+    local offsetX = Round(viewportWidth * (FRAME_OFFSET_RATIO - 0.5));
+    if orientation == ORIENTATION_LEFT then
+        offsetX = -offsetX;
+    end
+    frame:SetPoint("CENTER", UIParent, "CENTER", offsetX, 0);
+end
+
+-- The parchment can only be dragged in Custom while the Settings window is open on its UI tab.
+local function CanMove()
+    local settings = addon.SettingsUI;
+    return GetDBValue("FrameOrientation") == ORIENTATION_CUSTOM and settings and settings:IsOnUITab()
 end
 
 local function SavePosition(frame)
@@ -267,10 +307,19 @@ local function MakeMovable(frame, ...)
     frame:SetMovable(true);
     frame:SetClampedToScreen(true);
     frame:SetUserPlaced(false); -- we save the position ourselves
+    local moving = false;
     local function OnDragStart()
+        if not CanMove() then
+            return
+        end
+        moving = true;
         frame:StartMoving();
     end
     local function OnDragStop()
+        if not moving then
+            return
+        end
+        moving = false;
         frame:StopMovingOrSizing();
         SavePosition(frame);
     end
@@ -285,6 +334,16 @@ local function MakeMovable(frame, ...)
         EnableDrag((select(i, ...)));
     end
 end
+-- Custom: has the player dragged the frame somewhere (so Reset Position has something to reset).
+function ParchmentBackground:IsUsingCustomPosition()
+    return GetCustomPosition() ~= nil
+end
+
+function ParchmentBackground:ResetPosition()
+    SetDBValue("ParchmentPosition", nil);
+    self.applyPosition();
+end
+
 -- Resizes and re-anchors every part for the current frame size. The open page is not laid out again here
 -- (DialogueUI.lua does that after this). Called at creation and from "FrameSizeChanged".
 function ParchmentBackground:ApplySize()
@@ -398,11 +457,46 @@ local function CreateParchmentBackground(parent)
     self.QuestText = addon.CreateQuestTextLayout(frame, M.width, M.multiplier, FOOTER_OFFSET_Y, M.fullH, M.footerInset);
     self.QuestText.owner = self;
 
-    -- Saved variables are loaded after this file runs, so the saved position is only readable once the DB is ready.
-    CallbackRegistry:Register("ADDON_LOADED", function()
-        RestorePosition(frame);
+    -- Saved variables are loaded after this file runs, so the position is only known once the DB is ready. The
+    -- setting announces itself once at load, which places the frame.
+    CallbackRegistry:Register("SettingChanged.FrameOrientation", function()
+        ApplyPosition(frame);
     end);
+    self.applyPosition = function()
+        ApplyPosition(frame);
+    end;
     MakeMovable(frame, self.QuestText.ScrollArea);
+
+    -- Move mark (the Settings "Move" icon at double size) in the middle of the frame while the frame can be dragged.
+    -- No mouse on it, so a drag through it still moves the parchment.
+    local moveMark = CreateFrame("Frame", nil, frame);
+    moveMark:SetFrameLevel(frame:GetFrameLevel() + 20);
+    moveMark:SetWidth(MOVE_MARK_SIZE);
+    moveMark:SetHeight(MOVE_MARK_SIZE);
+    moveMark:SetPoint("CENTER", frame, "CENTER", 0, 0);
+    local moveIcon = moveMark:CreateTexture(nil, "OVERLAY");
+    moveIcon:SetAllPoints(moveMark);
+    ThemeUtil:BindTexture(moveIcon, "Settings-Move.blp");
+    moveMark:Hide();
+    local function UpdateMoveMark()
+        if CanMove() then
+            moveMark:Show();
+        else
+            moveMark:Hide();
+        end
+    end
+    CallbackRegistry:Register("SettingsUI.Show", UpdateMoveMark);
+    CallbackRegistry:Register("SettingsUI.Hide", UpdateMoveMark);
+    CallbackRegistry:Register("SettingsUI.TabChanged", UpdateMoveMark);
+    CallbackRegistry:Register("SettingChanged.FrameOrientation", UpdateMoveMark);
+
+    -- The Settings window moves to the other side while the parchment is up (Left / Right).
+    frame:HookScript("OnShow", function()
+        CallbackRegistry:Trigger("ParchmentShown");
+    end);
+    frame:HookScript("OnHide", function()
+        CallbackRegistry:Trigger("ParchmentHidden");
+    end);
 
     local header = CreateFrame("Frame", nil, frontFrame);
     frontFrame.Header = header;

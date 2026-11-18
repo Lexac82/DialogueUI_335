@@ -34,6 +34,18 @@ L["Size Medium"] = "Medium";
 L["Size Large"] = "Large";
 L["Font Size"] = "Font Size";
 L["Font Size Desc"] = "Set the font size for the UI.\n\nDefault: 12";
+L["Frame Orientation"] = "Orientation";
+L["Frame Orientation Desc"] = "Place the UI on the left or right side of the screen.\n\nCustom lets you drag the UI anywhere while this window is open.\n\nDefault: Right";
+L["Orientation Left"] = "Left";
+L["Orientation Right"] = "Right";
+L["Orientation Custom"] = "Custom";
+L["Move Position"] = "Move";
+L["Reset Position"] = "Reset Position";
+L["Move Position Desc"] = "Show the UI so you can drag it to a new position.";
+L["Reset Position Desc"] = "Reset the UI's position.";
+L["Drag To Move"] = "Left-click and drag to move the window.";
+L["Edit Mode Title"] = "Dialogue UI";
+L["Edit Mode Body"] = "Drag this window to where you want it. Close the settings window to hide it.";
 
 -- Quest types and tags
 L["Quest"] = "Quest";

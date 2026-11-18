@@ -4,6 +4,7 @@ local _, addon = ...;
 -- Core.lua listens to the game events and calls ShowUI / HideUI / OnItemUpdate.
 
 local API = addon.API;
+local L = addon.L;
 local QuestData = addon.QuestData;
 local GossipDataProvider = addon.GossipDataProvider;
 local After = API.After;
@@ -40,6 +41,7 @@ end);
 -- event: GOSSIP_SHOW, QUEST_GREETING, QUEST_DETAIL, QUEST_PROGRESS or QUEST_COMPLETE.
 -- Quest text is only valid during its own event, so it is read here.
 function MainFrame:ShowUI(event)
+    self.isEditMode = nil;      -- a real conversation replaces the Move sample
     if LIST_EVENTS[event] then
         local page = GossipDataProvider:Read(event);
         self:Show();
@@ -62,6 +64,64 @@ function MainFrame:HideUI()
     self:Hide();
     lastEvent, lastPage = nil, nil;
 end
+
+-- Settings > Orientation > Custom > Move: a small sample page, so the frame can be dragged without a conversation.
+-- The page has no Accept button; its only button (Goodbye, or Esc) closes it. It also closes when the Settings
+-- window closes, leaves the UI tab, or the orientation is no longer Custom.
+local EDIT_EVENT = "EDIT_MODE";
+
+function MainFrame:IsEditMode()
+    return self.isEditMode and self:IsShown()
+end
+
+function MainFrame:ToggleEditMode()
+    if self:IsEditMode() then
+        self:Hide();
+        return
+    end
+    if self:IsShown() then
+        return      -- a conversation is open: it can be dragged as it is
+    end
+
+    self.isEditMode = true;
+    lastEvent, lastPage = nil, nil;
+    self:Show();
+    self:UpdatePortrait();
+    self:SetTitle(L["Edit Mode Title"]);
+    self:SetTags(nil);
+    self:SetCompleteIcon(false);
+    self:SetQuestText(L["Edit Mode Body"], nil, nil);
+    self:SetPage(EDIT_EVENT, {});
+end
+
+local function LeaveEditMode()
+    if MainFrame:IsEditMode() then
+        MainFrame:Hide();
+    end
+end
+addon.CallbackRegistry:Register("SettingsUI.Hide", LeaveEditMode);
+addon.CallbackRegistry:Register("SettingChanged.FrameOrientation", function(value)
+    if value ~= 3 then
+        LeaveEditMode();
+    end
+end);
+addon.CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
+    if tabID ~= 1 then
+        LeaveEditMode();
+    end
+end);
+
+-- Whichever way the sample closes (button, Esc, the rules above): Esc and the Settings keys are the Footer's and
+-- the Settings window's override bindings on the same keys, so the Settings window takes its keys back.
+MainFrame.frame:HookScript("OnHide", function()
+    if MainFrame.isEditMode then
+        MainFrame.isEditMode = nil;
+        addon.SettingsUI:RefreshToggles();      -- the Move row is no longer on
+        After(0.05, function()
+            addon.SettingsUI:UpdateKeys();
+        end);
+    end
+end);
 
 -- The frame size or the font size changed (ParchmentBackground has already resized itself): lay out the open page
 -- again for the new text width and heights. The page is the one already read, quest text is only valid during its

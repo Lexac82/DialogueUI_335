@@ -20,6 +20,7 @@ local PlaySound = PlaySound;
 local Round = API.Round;
 local upper = string.upper;
 local max = math.max;
+local min = math.min;
 
 -- Retail values (Settings.lua) at the default font height 12.
 local FRAME_PADDING = 14;
@@ -259,6 +260,53 @@ local ARROWOPTION_BAR_HEIGHT = 4 * BACKGROUND_SCALE;        -- retail uses 5 px,
 local ARROWOPTION_BAR_GAP = 4 * BACKGROUND_SCALE;
 local ARROWOPTION_BAR_SHRINK = 4;
 
+-- Orientation: Move / Reset Position rows (retail "Custom" rows). Move shows a sample page to drag, Reset puts the
+-- frame back on the default side.
+local ORIENTATION_CUSTOM = 3;
+
+local function Orientation_Move_OnClick()
+    addon.DialogueUI:ToggleEditMode();
+end
+
+local function Orientation_Reset_OnClick()
+    addon.DialogueUI:ResetPosition();
+end
+
+local function Orientation_Move_IsToggled()
+    return addon.DialogueUI:IsEditMode()
+end
+
+local function OrientationPosition_Validation()
+    return addon.DialogueUI:IsUsingCustomPosition()
+end
+
+-- Retail's requiredParentValueAnd = {dbKey = value or {values}} (all must match) and validationFunc.
+local function IsOptionValid(optionData)
+    local required = optionData.requiredParentValueAnd;
+    if required then
+        for dbKey, wanted in pairs(required) do
+            local current = GetDBValue(dbKey);
+            local matches = false;
+            if type(wanted) == "table" then
+                for _, value in ipairs(wanted) do
+                    if value == current then
+                        matches = true;
+                    end
+                end
+            else
+                matches = (current == wanted);
+            end
+            if not matches then
+                return false
+            end
+        end
+    end
+    if optionData.validationFunc and not optionData.validationFunc() then
+        return false
+    end
+    return true
+end
+
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
 local Schematic = {
     {   -- UI
@@ -285,6 +333,18 @@ local Schematic = {
                     {dbValue = 3, valueText = "16"},
                 },
             },
+            {type = "ArrowOption", name = L["Frame Orientation"], description = L["Frame Orientation Desc"], dbKey = "FrameOrientation",
+                choices = {
+                    {dbValue = 1, valueText = L["Orientation Left"]},
+                    {dbValue = 2, valueText = L["Orientation Right"]},
+                    {dbValue = 3, valueText = L["Orientation Custom"]},
+                },
+            },
+            {type = "Custom", name = L["Move Position"], description = L["Move Position Desc"], icon = "Settings-Move.blp",
+                onClickFunc = Orientation_Move_OnClick, isToggledFunc = Orientation_Move_IsToggled, requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
+            {type = "Custom", name = L["Reset Position"], description = L["Reset Position Desc"], icon = "Settings-Reset.blp",
+                onClickFunc = Orientation_Reset_OnClick, validationFunc = OrientationPosition_Validation,
+                requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
         },
     },
     {   -- Control
@@ -435,6 +495,7 @@ local function CreateArrowOption(row, optionData)
         end
         self:ShowChoice(id);
         SetDBValue(self.dbKey, self.choices[id].dbValue, true);
+        SettingsUI:LayoutRows(frame.tabID);     -- other options may depend on this one
         PlaySound("igMainMenuOptionCheckBoxOn");
         row:OnEnter();      -- the description may depend on the choice
     end
@@ -486,12 +547,103 @@ local function CreateOptionRow(page, index, optionData)
 
     if optionData.type == "ArrowOption" then
         row.widget = CreateArrowOption(row, optionData);
+    elseif optionData.type == "Custom" then
+        -- A plain button row (retail: branch mark when it depends on another option, icon, then the label).
+        row:RegisterForClicks("LeftButtonUp");
+        row:SetScript("OnClick", function(self)
+            PlaySound("igMainMenuOptionCheckBoxOn");
+            if optionData.onClickFunc then
+                optionData.onClickFunc(self);
+            end
+            SettingsUI:LayoutRows(frame.tabID);     -- Reset hides itself once there is nothing to reset
+            if self:IsShown() then
+                self:OnEnter();
+            else
+                SettingsUI:HighlightButton(nil);
+                SettingsUI:SetDescription(nil);
+            end
+        end);
+
+        local nameOffset = OPTION_LABEL_OFFSET;
+        if optionData.requiredParentValueAnd then
+            local branchSize = OPTIONBUTTON_HEIGHT * 0.5;
+            nameOffset = OPTION_LABEL_OFFSET + (branchSize * 0.5 + 10);
+            local branch = content:CreateTexture(nil, "ARTWORK");
+            branch:SetWidth(branchSize);
+            branch:SetHeight(branchSize);
+            branch:SetPoint("BOTTOMRIGHT", content, "LEFT", nameOffset - 8, 0);
+            ThemeUtil:BindTexture(branch, "Settings-SubOptionIcon.blp");
+            branch:SetVertexColor(1, 1, 1, 0.5);
+        end
+        if optionData.icon then
+            local icon = content:CreateTexture(nil, "ARTWORK");
+            icon:SetWidth(OPTION_WIDGET_SIZE);
+            icon:SetHeight(OPTION_WIDGET_SIZE);
+            icon:SetPoint("LEFT", content, "LEFT", nameOffset - 0.125 * OPTION_WIDGET_SIZE, 0);
+            ThemeUtil:BindTexture(icon, optionData.icon);
+            nameOffset = nameOffset + OPTION_WIDGET_SIZE;
+        end
+        label:ClearAllPoints();
+        label:SetPoint("LEFT", content, "LEFT", nameOffset, 0);
+
+        -- A toggle row (Move) keeps the hover glow while it is on. Same glow as the hover, under the label.
+        if optionData.isToggledFunc then
+            local toggleFrame = CreateFrame("Frame", nil, row);
+            toggleFrame:SetAllPoints(row);
+            toggleFrame:SetFrameLevel(row:GetFrameLevel() + 1);
+            toggleFrame:Hide();
+            local slice = NineSlice:CreateTiled(toggleFrame, ThemeUtil:GetTextureFile("Settings-ButtonHighlight.blp"),
+                { 128, 64 }, 24, 1, "BACKGROUND");
+            slice:Update(OPTIONBUTTON_WIDTH, OPTION_ROW_HEIGHT);
+            ThemeUtil:BindSlice(slice, "Settings-ButtonHighlight.blp");
+            row.toggleFrame = toggleFrame;
+        end
     end
 
     return row
 end
 
+-- Shows the glow on toggle rows that are on. The hover glow skips them meanwhile (isSelected), so it is not doubled.
+function SettingsUI:RefreshToggles()
+    local rows = frame.rows[frame.tabID];
+    for i = 1, #rows do
+        local row = rows[i];
+        if row.toggleFrame then
+            local on = row:IsShown() and row.optionData.isToggledFunc() and true or false;
+            row.isSelected = on;
+            if on then
+                row.toggleFrame:Show();
+                if frame.highlightFrame:IsShown() then
+                    self:HighlightButton(nil);
+                end
+            else
+                row.toggleFrame:Hide();
+            end
+        end
+    end
+end
+
+-- Shows the rows whose requirements are met, stacked from the top.
+function SettingsUI:LayoutRows(tabID)
+    local rows = frame.rows[tabID];
+    local page = frame.pages[tabID];
+    local shown = 0;
+    for i = 1, #rows do
+        local row = rows[i];
+        if IsOptionValid(row.optionData) then
+            shown = shown + 1;
+            row:ClearAllPoints();
+            row:SetPoint("TOPLEFT", page, "TOPLEFT", 0, -(shown - 1) * OPTION_ROW_HEIGHT);
+            row:Show();
+        else
+            row:Hide();
+        end
+    end
+    self:RefreshToggles();
+end
+
 function SettingsUI:RefreshTab(tabID)
+    self:LayoutRows(tabID);
     local rows = frame.rows[tabID];
     for i = 1, #rows do
         if rows[i].widget then
@@ -660,6 +812,7 @@ local function CreateSettingsFrame()
 
     -- Keys while the window is open: Esc and F1 close it.
     f:SetScript("OnShow", function()
+        SettingsUI:MoveToBestPosition();
         SettingsUI:RefreshTab(f.tabID);         -- a setting may have changed by other means (/run)
         SettingsUI:UpdateKeys();
         CallbackRegistry:Trigger("SettingsUI.Show");
@@ -729,11 +882,54 @@ function SettingsUI:SelectTab(tabID, silent)
     self:HighlightButton(nil);
     self:SetDescription(nil);
     self:RefreshTab(tabID);
+    CallbackRegistry:Trigger("SettingsUI.TabChanged", tabID);
 
     if not silent and f:IsVisible() then
         PlaySound("igMainMenuOptionCheckBoxOn");
     end
 end
+
+-- True while the window is open on the UI tab (the Custom orientation lets the parchment be dragged then).
+function SettingsUI:IsOnUITab()
+    return frame:IsShown() and frame.tabID == 1
+end
+
+-- Retail: the window opens on the opposite side of the dialogue so both can be seen, centered when no dialogue is
+-- up. Left orientation: window on the right. Right: on the left. Custom: not moved at all.
+function SettingsUI:MoveToBestPosition()
+    local f = frame;
+    local parchment = addon.DialogueUI;
+    local orientation = GetDBValue("FrameOrientation");
+
+    -- Custom: the window stays wherever it is (the player moves both frames by hand).
+    if orientation == ORIENTATION_CUSTOM then
+        return
+    end
+
+    f:ClearAllPoints();
+
+    if parchment and parchment:IsShown() then
+        local screenWidth = UIParent:GetWidth();
+        local viewportWidth = min(screenWidth, UIParent:GetHeight() * 16/9);
+        local offset = 0.5 * f:GetWidth() - 0.5 * viewportWidth + 16;      -- against the left edge of the viewport
+
+        if orientation == 1 then
+            offset = -offset;
+        end
+        f:SetPoint("CENTER", UIParent, "CENTER", offset, 0);
+    else
+        f:SetPoint("CENTER", UIParent, "CENTER", 0, 0);
+    end
+end
+
+local function MoveIfShown()
+    if frame and frame:IsShown() then
+        SettingsUI:MoveToBestPosition();
+    end
+end
+CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
+CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
+CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
 
 function SettingsUI:SetDescription(text)
     frame.description:SetText(text or "");
