@@ -26,8 +26,6 @@ The settings have four tabs: **UI**, **Control** (including custom key bindings)
 
 ![Book UI - Metal](Preview/BookUI-Metal.jpg)
 
-*Screenshots are from the retail Dialogue UI, which this port follows.*
-
 ## Features
 
 - Select options and accept quests by pressing a keyboard key.
