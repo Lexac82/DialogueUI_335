@@ -61,5 +61,5 @@ Open the settings with **/dui** or **/dialogui**, with **F1** while a dialogue i
 ## Notes
 
 - Built for client **3.3.5a** (Interface 30300) only.
-- Based on the retail Dialogue UI by Peter Yu (Posnet). Some retail features (such as Auto Complete Quest and the Gossip options group) are not included because they do not apply to 3.3.5a.
+- Inspired by [Dialogue UI (YUI-Dialogue)](https://github.com/Peterodox/YUI-Dialogue) by Peterodox, the retail version of this addon. Some retail features (such as Auto Complete Quest and the Gossip options group) are not included because they do not apply to 3.3.5a.
 - Pawn is optional and only needed for the upgrade arrow and the Valuable Reward Popup.
