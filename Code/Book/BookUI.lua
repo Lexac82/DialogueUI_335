@@ -1212,7 +1212,18 @@ end
 
 -- Show / hide ------------------------------------------------------------------------------------------------
 
--- Size and font settings are read again every time a book is built, so only the vignette needs a live update.
+-- Size and font settings are read again every time a book is built. With a book open, build it again from the
+-- cached pages (keeping the reading position) so the change shows at once.
+local function RebuildOpenBook()
+    if Book:IsShown() and Cache.maxPage and Cache.pageTexts and Cache.pageTexts[1] then
+        Book:SavePosition();
+        Book:Build();
+    end
+end
+addon.CallbackRegistry:Register("SettingChanged.BookUISize", RebuildOpenBook);
+addon.CallbackRegistry:Register("SettingChanged.BookFontSize", RebuildOpenBook);
+
+-- The vignette needs its own live update.
 addon.CallbackRegistry:Register("SettingChanged.BookDarkenScreen", function(state)
     if Book.vignette and Book:IsShown() then
         if state then

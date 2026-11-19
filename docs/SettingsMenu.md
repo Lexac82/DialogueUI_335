@@ -23,6 +23,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Quest group: **Mark Highest Sell Price** checkbox (logic existed, row + live toggle added) | written, **not tested in the game**, see "Mark Highest Sell Price: what was done" |
 | Quest group: **Use Blizzard Tooltip** checkbox (row + top-frame take-out) | written, **not tested in the game**, see "Use Blizzard Tooltip: what was done" |
 | **Readables** subheader label after Use Blizzard Tooltip (same Subheader row type as Quest, no options under it yet) | written, **not tested in the game**, see "Subheader: what was done" |
+| Readables group: **Frame Size** (Extra Small 0.9 / Small 1.0 / Medium 1.1 / Large 1.25, `BookUISize`) | written, **not tested in the game**, see "Readables Frame Size: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -186,6 +187,15 @@ Retail (`RewardTooltipCode.lua`): a plain checkbox (no preview), default off. On
 - `TooltipItem.lua`: `RewardTooltip:TakeOutGameTooltip` / `RestoreGameTooltip` as retail, but the top frame (TOOLTIP strata, level 100) is a child of `addon.UIRoot`. That fixes the gap noted under Hide UI: the Blizzard tooltip no longer disappears with `UIParent`. `SettingChanged.UseBlizzardTooltip` (off) restores the parent.
 - Not ported: retail's `GameTooltip_ShowCompareItem` call (not in the docs for 3.3.5a, so the Blizzard tooltip has no comparison; our own tooltip keeps Shift comparison), currency / reputation / skill / follower / war mode entries (do not exist in 3.3.5a), `ShowHyperlink`, reward context text.
 - To look at: checkbox on, hover an item and a spell reward (default tooltip at the icon's top right); with Hide UI on the tooltip stays visible; off again with a page open (our tooltip returns, normal GameTooltip works elsewhere, e.g. bags / world units); both themes for the row.
+
+## Readables Frame Size: what was done (not tested in the game)
+
+Retail (`BookUI.lua`): `BookUISize` 0..3 = 0.9 / 1.0 / 1.1 / 1.25 (4 = 1.4 is only forced by Mobile Device Mode); `CalculateSizeData` multiplies every raw size by `PIXEL_SCALE (0.53333) x multiplier`; default 1 (Small). The option is only shown while "Use new UI for Readable Objects" is on; we have no such switch (the new UI is always on), so the row is always shown.
+
+- Our `Code/Book/BookUI.lua` already used the same table (`SIZE_SCALES`), `PIXEL_SCALE` and default (`BookUISize = 1`), so **no size values changed**; only the menu row was missing.
+- Row: ArrowOption under the Readables subheader (`Settings.lua`), 4 choices (the 1.4 step is left out, no Mobile mode), strings reuse `Size ...`; `BookUI Frame Size Desc` is new in `Locales/enUS.lua`.
+- Size is read in `CalculateSizeData` every time a book is built. `SettingChanged.BookUISize` (and `BookFontSize`) now also call `Book:Build()` again on an open book from the cached pages (reading position kept), so the change shows at once (`RebuildOpenBook` in `BookUI.lua`). Retail does the same through `Settings_FrameSize` (re-run `CalculateSizeData` + `Resize`), but leaves images until the cache is wiped; ours re-lays out images too.
+- To look at: all four sizes on a short and a long book, a book with images, close button / title / page buttons / footer positions, change with a book open (old size stays until the next one).
 
 ## Simplify Currency Rewards: skipped
 

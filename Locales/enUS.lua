@@ -59,6 +59,7 @@ L["Edit Mode Body"] = "Drag this window to where you want it. Close the settings
 -- Quest types and tags
 L["Quest"] = "Quest";
 L["Readables"] = "Readables";
+L["BookUI Frame Size Desc"] = "Set the size of the Book UI.\n\nDefault: Small";
 L["Quest Frequency Daily"] = "Daily";
 L["Quest Frequency Weekly"] = "Weekly";
 L["Quest Type Repeatable"] = "Repeatable";

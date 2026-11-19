@@ -401,7 +401,15 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
-            {type = "Subheader", name = L["Readables"]},
+            {type = "Subheader", name = L["Readables"], extraWidth = 20},
+            {type = "ArrowOption", name = L["Frame Size"], description = L["BookUI Frame Size Desc"], dbKey = "BookUISize",
+                choices = {
+                    {dbValue = 0, valueText = L["Size Extra Small"]},
+                    {dbValue = 1, valueText = L["Size Small"]},
+                    {dbValue = 2, valueText = L["Size Medium"]},
+                    {dbValue = 3, valueText = L["Size Large"]},
+                },
+            },
         },
     },
     {   -- Control
@@ -683,11 +691,12 @@ local LABEL_BG_MARGINS = { 24, 24, 24, 16 };       -- left, right, top, bottom
 local SUBHEADER_WIDTH = 70;                      -- plate size (retail: 3 x font height high, text width + 2.2 x font height wide)
 local SUBHEADER_HEIGHT = 45;
 
-local function CreateSubheaderBackground(row, label)
+
+local function CreateSubheaderBackground(row, label, extraWidth)
     local height = SUBHEADER_HEIGHT;
     -- Wider than retail's text + 2.2 x font height: the texture has a transparent rim, so the visible plate is narrower.
     local textWidth = label:GetStringWidth();
-    local width = max(SUBHEADER_WIDTH, textWidth + FONT_HEIGHT);
+    local width = max(SUBHEADER_WIDTH, textWidth + FONT_HEIGHT) + (extraWidth or 0);     -- extraWidth: per-row option
 
     local plate = CreateFrame("Frame", nil, row);
     plate:SetFrameLevel(row:GetFrameLevel() + 1);
@@ -737,7 +746,7 @@ local function CreateOptionRow(page, index, optionData)
     if optionData.type == "Subheader" then
         -- Not an option: no hover glow, no click, and the description area stays empty (retail).
         row.isSubheader = true;
-        CreateSubheaderBackground(row, label);
+        CreateSubheaderBackground(row, label, optionData.extraWidth);
         row:SetScript("OnEnter", function() SettingsUI:SetDescription(nil) end);
         row:SetScript("OnLeave", nil);
         ForwardDrag(row);
