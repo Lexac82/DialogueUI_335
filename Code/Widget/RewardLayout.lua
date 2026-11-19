@@ -441,6 +441,11 @@ function RewardLayout:OnButtonClick(button, mouseButton)
         return
     end
 
+    if mouseButton == "RightButton" and addon.GetDBBool("RightClickToCloseUI") then
+        self.host.owner:RequestClose();         -- Settings > Control > Right Click To Close UI
+        return
+    end
+
     if entry.link and IsModifiedClick("CHATLINK") then
         local insertLink = _G.ChatEdit_InsertLink;          -- FrameXML, not in wow-docs (UNVERIFIED)
         if insertLink then

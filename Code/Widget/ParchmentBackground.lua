@@ -483,6 +483,16 @@ local function CreateParchmentBackground(parent)
     end;
     MakeMovable(frame, self.QuestText.ScrollArea);
 
+    -- Settings > Control > Right Click To Close UI: a right click on the paper or the text closes the dialogue
+    -- (buttons and reward items are other frames; RewardLayout handles the reward items).
+    local function OnMouseUp_RightClickClose(_, button)
+        if button == "RightButton" and addon.GetDBBool("RightClickToCloseUI") then
+            self:RequestClose();
+        end
+    end
+    frame:SetScript("OnMouseUp", OnMouseUp_RightClickClose);
+    self.QuestText.ScrollArea:SetScript("OnMouseUp", OnMouseUp_RightClickClose);
+
     -- Move mark (the Settings "Move" icon at double size) in the middle of the frame while the frame can be dragged.
     -- No mouse on it, so a drag through it still moves the parchment.
     local moveMark = CreateFrame("Frame", nil, frame);

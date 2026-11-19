@@ -357,7 +357,7 @@ local function MakeMovable(...)
         target:SetScript("OnDragStart", OnDragStart);
         target:SetScript("OnDragStop", OnDragStop);
         target:SetScript("OnMouseUp", function(_, button)
-            if button == "RightButton" then
+            if button == "RightButton" and addon.GetDBBool("RightClickToCloseUI") then
                 Book:Hide();
             end
         end);

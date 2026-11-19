@@ -377,6 +377,9 @@ do
     for i = 1, 9 do
         AddKeybinding("Option" .. i, L["Action Option" .. i], L["Action Option Desc"]:format(i));
     end
+
+    ControlOptions[#ControlOptions + 1] = {type = "Checkbox", name = L["Right Click To Close UI"], description = L["Right Click To Close UI Desc"],
+        dbKey = "RightClickToCloseUI", requiredParentValueAnd = {InputDevice = 1}};
 end
 
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
