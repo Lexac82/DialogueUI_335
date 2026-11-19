@@ -13,7 +13,6 @@ local ATLAS_WIDTH = 1024;
 local ATLAS_HEIGHT = 2048;
 local BASE_WIDTH = 546.13;      -- frame width at multiplier 1 (retail: 0.85 x height, see docs/SettingsMenu.md)
 
-local DEFAULT_DURATION = 0.35; -- seconds for both height and fade
 local START_MID_RATIO = 0.1;  -- middle piece starts at this fraction of its full height
 
 local TOP_ROWS = { 0, 256 };
@@ -127,10 +126,12 @@ function ParchmentBackground:IsShown()
     return self.frame:IsShown()
 end
 
+-- Seconds for both height and fade: the "OpenAnimationDuration" setting unless a caller gives one. 0 = no animation
+-- (OnPlayUpdate then shows the full frame on its first update).
 function ParchmentBackground:Play(duration)
     local frame = self.frame;
     self.applyPosition();       -- the screen size may have changed since the last time
-    self.duration = duration or DEFAULT_DURATION;
+    self.duration = duration or GetDBValue("OpenAnimationDuration");
     self.elapsed = 0;
     self.playing = true;
 
@@ -460,7 +461,7 @@ end
 local function CreateParchmentBackground(parent)
     local self = setmetatable({}, ParchmentBackground);
     self.elapsed = 0;
-    self.duration = DEFAULT_DURATION;
+    self.duration = 0;
     self.playing = false;
     self.completeIconShown = false;
 
