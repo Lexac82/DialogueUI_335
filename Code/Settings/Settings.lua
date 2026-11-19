@@ -385,6 +385,8 @@ do
         dbKey = "CycleRewardHotkeyEnabled", requiredParentValueAnd = {InputDevice = 1}};
     ControlOptions[#ControlOptions + 1] = {type = "Checkbox", name = L["Press Button To Scroll Down"], description = L["Press Button To Scroll Down Desc"],
         dbKey = "ScrollDownThenAcceptQuest"};
+    ControlOptions[#ControlOptions + 1] = {type = "Checkbox", name = L["Press Escape To Decline Quest"], description = L["Press Escape To Decline Quest Desc"],
+        dbKey = "EscapeToDeclineQuest"};
 end
 
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.

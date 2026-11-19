@@ -181,6 +181,7 @@ end
 -- First-contact page: greeting text and the quest / option rows (GossipDataProvider:Read). Replaces SetTitle,
 -- SetTags, SetQuestText and SetPage for GOSSIP_SHOW and QUEST_GREETING.
 function ParchmentBackground:SetListPage(event, page)
+    self.questIsFromGossip = nil;
     self:SetCompleteIcon(false);
     self:SetTags(nil);
     self:SetListMode(true);
@@ -188,7 +189,18 @@ function ParchmentBackground:SetListPage(event, page)
     self.Footer:SetPage(event, page);
     self.Footer:SetRowKeys(self.QuestText.rowNames);
 end
+-- A quest chosen from the list (GOSSIP_SHOW / QUEST_GREETING): Decline / Cancel go back to the list instead of
+-- closing (retail MarkQuestIsFromGossip). Cleared when a list page is shown again and when the frame hides.
+function ParchmentBackground:MarkQuestIsFromGossip()
+    self.questIsFromGossip = true;
+end
+
+function ParchmentBackground:IsQuestFromGossip()
+    return self.questIsFromGossip == true
+end
+
 function ParchmentBackground:Hide()
+    self.questIsFromGossip = nil;
     self:SetCompleteIcon(false);
     self.playing = false;
     self.frame:SetScript("OnUpdate", nil);

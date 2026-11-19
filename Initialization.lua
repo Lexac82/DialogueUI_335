@@ -37,6 +37,7 @@ local DefaultValues = {
     RightClickToCloseUI = true,                 --Right click on the dialogue or a readable closes it
     CycleRewardHotkeyEnabled = false,           --Tab / Shift-Tab choose the next / previous quest reward (see FooterButtons.lua)
     ScrollDownThenAcceptQuest = false,          --Confirm key scrolls a long quest text down before accepting (see FooterButtons.lua)
+    EscapeToDeclineQuest = false,               --Esc on a quest chosen from a list goes back to the list instead of closing (see FooterButtons.lua)
     UseCustomBindings = false,                --Own keys for Confirm / Settings / Option 1-9 (see Keybindings.lua, DB.CustomBindings)
 
     --Reward tooltip

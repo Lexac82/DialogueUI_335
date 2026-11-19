@@ -339,6 +339,9 @@ end
 local function OnClick_Row(button)
     local row = button.row;
     if row and row.select then
+        if row.kind ~= "option" then
+            button.owner:MarkQuestIsFromGossip();       -- Decline / Cancel / Esc can go back to this list
+        end
         row.select(row.index);
     end
 end

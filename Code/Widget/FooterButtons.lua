@@ -20,7 +20,8 @@ local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
 local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
-local SCROLL_NAME = "DialogueUI335ScrollOrAccept";             -- hidden button the Confirm key clicks (Press Button To Scroll Down)
+local ESCAPE_NAME = "DialogueUI335EscapeKey";                  -- hidden button the Esc key clicks (Press Escape To Decline Quest)
+local SCROLL_NAME ="DialogueUI335ScrollOrAccept";             -- hidden button the Confirm key clicks (Press Button To Scroll Down)
 local CYCLE_NAME ="DialogueUI335CycleReward";                  -- hidden buttons the Tab keys click (created below)
 local CYCLE_BACK_NAME = "DialogueUI335CycleRewardBack";
 
@@ -47,8 +48,15 @@ local function OnClick_Accept()
     AcceptQuest();
 end
 
-local function OnClick_Decline()
-    DeclineQuest();
+-- Retail SetButtonDeclineQuest / SetButtonCancelQuestProgress: a quest that was chosen from a list (gossip or
+-- greeting) goes back to the previous page with DeclineQuest, any other one closes the conversation.
+local function OnClick_Decline(button)
+    local owner = button.owner;
+    if owner:IsQuestFromGossip() then
+        DeclineQuest();
+    else
+        owner:RequestClose();
+    end
 end
 
 local function OnClick_Continue()
@@ -111,7 +119,9 @@ function Footer:GetExitConfig()
     local event = self.event;
     if event == "QUEST_DETAIL" then
         return {type = "decline", text = L["Decline"], art = 4, key = "Esc", onClick = OnClick_Decline}
-    elseif event == "QUEST_PROGRESS" or event == "QUEST_COMPLETE" then
+    elseif event == "QUEST_PROGRESS" then
+        return {type = "cancel", text = L["Cancel"], art = 4, key = "Esc", onClick = OnClick_Decline}
+    elseif event == "QUEST_COMPLETE" then
         return {type = "cancel", text = L["Cancel"], art = 4, key = "Esc", onClick = OnClick_Close}
     end
     return {type = "goodbye", text = L["Goodbye"], art = 4, key = "Esc", onClick = OnClick_Close}
@@ -215,7 +225,7 @@ function Footer:UpdateKeys()
     local settings = addon.SettingsUI;
     local settingsOpen = settings and settings:IsShown();
     if exit:IsShown() and exit.isEnabled and exit.hasHotkey and not settingsOpen then
-        SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", EXIT_NAME, "LeftButton");
+        SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", ESCAPE_NAME, "LeftButton");
     end
 
     -- Tab / Shift-Tab choose the next / previous reward while a reward must be chosen (Settings > Control).
@@ -310,6 +320,23 @@ local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom
     end);
     addon.CallbackRegistry:Register("SettingsUI.Hide", function()
         self:UpdateKeys();
+    end);
+
+    -- Press Escape To Decline Quest (retail HideUI with fromPressingKey): Esc on a quest that was chosen from a list
+    -- goes back to the previous page when the option is on, otherwise it closes the conversation. A click on the
+    -- Decline / Cancel button is not affected (it always goes back for such a quest).
+    local escapeButton = CreateFrame("Button", ESCAPE_NAME, UIParent);
+    escapeButton:SetWidth(1);
+    escapeButton:SetHeight(1);
+    escapeButton:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0);
+    escapeButton:SetScript("OnClick", function()
+        local event = self.event;
+        if (event == "QUEST_DETAIL" or event == "QUEST_PROGRESS") and owner:IsQuestFromGossip()
+            and addon.GetDBBool("EscapeToDeclineQuest") then
+            DeclineQuest();
+        else
+            owner:RequestClose();
+        end
     end);
 
     -- Press Button To Scroll Down: scrolls while the quest text is not fully in view, then clicks Accept.
