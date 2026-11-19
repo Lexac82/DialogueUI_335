@@ -1203,11 +1203,26 @@ function Book:UpdateSourceButton()
             end
         end
         self:SetLocation(BookItem:GetLetterSender(info));
-    elseif GetDBBool("BookShowLocation") then
-        -- A readable standing in the world.
-        self:SetLocation(BookItem:GetLocation());
+    else
+        -- A readable standing in the world. Kept so the checkbox can show it later without asking again.
+        self.worldLocation = BookItem:GetLocation();
+        if GetDBBool("BookShowLocation") then
+            self:SetLocation(self.worldLocation);
+        end
     end
 end
+
+-- Live toggle. Only for readables in the world, items from the bags show the letter sender instead.
+addon.CallbackRegistry:Register("SettingChanged.BookShowLocation", function(state)
+    if Book:IsShown() and not Cache.itemInfo then
+        if state then
+            Book.worldLocation = Book.worldLocation or BookItem:GetLocation();
+            Book:SetLocation(Book.worldLocation);
+        else
+            Book:SetLocation(nil);
+        end
+    end
+end);
 
 
 -- Show / hide ------------------------------------------------------------------------------------------------

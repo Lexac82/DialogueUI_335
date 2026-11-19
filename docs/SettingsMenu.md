@@ -25,6 +25,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | **Readables** subheader label after Use Blizzard Tooltip (same Subheader row type as Quest, no options under it yet) | written, **not tested in the game**, see "Subheader: what was done" |
 | Readables group: **Frame Size** (Extra Small 0.9 / Small 1.0 / Medium 1.1 / Large 1.25, `BookUISize`) | written, **not tested in the game**, see "Readables Frame Size: what was done" |
 | Readables group: **Keep Window Open** checkbox (`BookKeepUIOpen`) | written, **not tested in the game**, see "Readables Keep Window Open: what was done" |
+| Readables group: **Show Location** checkbox (`BookShowLocation`, live toggle added) | written, **not tested in the game**, see "Readables Show Location: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -206,6 +207,15 @@ Retail (`BookUI.lua` EventListener, `Settings.lua`): plain checkbox `BookKeepUIO
 - Added: checkbox after the Readables Frame Size row (`Settings.lua`), strings `BookUI Keep UI Open (Desc)` (retail enUS) in `Locales/enUS.lua`. No live callback needed: the value is read when the game closes the readable.
 - Esc / right click are the same as retail (`Book` binds Esc while shown, right click hides, see `BookUI.lua`).
 - To look at: option on, open a book and walk away (stays open, Esc and right click close it, `CloseItemText` is called on hide); option off (closes ~0.03 s after walking away); opening another readable while one is kept open; talking to an NPC with it kept open (closes); toggling with a book open; both themes for the row.
+
+## Readables Show Location: what was done (not tested in the game)
+
+Retail (`BookUI.lua`, `HeaderFrameMixin:SetLocation`): checkbox `BookShowLocation`, no preview. For a readable that is a game object (not a bag item) the header shows its location (zone and coordinates) above the title. Toggling with the book open shows / hides it at once.
+
+- The display already existed: `Book:UpdateSourceButton` shows `BookItem:GetLocation()` ("Zone  x, y", `GetRealZoneText` + `GetPlayerMapPosition`) for world readables, and the Plain Letter sender for bag items (not tied to the option). Default is `true` in `Initialization.lua` (retail: false, a deliberate difference noted there), left as is.
+- Added: the checkbox after Keep Window Open, strings `BookUI Show Location (Desc)` (retail enUS), and a live `SettingChanged.BookShowLocation` callback in `BookUI.lua`. The location is stored in `Book.worldLocation` at build time, so turning the option on later shows the position where the book was opened. If the option was off at build time it is read when switched on (the player's current position, which differs if they walked away with Keep Window Open on).
+- Difference to retail: retail stores the location per object in its cache; ours is read at build time.
+- To look at: world book / plaque with the option on and off, toggling with the book open, a bag item (no location, letter sender still shown), zone text with the world map open.
 
 ## Simplify Currency Rewards: skipped
 
