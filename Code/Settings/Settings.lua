@@ -410,6 +410,7 @@ local Schematic = {
                     {dbValue = 3, valueText = L["Size Large"]},
                 },
             },
+            {type = "Checkbox", name = L["BookUI Keep UI Open"], description = L["BookUI Keep UI Open Desc"], dbKey = "BookKeepUIOpen"},
         },
     },
     {   -- Control

@@ -24,6 +24,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Quest group: **Use Blizzard Tooltip** checkbox (row + top-frame take-out) | written, **not tested in the game**, see "Use Blizzard Tooltip: what was done" |
 | **Readables** subheader label after Use Blizzard Tooltip (same Subheader row type as Quest, no options under it yet) | written, **not tested in the game**, see "Subheader: what was done" |
 | Readables group: **Frame Size** (Extra Small 0.9 / Small 1.0 / Medium 1.1 / Large 1.25, `BookUISize`) | written, **not tested in the game**, see "Readables Frame Size: what was done" |
+| Readables group: **Keep Window Open** checkbox (`BookKeepUIOpen`) | written, **not tested in the game**, see "Readables Keep Window Open: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -196,6 +197,15 @@ Retail (`BookUI.lua`): `BookUISize` 0..3 = 0.9 / 1.0 / 1.1 / 1.25 (4 = 1.4 is on
 - Row: ArrowOption under the Readables subheader (`Settings.lua`), 4 choices (the 1.4 step is left out, no Mobile mode), strings reuse `Size ...`; `BookUI Frame Size Desc` is new in `Locales/enUS.lua`.
 - Size is read in `CalculateSizeData` every time a book is built. `SettingChanged.BookUISize` (and `BookFontSize`) now also call `Book:Build()` again on an open book from the cached pages (reading position kept), so the change shows at once (`RebuildOpenBook` in `BookUI.lua`). Retail does the same through `Settings_FrameSize` (re-run `CalculateSizeData` + `Resize`), but leaves images until the cache is wiped; ours re-lays out images too.
 - To look at: all four sizes on a short and a long book, a book with images, close button / title / page buttons / footer positions, change with a book open (old size stays until the next one).
+
+## Readables Keep Window Open: what was done (not tested in the game)
+
+Retail (`BookUI.lua` EventListener, `Settings.lua`): plain checkbox `BookKeepUIOpen` (default off, no preview) under Readables. The game sends `ITEM_TEXT_CLOSED` when you walk away from the object (or interact with another one); with the option on the book is not hidden then. It closes with Esc, right click or the close button. Talking to an NPC (`GOSSIP_SHOW`, `QUEST_*`) and cinematics still close it. Retail only shows the row while "Use new UI for Readable Objects" is on; we have no such switch, so it is always shown.
+
+- The behaviour already existed: `BookEvents.lua` `ScheduleCloseCheck` skips `Book:Hide()` when `GetDBBool("BookKeepUIOpen")`, and `Initialization.lua` has the default `false`. Only the menu row was missing.
+- Added: checkbox after the Readables Frame Size row (`Settings.lua`), strings `BookUI Keep UI Open (Desc)` (retail enUS) in `Locales/enUS.lua`. No live callback needed: the value is read when the game closes the readable.
+- Esc / right click are the same as retail (`Book` binds Esc while shown, right click hides, see `BookUI.lua`).
+- To look at: option on, open a book and walk away (stays open, Esc and right click close it, `CloseItemText` is called on hide); option off (closes ~0.03 s after walking away); opening another readable while one is kept open; talking to an NPC with it kept open (closes); toggling with a book open; both themes for the row.
 
 ## Simplify Currency Rewards: skipped
 
