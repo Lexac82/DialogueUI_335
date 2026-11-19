@@ -10,6 +10,7 @@ local TooltipScan = addon.TooltipScan;
 local TooltipCompare = addon.TooltipCompare;
 local TooltipModel = addon.TooltipModel;
 
+local UIParent = UIParent;
 local GetItemInfo = GetItemInfo;
 local GetItemCount = GetItemCount;
 local GetItemQualityColor = GetItemQualityColor;
@@ -367,13 +368,48 @@ function RewardTooltip:Hide()
     if tooltip then
         tooltip:Hide();
     end
-    if GetDBBool("UseBlizzardTooltip") then
+    if self.gameTooltipTaken then
         GameTooltip:Hide();
     end
 end
 
--- Option /run DialogueUI_335_DB.UseBlizzardTooltip = true : the default GameTooltip at the same anchor.
+-- Retail (RewardTooltipCode.lua TakeOutGameTooltip / RestoreGameTooltip): while our tooltip is not used, the
+-- GameTooltip is moved under a top frame so it is not hidden with UIParent (Hide UI) and stays above the dialogue.
+-- The top frame hangs on addon.UIRoot, which keeps UIParent's scale. Retail also scales it by UIParent's effective
+-- scale; here the root already copies it.
+function RewardTooltip:TakeOutGameTooltip()
+    if self.gameTooltipTaken then
+        return
+    end
+    self.gameTooltipTaken = true;
+    if not self.topFrame then
+        self.topFrame = CreateFrame("Frame", nil, addon.UIRoot);
+        self.topFrame:SetFrameStrata("TOOLTIP");
+        self.topFrame:SetFrameLevel(100);
+    end
+    GameTooltip:Hide();
+    GameTooltip:SetParent(self.topFrame);
+end
+
+function RewardTooltip:RestoreGameTooltip()
+    if not self.gameTooltipTaken then
+        return
+    end
+    self.gameTooltipTaken = nil;
+    GameTooltip:Hide();
+    GameTooltip:SetParent(UIParent);
+    GameTooltip:SetFrameStrata("TOOLTIP");
+end
+
+addon.CallbackRegistry:Register("SettingChanged.UseBlizzardTooltip", function(dbValue)
+    if dbValue ~= true then
+        RewardTooltip:RestoreGameTooltip();
+    end
+end);
+
+-- The default GameTooltip at the same anchor as our tooltip.
 function RewardTooltip:ShowBlizzard(owner, anchor, entry)
+    self:TakeOutGameTooltip();
     GameTooltip:SetOwner(owner, "ANCHOR_NONE");
     GameTooltip:ClearAllPoints();
     GameTooltip:SetPoint("BOTTOMLEFT", anchor or owner, "TOPRIGHT", 0, 2);

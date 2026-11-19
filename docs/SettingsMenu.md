@@ -21,6 +21,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Quest group: **Quest Difficulty** (Off / Level / Name / Both) | written, **not tested in the game**, see "Quest Difficulty: what was done" |
 | Quest group: **Show Upgrade Arrow** checkbox (arrow + setting) | written, **not tested in the game**, see "Show Upgrade Arrow: what was done" |
 | Quest group: **Mark Highest Sell Price** checkbox (logic existed, row + live toggle added) | written, **not tested in the game**, see "Mark Highest Sell Price: what was done" |
+| Quest group: **Use Blizzard Tooltip** checkbox (row + top-frame take-out) | written, **not tested in the game**, see "Use Blizzard Tooltip: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -174,6 +175,19 @@ Retail (`DialogueUI.lua` `RequestSellPrice`, `SetHighestSellPrice`): on a reward
 - Default is now **false** as retail (was true).
 - **Texture (converted, in `Textures\PreviewPicture\`):** `MarkHighestSellPrice.blp` (256 x 256, retail's preview).
 - To look at: 2+ choices with different prices, one unsellable choice (no coin), uncached items (coin after ~1 s), toggling with the page open, coin vs the upgrade arrow and quality triangle.
+
+## Use Blizzard Tooltip: what was done (not tested in the game)
+
+Retail (`RewardTooltipCode.lua`): a plain checkbox (no preview), default off. On: the reward button shows the default `GameTooltip` at the same anchor instead of our tooltip. Retail also moves `GameTooltip` under a top frame (`TakeOutGameTooltip`) so it stays above the dialogue, and puts it back (`RestoreGameTooltip`) on leave / when the option is turned off.
+
+- The logic (`RewardTooltip:ShowBlizzard`, `UseBlizzardTooltip` default false) already existed as a `/run` switch; added the checkbox after Mark Highest Sell Price (Quest group) and the strings `Use Blizzard Tooltip (Desc)` (retail enUS).
+- `TooltipItem.lua`: `RewardTooltip:TakeOutGameTooltip` / `RestoreGameTooltip` as retail, but the top frame (TOOLTIP strata, level 100) is a child of `addon.UIRoot`. That fixes the gap noted under Hide UI: the Blizzard tooltip no longer disappears with `UIParent`. `SettingChanged.UseBlizzardTooltip` (off) restores the parent.
+- Not ported: retail's `GameTooltip_ShowCompareItem` call (not in the docs for 3.3.5a, so the Blizzard tooltip has no comparison; our own tooltip keeps Shift comparison), currency / reputation / skill / follower / war mode entries (do not exist in 3.3.5a), `ShowHyperlink`, reward context text.
+- To look at: checkbox on, hover an item and a spell reward (default tooltip at the icon's top right); with Hide UI on the tooltip stays visible; off again with a page open (our tooltip returns, normal GameTooltip works elsewhere, e.g. bags / world units); both themes for the row.
+
+## Simplify Currency Rewards: skipped
+
+Retail's option makes currency, major faction reputation and honor rewards small rows. 3.3.5a has no quest currency rewards (`GetNumRewardCurrencies` / `GetQuestCurrencyInfo` are Cataclysm), and Emblems are normal items here, so they already show as item buttons. Only honor and arena points are currency-like, and `QuestData.lua` already shows both as small rows (always the simplified form). A setting would only switch those two to big buttons, so it was left out. If it is ever wanted: `small = SimplifyCurrencyReward` in `ReadRewards` and `honor` / `arena` branches in `RewardItemButton:SetEntry`; the client already has the icons (`Interface\PVPFrame\PVP-Currency-*`, `PVP-ArenaPoints-Icon`), and retail's preview picture would not fit (it shows currency items).
 
 ## Scrolling: what was done (not tested in the game)
 

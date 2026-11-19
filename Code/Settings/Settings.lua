@@ -400,6 +400,7 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
+            {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
         },
     },
     {   -- Control
