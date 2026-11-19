@@ -2,6 +2,14 @@
 
 A port of the retail **Dialogue UI** addon to **World of Warcraft: Wrath of the Lich King 3.3.5a**. It replaces the default quest and gossip windows with a clean, readable dialogue screen, and adds a few quality-of-life features around quests and readable objects.
 
+## Opening the settings
+
+- Type **/dui** or **/dialogueui** in chat.
+- Press **F1** while a dialogue is open.
+- Click the **minimap button**.
+
+The settings have four tabs: **UI**, **Control** (including custom key bindings), **Gameplay** and **Minimap**.
+
 **Quest UI - Light Theme**
 
 ![Quest UI - Light Theme](Preview/QuestUI-Light.jpg)
@@ -72,9 +80,6 @@ Copy the dialogue text, along with NPC and item IDs, to paste elsewhere.
 Books, notes and other readable objects open in their own window. Choose its size, keep it open when you walk away, show the object's location and item description, and darken the screen behind it.
 
 ![Readables](Preview/BookUI.png)
-
-### Settings
-Open the settings with **/dui** or **/dialogueui**, with **F1** while a dialogue is open, or with the minimap button. Tabs: **UI**, **Control** (including custom key bindings), **Gameplay** and **Minimap**.
 
 ## Installation
 
