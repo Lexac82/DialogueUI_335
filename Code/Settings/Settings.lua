@@ -486,6 +486,7 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
             {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
             {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
+            {type = "Checkbox", name = L["Instant Quest Text"], description = L["Instant Quest Text Desc"], cvarFunc = function() return addon.INSTANT_TEXT_CVAR end},
             {type = "Subheader", name = L["Quest"]},
             {type = "ArrowOption", name = L["Quest Difficulty Option"], description = L["Quest Difficulty Option Desc"], tooltip = QuestDifficultyStyle_Tooltip, dbKey = "QuestDifficultyStyle", preview = "QuestDifficultyStyle", ratio = 2,
                 choices = {
@@ -966,6 +967,22 @@ local function CreateCheckbox(row, optionData)
     widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
     widget.dbKey = optionData.dbKey;
 
+    -- Optional cvarFunc: the option is a game CVar (Blizzard's own setting), not a saved variable of ours.
+    local function GetValue()
+        if optionData.cvarFunc then
+            local ok, value = pcall(GetCVar, optionData.cvarFunc());
+            return ok and value == "1"
+        end
+        return GetDBValue(widget.dbKey) == true
+    end
+    local function SetValue(state)
+        if optionData.cvarFunc then
+            pcall(SetCVar, optionData.cvarFunc(), state and "1" or "0");
+        else
+            SetDBValue(widget.dbKey, state, true);
+        end
+    end
+
     local background = widget:CreateTexture(nil, "BACKGROUND");
     background:SetAllPoints(widget);
     ThemeUtil:BindTexture(background, CHECKBOX_FILE);
@@ -1023,7 +1040,7 @@ local function CreateCheckbox(row, optionData)
             self:SetAlpha(0.4);
             row.label:SetAlpha(0.5);
         else
-            self:SetChecked(GetDBValue(self.dbKey) == true);
+            self:SetChecked(GetValue());
             self:SetAlpha(1);
             row.label:SetAlpha(1);
         end
@@ -1031,7 +1048,7 @@ local function CreateCheckbox(row, optionData)
 
     function widget:Toggle()
         self:SetChecked(not self.checked);
-        SetDBValue(self.dbKey, self.checked, true);
+        SetValue(self.checked);
         SettingsUI:LayoutRows(frame.tabID);     -- sub-options may depend on this one
         PlaySound(self.checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff");
         row:OnEnter();

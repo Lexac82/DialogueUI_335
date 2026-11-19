@@ -32,6 +32,7 @@ local SUBHEADER_FONT_NAME = "DUI335_Quest_SubHeader";
 
 -- Smooth reveal, like Blizzard's quest frame. Skipped when "Instant Quest Text" is on.
 local INSTANT_TEXT_CVAR = "questFadingDisable";        -- UNVERIFIED name: not in wow-docs
+addon.INSTANT_TEXT_CVAR = INSTANT_TEXT_CVAR;            -- the Settings checkbox uses the same CVar
 local REVEAL_CPS = 40;                                  -- characters per second
 local REVEAL_GRADIENT = 30;                             -- soft edge width in pixels
 local REVEAL_TAIL = 5;                                  -- extra characters so the last ones fully fade in (~30 px)

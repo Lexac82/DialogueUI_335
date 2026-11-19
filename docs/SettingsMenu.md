@@ -18,6 +18,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | UI tab: **Show NPC Name** checkbox | written, **not tested in the game**, see "Show NPC Name: what was done" |
 | UI tab: **Show Quest Type** checkbox (not in retail) | written, **not tested in the game**, see "Show Quest Type: what was done" |
 | UI tab: **Quest** subheader label after Show Quest Type (new row type **Subheader**, as retail) | written, **not tested in the game**, see "Subheader: what was done" |
+| UI tab: **Instant Quest Text** checkbox (after Show Quest Type, before the Quest subheader), bound to Blizzard's CVar (`addon.INSTANT_TEXT_CVAR` = `questFadingDisable`, **name unverified**, not in wow-docs; `cvarFunc` field of the Checkbox row reads / writes it with `GetCVar` / `SetCVar` in `pcall`, so a wrong name just shows unchecked). `QuestTextLayout` already reads it at every page, so it applies at once | written, **not tested in the game** |
 | Quest group: **Quest Difficulty** (Off / Level / Name / Both) | written, **not tested in the game**, see "Quest Difficulty: what was done" |
 | Quest group: **Show Upgrade Arrow** checkbox (arrow + setting) | written, **not tested in the game**, see "Show Upgrade Arrow: what was done" |
 | Quest group: **Mark Highest Sell Price** checkbox (logic existed, row + live toggle added) | written, **not tested in the game**, see "Mark Highest Sell Price: what was done" |
