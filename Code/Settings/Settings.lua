@@ -44,6 +44,7 @@ local TAB_ENTRIES = {
     { name = L["UI"] },
     { name = L["Control"] },
     { name = L["Gameplay"] },
+    { name = L["Minimap"] },
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
@@ -541,6 +542,11 @@ local Schematic = {
                 requiredParentValueAnd = {QuickSlotQuestReward = true}},
             {type = "Checkbox", name = L["Press Key To Use Item"], tooltip = UseItemHotkey_Tooltip, dbKey = "QuickSlotUseHotkey",
                 requiredParentValueAnd = {QuickSlotQuestReward = true}, validationFunc = QuickSlot_Move_Validation, branchLevel = 0},
+        },
+    },
+    {   -- Minimap
+        options = {
+            {type = "Checkbox", name = L["Show Minimap Button"], description = L["Show Minimap Button Desc"], dbKey = "ShowMinimapButton"},
         },
     },
 };

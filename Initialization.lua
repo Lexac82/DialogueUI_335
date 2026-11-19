@@ -67,6 +67,10 @@ local DefaultValues = {
         BookUIItemDescription = true,           --Retail: false
         BookDarkenScreen = false,
 
+    --Minimap button (see Code\Widget\MinimapButton.lua)
+    ShowMinimapButton = true,
+    MinimapButtonAngle = 215,                   --Position on the minimap rim in degrees (set by dragging, not shown in the Settings)
+
     --Not shown in the Settings. Accessible by other means
     DebugGossip = false,                        --Prints the raw gossip lists: /run DialogueUI_335_DB.DebugGossip = true
 

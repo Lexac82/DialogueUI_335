@@ -3,6 +3,7 @@
 ## Title: Dialogue UI
 ## Notes: Quest Dialogue UI (WotLK 3.3.5a port)
 ## Author: Navardraz
+## IconTexture: Interface\AddOns\DialogueUI_335\Textures\Logo.tga
 
 ## SavedVariables: DialogueUI_335_DB
 
@@ -47,5 +48,6 @@ Code\Book\BookItem.lua
 Code\Book\BookUI.lua
 Code\Book\BookEvents.lua
 Code\Settings\Settings.lua
+Code\Widget\MinimapButton.lua
 Code\Core.lua
 Code\Utility\DevTool.lua

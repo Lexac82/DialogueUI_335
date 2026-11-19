@@ -20,6 +20,13 @@ L["Goodbye"] = GOODBYE or "Goodbye";
 L["UI"] = "UI";
 L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
+L["Minimap"] = "Minimap";
+
+-- Settings: Minimap tab and minimap button
+L["Show Minimap Button"] = "Show Minimap Button";
+L["Show Minimap Button Desc"] = "Show a button on the minimap that opens these settings. Drag it to move it around the minimap.";
+L["Minimap Button Tooltip"] = "Click to open the settings.";
+L["Minimap Button Drag"] = "Drag to move";
 
 -- Settings: UI tab
 L["Theme"] = "Theme";

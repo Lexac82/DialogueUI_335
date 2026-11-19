@@ -37,6 +37,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Gameplay tab: Quest Item Display + Ignore Seen Items, Await World Map, Move, Reset Position (Auto Quest Popup skipped) | done |
 | Gameplay tab: **Quest** subheader, **Valuable Reward Popup** (equipment upgrades by Pawn, new popup) with Move / Reset Position rows | written, **not tested in the game**, see "Valuable Reward Popup: what was done". Textures converted and in place |
 | Gameplay tab: **Auto Complete Quest** | skipped, see "Auto Complete Quest: skipped" |
+| **Minimap** tab (4th tab, not in retail): **Show Minimap Button** checkbox + the minimap button itself (Logo, opens Settings) | written, **not tested in the game**, see "Minimap tab: what was done" |
 | Gameplay tab: **Gossip** group (Auto Select Option, Force Gossip, Skip GameObject, Show Hint) | skipped, no label either, see "Gossip group: skipped" |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -311,6 +312,17 @@ Retail (`Widget_QuickSlot.lua`, `Widget_ItemButton.lua`, `ItemEvaluator.lua`): `
 - Not the same as retail: no `GLOBAL_MOUSE_DOWN` (right click uses the button's own `OnClick`), no `HideUI` handling (the popup is on `UIParent`, like the Quest Item Display; it fades in with the UI when the dialogue closes), the loot message pattern is used to find the link (`|Hitem:...|h[name]|h`, assumes the 3.3.5a format). A ring / trinket goes to the slot the game picks (the first), even when Pawn compared it to the second.
 - **Textures (converted, in place):** `Textures\Shared\QuestFlyoutButton.blp` (512 x 512), `Textures\PreviewPicture\QuickSlotQuestReward.blp` (512 x 256, shown with `ratio = 2`).
 - To look at: with Pawn installed and a Pawn scale enabled, turn in a quest with a reward that beats the equipped item (popup appears above the action bar, slides up, ring fills in 4 s, click equips -> "Equipped", closes ~1 s later); a reward that is not an upgrade, a reward already worn (2 s), several loot lines in a row (the last upgrade replaces the earlier popup), combat while it shows (greyed out, back after combat), bind-on-equip confirmation, hover pauses the ring, right click closes, an item still uncached; Move sample (drag, Reset appears, Reset, close with X / right click / tab change / closing Settings), position survives /reload; no Pawn (greyed checkbox, copy link, no Move rows); option off while a popup shows.
+
+## Minimap tab: what was done (not tested in the game)
+
+Not in retail. A fourth tab, **Minimap**, with one checkbox, and a minimap button that opens the Settings window. Modelled on DragonUI's settings button (`DragonUI\modules\minimap_collector.lua`: round button orbiting the minimap rim at a saved angle, left-drag to move, square orbit when `GetMinimapShape()` says SQUARE), without its collector, skinning or fade.
+
+- Settings: `ShowMinimapButton` (default true) and `MinimapButtonAngle` (default 215, degrees, written by dragging, no menu row) in `DefaultValues`. Tab entry `L["Minimap"]` in `TAB_ENTRIES` and a 4th `Schematic` entry with the checkbox (`Settings.lua`). Strings in `Locales/enUS.lua`.
+- `Code/Widget/MinimapButton.lua` (new, in the .toc after `Settings.lua`): `DialogueUI335MinimapButton`, 31 px child of `Minimap`, a **Button**, so DragonUI's minimap module collects and skins it like any addon launcher (a plain Frame was tried first and DragonUI ignored it, which was not wanted), standard minimap parts (`UI-Minimap-Background` disc, `Textures\Logo.blp` icon as a plain texture (`SetPortraitToTexture` drew nothing for it), `MiniMap-TrackingBorder` ring, zoom-button highlight). Click = `SettingsUI:Toggle()`; tooltip with the click and drag hints. `SettingChanged.ShowMinimapButton` creates / shows / hides it (also fires once at load).
+- Drag: `OnUpdate` while dragging reads the cursor angle around the minimap centre and saves it; a click arriving within 0.2 s after a drag is ignored.
+- Orbit radius is half the minimap width + 5, so the button hangs on the rim. Other minimap addons that reshape the minimap are only handled through `GetMinimapShape`.
+- Unverified: `Textures\Logo.tga` is used by path without conversion (TGA loads in the client as is, but it must be a power of 2 size); `SetPortraitToTexture` with a custom file; the look next to DragonUI's minimap frame.
+- To look at: button on the rim at the default angle, click opens / closes Settings (also with the Minimap tab open), drag around the rim and position survives /reload, checkbox off hides it at once and on (fresh character / default) shows it, tooltip, DragonUI minimap (round and square), logo not clipped by the ring.
 
 ## Gossip group: skipped
 
