@@ -383,6 +383,8 @@ do
     ControlOptions[#ControlOptions + 1] = {type = "Subheader", name = L["Quest"]};
     ControlOptions[#ControlOptions + 1] = {type = "Checkbox", name = L["Press Tab To Select Reward"], description = L["Press Tab To Select Reward Desc"],
         dbKey = "CycleRewardHotkeyEnabled", requiredParentValueAnd = {InputDevice = 1}};
+    ControlOptions[#ControlOptions + 1] = {type = "Checkbox", name = L["Press Button To Scroll Down"], description = L["Press Button To Scroll Down Desc"],
+        dbKey = "ScrollDownThenAcceptQuest"};
 end
 
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.

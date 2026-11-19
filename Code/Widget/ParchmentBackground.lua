@@ -262,6 +262,16 @@ function ParchmentBackground:FlashRewardChoices()
     self.QuestText.rewards:FlashChoices();
 end
 
+-- Confirm key on a quest offer with Settings > Control > Press Button To Scroll Down: while the quest text is not
+-- fully in view, scroll down instead of accepting (retail ScrollDownOrAcceptQuest). Returns true when it scrolled.
+function ParchmentBackground:ScrollDownIfNeeded()
+    if self.QuestText:IsScrollPassObjectives() then
+        return false
+    end
+    self.QuestText:ScrollToBottom();
+    return true
+end
+
 -- Tab / Shift-Tab: choose the next / previous reward.
 function ParchmentBackground:CycleRewardChoice(delta)
     return self.QuestText.rewards:CycleChoice(delta)

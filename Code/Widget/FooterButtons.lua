@@ -20,7 +20,8 @@ local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
 local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
-local CYCLE_NAME = "DialogueUI335CycleReward";                  -- hidden buttons the Tab keys click (created below)
+local SCROLL_NAME = "DialogueUI335ScrollOrAccept";             -- hidden button the Confirm key clicks (Press Button To Scroll Down)
+local CYCLE_NAME ="DialogueUI335CycleReward";                  -- hidden buttons the Tab keys click (created below)
 local CYCLE_BACK_NAME = "DialogueUI335CycleRewardBack";
 
 local L = addon.L;
@@ -201,7 +202,13 @@ function Footer:UpdateKeys()
     local confirmKey = BindingUtil:GetActiveConfirmKey();       -- Space unless the player chose another one
     local confirmUsed = false;
     if confirmKey and accept:IsShown() and accept.isEnabled and accept.hasHotkey then
-        SetOverrideBindingClick(self.keyOwner, true, confirmKey, ACCEPT_NAME, "LeftButton");
+        -- Press Button To Scroll Down: on a quest offer the key goes through a button that scrolls first (a mouse
+        -- click on Accept always accepts).
+        local target = ACCEPT_NAME;
+        if self.event == "QUEST_DETAIL" and addon.GetDBBool("ScrollDownThenAcceptQuest") then
+            target = SCROLL_NAME;
+        end
+        SetOverrideBindingClick(self.keyOwner, true, confirmKey, target, "LeftButton");
         confirmUsed = true;
     end
     -- Esc belongs to the settings window while it is open (it binds Esc itself).
@@ -302,6 +309,20 @@ local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom
         self:UpdateKeys();
     end);
     addon.CallbackRegistry:Register("SettingsUI.Hide", function()
+        self:UpdateKeys();
+    end);
+
+    -- Press Button To Scroll Down: scrolls while the quest text is not fully in view, then clicks Accept.
+    local scrollButton = CreateFrame("Button", SCROLL_NAME, UIParent);
+    scrollButton:SetWidth(1);
+    scrollButton:SetHeight(1);
+    scrollButton:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0);
+    scrollButton:SetScript("OnClick", function()
+        if not owner:ScrollDownIfNeeded() then
+            self.accept:Click();
+        end
+    end);
+    addon.CallbackRegistry:Register("SettingChanged.ScrollDownThenAcceptQuest", function()
         self:UpdateKeys();
     end);
 

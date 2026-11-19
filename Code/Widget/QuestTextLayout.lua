@@ -162,6 +162,26 @@ function QuestTextLayout:UpdateScrollRange()
     self.ScrollArea:SetScrollRange(range);
 end
 
+-- Port of retail's IsScrollPassObjectives / SetQuestTextRange (Settings > Control > Press Button To Scroll Down):
+-- true when the quest text (body and objectives, not the rewards under it) has been scrolled fully into view,
+-- or the page does not scroll at all.
+function QuestTextLayout:IsScrollPassObjectives()
+    local scrollArea = self.ScrollArea;
+    if not scrollArea:IsScrollable() then
+        return true
+    end
+    local target = scrollArea.range;
+    if self.questTextEnd then
+        local viewHeight = self.fullHeight - self.scrollTop - self.footerOffset;
+        target = math.min(target, self.questTextEnd + PARAGRAPH_SPACING - viewHeight);
+    end
+    return scrollArea.scrollTarget + 0.5 > target
+end
+
+function QuestTextLayout:ScrollToBottom()
+    self.ScrollArea:ScrollToBottom();
+end
+
 function QuestTextLayout:ReleaseAll()
     self:StopReveal();
     self.revealItems = {};
@@ -341,6 +361,7 @@ function QuestTextLayout:SetListPage(page)
     self:ReleaseAll();
     self.ScrollArea:ResetScroll();
     self.isListPage = true;
+    self.questTextEnd = nil;
     self:SetScrollTop(self.listScrollTop);
 
     local gaps = addon.GossipDataProvider.GAPS;
@@ -404,6 +425,8 @@ function QuestTextLayout:SetQuestText(body, objective, page)
         offsetY = self:InsertSubHeader(offsetY, L["Quest Objectives"]);
         offsetY = self:FormatParagraph(offsetY, objective);
     end
+
+    self.questTextEnd = offsetY;        -- where the quest text ends, before suggested group size and rewards
 
     if page then
         if page.suggested then
