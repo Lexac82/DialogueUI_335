@@ -26,6 +26,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Readables group: **Frame Size** (Extra Small 0.9 / Small 1.0 / Medium 1.1 / Large 1.25, `BookUISize`) | written, **not tested in the game**, see "Readables Frame Size: what was done" |
 | Readables group: **Keep Window Open** checkbox (`BookKeepUIOpen`) | written, **not tested in the game**, see "Readables Keep Window Open: what was done" |
 | Readables group: **Show Location** checkbox (`BookShowLocation`, live toggle added) | written, **not tested in the game**, see "Readables Show Location: what was done" |
+| Readables group: **Show Item Description** checkbox (`BookUIItemDescription`, live toggle added) | written, **not tested in the game**, see "Readables Show Item Description: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -216,6 +217,15 @@ Retail (`BookUI.lua`, `HeaderFrameMixin:SetLocation`): checkbox `BookShowLocatio
 - Added: the checkbox after Keep Window Open, strings `BookUI Show Location (Desc)` (retail enUS), and a live `SettingChanged.BookShowLocation` callback in `BookUI.lua`. The location is stored in `Book.worldLocation` at build time, so turning the option on later shows the position where the book was opened. If the option was off at build time it is read when switched on (the player's current position, which differs if they walked away with Keep Window Open on).
 - Difference to retail: retail stores the location per object in its cache; ours is read at build time.
 - To look at: world book / plaque with the option on and off, toggling with the book open, a bag item (no location, letter sender still shown), zone text with the world map open.
+
+## Readables Show Item Description: what was done (not tested in the game)
+
+Retail (`BookUI.lua` `Settings_BookUIItemDescription`, `BookUI_Component.lua` `SourceItemButtonMixin`): your guess was right, it is for readables. When the readable is an **item** (e.g. a letter or note in the bags), the quoted flavor line at the bottom of its tooltip (`"Dear friend, ..."`) is shown in a strip with the item's round icon above the book frame. Plain checkbox, no preview, default off in retail. It affects nothing else (no layout of the book itself, no other setting). Retail polls the tooltip up to 3 times (0.2 s) until the line is there.
+
+- The display already existed: `BookItem:GetDescription` (scans the bag item's tooltip for the last line starting with `"`), `Book:ShowSource` (round icon, text, paper strip) and `UpdateSourceButton`, all driven by `BookUIItemDescription` (default `true` in `Initialization.lua`, retail: false, deliberate difference noted there, left as is). Readables standing in the world have no item, so nothing shows for them.
+- Added: checkbox after Show Location (`Settings.lua`), strings `BookUI Show Item Description (Desc)` (retail enUS) and a live `SettingChanged.BookUIItemDescription` callback in `BookUI.lua` (shows / hides the strip on an open book from a bag item).
+- Not done: retail's tooltip re-poll (ours scans the bag slot directly), the first-time-on case for an item whose tooltip is not loaded yet.
+- To look at: a bag readable with a quoted line (e.g. a letter) with the option on / off, toggling with the book open, a world readable (no change), both themes for the row.
 
 ## Simplify Currency Rewards: skipped
 

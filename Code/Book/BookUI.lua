@@ -1227,6 +1227,22 @@ end);
 
 -- Show / hide ------------------------------------------------------------------------------------------------
 
+-- Live toggle. Only items from the bags have a description (readables in the world do not).
+addon.CallbackRegistry:Register("SettingChanged.BookUIItemDescription", function(state)
+    if not (Book:IsShown() and Cache.itemInfo) then
+        return
+    end
+    if state then
+        local icon, text = BookItem:GetDescription(Cache.itemInfo);
+        if icon and text then
+            Book:ShowSource(icon, text);
+        end
+    else
+        Book.source:Hide();
+    end
+end);
+
+
 -- Size and font settings are read again every time a book is built. With a book open, build it again from the
 -- cached pages (keeping the reading position) so the change shows at once.
 local function RebuildOpenBook()
