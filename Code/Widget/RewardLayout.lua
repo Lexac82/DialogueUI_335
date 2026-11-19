@@ -238,23 +238,26 @@ function RewardLayout:UpdateSellMarker()
     if not self.page or not self.page.canChoose or #buttons < 2 then
         return
     end
-    -- Retail keeps this off by default. Here it is on by default (see Initialization.lua).
+    for i = 1, #buttons do
+        buttons[i]:SetSellMarker(false);
+    end
     if not GetDBBool("MarkHighestSellPrice") then
         return
     end
 
+    -- As retail RequestSellPrice: unit price (stack count ignored); a choice with no price
+    -- (not cached yet, or unsellable) means no marker, after one more try later.
     local best, bestPrice, missing = nil, 0, false;
     for i = 1, #buttons do
         local entry = buttons[i].entry;
         local price = entry.link and select(11, GetItemInfo(entry.link));
-        if price == nil then
+        if not price or price == 0 then
             missing = true;
-        elseif price * (entry.count or 1) > bestPrice then
-            best, bestPrice = buttons[i], price * (entry.count or 1);
+        elseif price > bestPrice then
+            best, bestPrice = buttons[i], price;
         end
-        buttons[i]:SetSellMarker(false);
     end
-    if best then
+    if best and not missing then
         best:SetSellMarker(true);
     end
 
@@ -470,6 +473,9 @@ local function CreateRewardLayout(host)
     -- Turning the option on or off with a page open applies at once (no redraw, a reward choice stays).
     addon.CallbackRegistry:Register("SettingChanged.ShowUpgradeArrow", function()
         self:UpdateUpgradeMarkers();
+    end);
+    addon.CallbackRegistry:Register("SettingChanged.MarkHighestSellPrice", function()
+        self:UpdateSellMarker();
     end);
     return self
 end

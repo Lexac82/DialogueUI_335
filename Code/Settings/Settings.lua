@@ -331,8 +331,20 @@ end
 
 -- Description with the arrow drawn inline (retail ItemEvaluatorTooltip uses UpgradeArrowSmall the same way).
 local UPGRADE_ARROW_ICON = "|TInterface\\AddOns\\DialogueUI_335\\Textures\\Shared\\UpgradeArrowSmall.blp:0:0:0:-6|t";     -- retail's numbers (0 = font height)
+local PAWN_URL = "https://warperia.com/addon-wotlk/pawn/download/";
 local function UpgradeArrow_Tooltip()
-    return L["Show Upgrade Arrow Desc"]:format(UPGRADE_ARROW_ICON)
+    local text = L["Show Upgrade Arrow Desc"]:format(UPGRADE_ARROW_ICON);
+    if not addon.TooltipCompare:IsPawnAvailable() then
+        text = text .. "\n\n" .. L["Show Upgrade Arrow Pawn Missing"]:format(PAWN_URL);
+    end
+    return text
+end
+-- Without Pawn the checkbox is greyed out; clicking it opens the Clipboard window with the download link.
+local function UpgradeArrow_IsDisabled()
+    return not addon.TooltipCompare:IsPawnAvailable()
+end
+local function UpgradeArrow_DisabledClick()
+    addon.Clipboard:ShowContent(PAWN_URL, nil, true, 360, 40);
 end
 
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
@@ -386,7 +398,8 @@ local Schematic = {
                     {dbValue = 3, valueText = L["QuestDifficultyStyle Both"]},
                 },
             },
-            {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow"},
+            {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
+            {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
         },
     },
     {   -- Control
@@ -588,8 +601,45 @@ local function CreateCheckbox(row, optionData)
         end
     end
 
+    -- Optional isDisabledFunc (e.g. a required addon is missing): unchecked, dimmed, and a click calls onDisabledClick.
+    local function IsDisabled()
+        return optionData.isDisabledFunc and optionData.isDisabledFunc()
+    end
+
+    -- Optional copyLink: a copy icon right after the label while the option is disabled. 3.3.5a cannot write to the
+    -- clipboard, so it opens the Clipboard window with the link selected, ready for Ctrl+C.
+    local copyButton;
+    if optionData.copyLink then
+        copyButton = addon.CreateCopyTextButton(row.content, function(self)
+            if not addon.Clipboard:CloseIfFromSameSender(self) then
+                addon.Clipboard:ShowContent(optionData.copyLink, self, true, 360, 40);
+            end
+        end, ThemeUtil:GetThemeID(), L["Click To Copy To Clipboard"]);
+        copyButton:SetPoint("LEFT", row.label, "RIGHT", 4, 0);
+        copyButton:Hide();
+        copyButton:HookScript("OnEnter", function() row:OnEnter(); end);      -- keep the row's description while on the icon
+        CallbackRegistry:Register("ThemeChanged", function(themeID)
+            copyButton:SetTheme(themeID);
+        end);
+    end
+
     function widget:Refresh()
-        self:SetChecked(GetDBValue(self.dbKey) == true);
+        if copyButton then
+            if IsDisabled() then
+                copyButton:Show();
+            else
+                copyButton:Hide();
+            end
+        end
+        if IsDisabled() then
+            self:SetChecked(false);
+            self:SetAlpha(0.4);
+            row.label:SetAlpha(0.5);
+        else
+            self:SetChecked(GetDBValue(self.dbKey) == true);
+            self:SetAlpha(1);
+            row.label:SetAlpha(1);
+        end
     end
 
     function widget:Toggle()
@@ -603,7 +653,14 @@ local function CreateCheckbox(row, optionData)
     row:RegisterForClicks("LeftButtonUp");
     row:SetScript("OnClick", function()
         if IsPointerInList() then
-            widget:Toggle();
+            if IsDisabled() then
+                if optionData.onDisabledClick then
+                    PlaySound("igMainMenuOptionCheckBoxOn");
+                    optionData.onDisabledClick();
+                end
+            else
+                widget:Toggle();
+            end
         end
     end);
 

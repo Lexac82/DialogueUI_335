@@ -20,6 +20,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | UI tab: **Quest** subheader label after Show Quest Type (new row type **Subheader**, as retail) | written, **not tested in the game**, see "Subheader: what was done" |
 | Quest group: **Quest Difficulty** (Off / Level / Name / Both) | written, **not tested in the game**, see "Quest Difficulty: what was done" |
 | Quest group: **Show Upgrade Arrow** checkbox (arrow + setting) | written, **not tested in the game**, see "Show Upgrade Arrow: what was done" |
+| Quest group: **Mark Highest Sell Price** checkbox (logic existed, row + live toggle added) | written, **not tested in the game**, see "Mark Highest Sell Price: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -156,12 +157,23 @@ Retail (`QuestDifficulty.lua`, `QuestDifficultyStyle`): 0 Off, 1 Level (default)
 Retail (`ItemEvaluator.lua`, `API.lua` item level delta, `ItemButtonSharedMixin:ShowUpgradeIcon`): a green arrow at the bottom left of a reward item's icon when the item is a potential upgrade. The 335 addon had no arrow at all, so both the arrow and the setting were added.
 
 - `ShowUpgradeArrow` (default true, as retail) in `DefaultValues`. Checkbox after Quest Difficulty (Quest group), strings `Show Upgrade Arrow (Desc)`. Retail's extra tooltip text about third-party evaluators (Pawn etc.) is not ported: only the item level rule exists here.
-- `TooltipCompare:IsUpgrade(link)` returns `isUpgrade, isReady`. Rule as retail: item level higher than the equipped item, best case over the slots (ring / trinket: 2 slots; an empty slot counts as an upgrade; one-hand weapon: 2nd slot only when it holds a weapon, an empty or shield / held-item offhand is ignored). `isReady` is false while `GetItemInfo` has no item level yet.
+- **Pawn required (replaces the retail item level rule, which did not suit us).** `TooltipCompare:IsPawnAvailable()` checks, at call time, that Pawn's globals exist (`PawnGetItemData`, `PawnGetItemDataForInventorySlot`, `PawnCommon.Scales`), so load order does not matter. `TooltipCompare:IsUpgrade(link)` returns `isUpgrade, isReady`: with Pawn, the item is an upgrade when its Pawn value beats the equipped item (without enchants / gems) in at least one of the player's enabled scales, in any of its slots (ring / trinket: 2 slots; an empty slot counts as an upgrade when the item has any value; one-hand weapon: 2nd slot only when it holds a weapon). Armor slots holding another armor type (cloth over leather) are skipped. Without Pawn nothing is an upgrade. `isReady` is false while `GetItemInfo` has no data for the item. Written against Pawn 1.3.8 in `AddOns\Pawn` (`Item.Values` = `{scale, value, unenchantedValue, ...}`); **not tested in the game**.
+- **Menu:** label "Show Upgrade Arrow (Pawn Required)". Without Pawn the checkbox is dimmed and unchecked, the description adds that Pawn is missing plus the download link (https://warperia.com/addon-wotlk/pawn/download/ -> see `PAWN_URL` in `Settings.lua`), a copy icon (the Copy Text button from `Clipboard.lua`) sits right after the option name while the option is disabled (option field `copyLink`, made in `CreateCheckbox`, shown by `widget:Refresh`). The icon and a click on the row open the Clipboard window with the link already selected (`Clipboard:ShowContent(text, sender, selectAll)`), ready for Ctrl+C. 3.3.5a addons cannot write to the clipboard, open a browser or make clickable URLs. Not tested in the game. New checkbox fields: `isDisabledFunc`, `onDisabledClick`.
 - `RewardLayout:UpdateUpgradeMarkers` runs after every layout: only big buttons of kind item, not "required", usable (`entry.isUsable`, so unusable items get the red "!" and no arrow). Not-ready items are asked again once after 0.8 s. `SettingChanged.ShowUpgradeArrow` re-runs it without a redraw (a reward choice is kept).
 - `RewardItemButton:SetUpgradeMarker(shown, animate)`: 32 px arrow, `CENTER` on the icon's `BOTTOMLEFT` (1, 5), on its own frame above the border. While choosing a reward (`page.canChoose`) it flies up as retail (0.5 s delay, 12 px rise over 0.5 s with outSine, fade in).
 - Not ported: cosmetic items (no such thing in 3.3.5a), third-party evaluators, the small reward rows, the Quest Item Display.
 - **Texture (converted, in `Textures\Shared\`):** `ItemIsUpgrade.blp` (64 x 64, retail's `Art/Icons/ItemIsUpgrade.png`).
 - To look at: arrow on choices and on fixed rewards, both themes, a ring / trinket / one-hand weapon with empty and full slots, a shield equipped with a one-hand weapon reward, toggling the checkbox with a quest page open, items not cached yet (arrow appears after ~1 s), arrow vs the quality triangle and count text.
+
+## Mark Highest Sell Price: what was done (not tested in the game)
+
+Retail (`DialogueUI.lua` `RequestSellPrice`, `SetHighestSellPrice`): on a reward choice with 2+ choices, a 15 px gold coin at the icon's top left marks the choice with the highest vendor price.
+
+- The coin (`RewardItemButton:SetSellMarker`) and the logic (`RewardLayout:UpdateSellMarker`) already existed; the setting had no menu row. Added: checkbox after Show Upgrade Arrow (`preview = "MarkHighestSellPrice"`, `ratio = 1`), strings `Mark Highest Sell Price (Desc)` (retail enUS), and `SettingChanged.MarkHighestSellPrice` re-runs the marker without a redraw.
+- Logic now as retail: unit price (stack count ignored); if any choice has no price (not cached or unsellable) nothing is marked, and it asks once more after 0.8 s. Before, the best of the known prices was marked, with count.
+- Default is now **false** as retail (was true).
+- **Texture (converted, in `Textures\PreviewPicture\`):** `MarkHighestSellPrice.blp` (256 x 256, retail's preview).
+- To look at: 2+ choices with different prices, one unsellable choice (no coin), uncached items (coin after ~1 s), toggling with the page open, coin vs the upgrade arrow and quality triangle.
 
 ## Scrolling: what was done (not tested in the game)
 

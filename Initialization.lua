@@ -37,7 +37,7 @@ local DefaultValues = {
     TooltipShowItemComparison = false,
 
     --Quest rewards
-    MarkHighestSellPrice = true,                --Retail: false
+    MarkHighestSellPrice = false,
     ShowUpgradeArrow = true,                    --Green arrow on reward items with a higher item level than the equipped one (see RewardLayout.lua)
 
     --Quest Item Display

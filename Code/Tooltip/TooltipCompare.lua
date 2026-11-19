@@ -40,6 +40,9 @@ local EQUIP_SLOTS = {
     INVTYPE_TABARD = {19},
 };
 
+-- Slots where the armor type (cloth / leather / mail / plate) matters.
+local ARMOR_TYPE_SLOTS = {[1] = true, [3] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true};
+
 local GREEN = "|cff19ff19";
 local RED = "|cffff2020";
 local GREY = "|cff808080";
@@ -76,43 +79,74 @@ function TooltipCompare:GetReplacedItem(link)
     return bestLink, bestLevel
 end
 
--- Retail's ItemEvaluator (item level based): true when the item is better than what is in one of its slots.
+-- The upgrade arrow needs the Pawn addon (item level alone is not a good measure). Pawn is looked up when asked,
+-- not at load, so the load order does not matter. Pawn's globals: PawnGetItemData(link) and
+-- PawnGetItemDataForInventorySlot(slot, unenchanted) return an item whose `Values` is a list of
+-- {scaleName, value, unenchantedValue, ...} for the scales the player has enabled (only values above 0).
+function TooltipCompare:IsPawnAvailable()
+    return type(PawnGetItemData) == "function" and type(PawnGetItemDataForInventorySlot) == "function"
+        and type(PawnCommon) == "table" and type(PawnCommon.Scales) == "table"
+end
+
+local function PawnValues(item)
+    local values = {};
+    if item and item.Values then
+        for i = 1, #item.Values do
+            local entry = item.Values[i];
+            values[entry[1]] = entry[2] or 0;
+        end
+    end
+    return values
+end
+
+-- True when `newValues` beats `oldValues` (scale name -> value) in at least one scale.
+local function BeatsInAnyScale(newValues, oldValues)
+    for scale, value in pairs(newValues) do
+        if value > (oldValues[scale] or 0) then
+            return true
+        end
+    end
+    return false
+end
+
+-- Upgrade according to Pawn: the item scores higher than what is in one of its slots in at least one of the
+-- player's enabled scales (equipped items without enchants and gems, so those do not count against the new item).
 -- Returns isUpgrade, isReady (false while an item is not in the cache yet: ask again later).
--- An empty slot counts as an upgrade, except the second slot of a one-hand weapon (retail skips it too,
--- and ignores a shield / held item there).
+-- An empty slot counts as an upgrade, except the second slot of a one-hand weapon (its second slot only counts when
+-- it holds a weapon). Armor of another type than the equipped one (cloth over leather) is never an upgrade.
+-- Without Pawn nothing is an upgrade.
 function TooltipCompare:IsUpgrade(link)
     local slots, equipSlot = GetEquipSlots(link);
-    if not slots then
+    if not slots or not self:IsPawnAvailable() then
         return false, true
     end
-    local level = select(4, GetItemInfo(link));
+    local _, _, _, level, _, class, subclass = GetItemInfo(link);
     if not level then
         return false, false
     end
 
-    local ready = true;
-    local maxDelta;
+    local newValues = PawnValues(PawnGetItemData(link));
     local isOneHand = (equipSlot == "INVTYPE_WEAPON");
     for i = 1, #slots do
         local equipped = GetInventoryItemLink("player", slots[i]);
-        local delta;
+        local upgrade = false;
         if equipped then
-            local _, _, _, equippedLevel, _, _, _, _, equippedSlot = GetItemInfo(equipped);
+            local _, _, _, _, _, equippedClass, equippedSubclass, _, equippedSlot = GetItemInfo(equipped);
             if i == 2 and isOneHand and equippedSlot ~= "INVTYPE_WEAPON" and equippedSlot ~= "INVTYPE_WEAPONOFFHAND" then
-                delta = nil;
-            elseif equippedLevel then
-                delta = level - equippedLevel;
+                upgrade = false;
+            elseif ARMOR_TYPE_SLOTS[slots[i]] and equippedClass == class and equippedSubclass ~= subclass then
+                upgrade = false;
             else
-                ready = false;
+                upgrade = BeatsInAnyScale(newValues, PawnValues(PawnGetItemDataForInventorySlot(slots[i], true)));
             end
         elseif not (i == 2 and isOneHand) then
-            delta = level;
+            upgrade = next(newValues) ~= nil;
         end
-        if delta and (not maxDelta or delta > maxDelta) then
-            maxDelta = delta;
+        if upgrade then
+            return true, true
         end
     end
-    return (maxDelta ~= nil and maxDelta > 0), ready
+    return false, true
 end
 
 -- Item level difference against the replaced item, or nil when there is nothing to compare.

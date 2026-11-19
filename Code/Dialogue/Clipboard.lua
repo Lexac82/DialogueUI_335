@@ -32,7 +32,7 @@ local RAIL_WIDTH = 4;
 local THUMB_MIN_HEIGHT = 12;
 local THUMB_HOVER_WIDTH = 8;
 local OFFSET_PER_SCROLL = 24;               -- two lines
-local VIEW_HEIGHT = FRAME_HEIGHT - 2 * FRAME_INSET;
+local VIEW_HEIGHT = FRAME_HEIGHT - 2 * FRAME_INSET;       -- changes with the window size (ShowContent)
 
 local Clipboard = {};
 addon.Clipboard = Clipboard;
@@ -307,15 +307,26 @@ local function Init()
 end
 
 -- sender: the Copy Text button that asked, so a second click on it closes the window again.
-function Clipboard:ShowContent(text, sender)
+-- selectAll: focus the box and select everything, ready for Ctrl+C.
+-- width, height (optional): window size, the default 480 x 480 when omitted (the link window is small).
+function Clipboard:ShowContent(text, sender, selectAll, width, height)
     if Init then
         Init();
     end
+    width, height = width or FRAME_WIDTH, height or FRAME_HEIGHT;
+    frame:SetWidth(width);
+    frame:SetHeight(height);
+    editBox:SetWidth(width - 3 * FRAME_INSET - SCROLLBAR_WIDTH);
+    VIEW_HEIGHT = height - 2 * FRAME_INSET;
     editBox:SetText(text);
     scrollRange = -1;           -- measured again by the next update
     scrollFrame:SetVerticalScroll(0);
     frame:Show();
     self.sender = sender;
+    if selectAll then
+        editBox:SetFocus();
+        editBox:HighlightText();
+    end
 end
 
 function Clipboard:IsFromSameSender(sender)
@@ -364,7 +375,7 @@ local function ShowButtonTooltip(button)
     tooltip = tooltip or addon.CreateTooltipFrame();
     tooltip:Hide();
     tooltip:Clear();
-    tooltip:SetTitle(L["Copy Text"]);
+    tooltip:SetTitle(button.tooltipText or L["Copy Text"]);
     tooltip:SetOwnerAnchor(button);
     tooltip.frame:ClearAllPoints();
     tooltip.frame:SetPoint("TOPRIGHT", button, "BOTTOMRIGHT", 0, -2);      -- the button sits in the top right corner
@@ -382,8 +393,10 @@ local function SetButtonTheme(button, themeID)
     button.icon:SetTexCoord(x, x + THEME_SLOT_WIDTH, 0, 1);
 end
 
-function addon.CreateCopyTextButton(parent, onClickFunc, themeID)
+-- tooltipText (optional): hover text, "Copy Text" when omitted.
+function addon.CreateCopyTextButton(parent, onClickFunc, themeID, tooltipText)
     local button = CreateFrame("Button", nil, parent);
+    button.tooltipText = tooltipText;
     button:SetWidth(BUTTON_SIZE);
     button:SetHeight(BUTTON_SIZE);
     button:RegisterForClicks("LeftButtonUp");
