@@ -40,7 +40,7 @@ addon.QuickSlot = QuickSlot;
 -- Retail numbers (CreateItemActionButton: border 52, everything else relative to it).
 local BORDER_SIZE = 52;
 local ICON_SIZE = 64 / 96 * BORDER_SIZE;
-local TEXT_LEFT = 40 / 96 * BORDER_SIZE;        -- text start, from the left edge of the coloured strip
+local TEXT_LEFT = 40 / 96 * BORDER_SIZE - 12;       -- text start, from the left edge of the coloured strip
 local HEIGHT = 72 / 96 * BORDER_SIZE;
 local TEXT_PADDING_V = 12;
 local TEXT_PADDING_H = 12;
@@ -68,8 +68,8 @@ local RING_COLOR = {0.88, 0.76, 0.55};
 local SHEET_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\QuestFlyoutButton.blp";
 local CLOSE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\WidgetCloseButton.blp";
 local ARROW_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";
-local HOTKEY_FILE = "Interface\AddOns\DialogueUI_335\Textures\Theme_Dark\HotkeyBackground.blp";     -- the popup is always dark
-local SPACE_FILE = "Interface\AddOns\DialogueUI_335\Textures\Keys\SPACE.blp";
+local HOTKEY_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Theme_Dark\\HotkeyBackground.blp";     -- the popup is always dark
+local SPACE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Keys\\SPACE.blp";
 local HOTKEY_SIZE = 20;
 local HOTKEY_ICON_SIZE = 14;
 local HOTKEY_CORNER = 6;
@@ -724,6 +724,7 @@ function QuickSlot:ToggleEditMode()
     local f = GetPopup();
     self:Clear();
     f.isEditMode = true;
+    f.hideHotkey = nil;
     f.upgradeArrow:Hide();
     f:RegisterForDrag("LeftButton");
     f.closeButton:EnableMouse(true);
