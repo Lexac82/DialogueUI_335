@@ -2,9 +2,33 @@
 
 A port of the retail **Dialogue UI** addon to **World of Warcraft: Wrath of the Lich King 3.3.5a**. It replaces the default quest and gossip windows with a clean, readable dialogue screen, and adds a few quality-of-life features around quests and readable objects.
 
-![Theme](Preview/Theme.png)
+**Quest UI - Light Theme**
+
+![Quest UI - Light Theme](Preview/QuestUI-Light.jpg)
+
+**Quest UI - Dark Theme**
+
+![Quest UI - Dark Theme](Preview/QuestUI-Dark.jpg)
+
+**Book UI - Parchment**
+
+![Book UI - Parchment](Preview/BookUI-Parchment.jpg)
+
+**Book UI - Metal**
+
+![Book UI - Metal](Preview/BookUI-Metal.jpg)
+
+*Screenshots are from the retail Dialogue UI, which this port follows.*
 
 ## Features
+
+- Select options and accept quests by pressing a keyboard key.
+- Adjustable font size and frame size to increase readability.
+- Copy dialogue text, with NPC and item IDs.
+- Display the lore text when you pick up a quest item.
+- Readable objects (books, plaques, notes) in their own window.
+
+## Details
 
 ### Two themes
 Pick the **Brown** (parchment) or **Dark** theme. You can also change the frame size, font size and which side of the screen the window sits on (or drag it anywhere).
