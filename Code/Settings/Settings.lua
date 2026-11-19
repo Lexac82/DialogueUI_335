@@ -1905,8 +1905,20 @@ end);
 CreateSettingsFrame();
 SettingsUI:SelectTab(1, true);
 
-SLASH_DIALOGUEUI3351 = "/dui";
 SLASH_DIALOGUEUI3352 = "/dialogueui";
 SlashCmdList["DIALOGUEUI335"] = function()
     SettingsUI:Toggle();
 end;
+
+-- DragonUI also uses /dui. If it is loaded, /dui is left to DragonUI.
+-- Checked at PLAYER_LOGIN, when all addons have loaded and DragonUI has registered its commands.
+do
+    local f = CreateFrame("Frame");
+    f:RegisterEvent("PLAYER_LOGIN");
+    f:SetScript("OnEvent", function(self)
+        self:UnregisterEvent("PLAYER_LOGIN");
+        if not IsAddOnLoaded("DragonUI") then
+            SLASH_DIALOGUEUI3351 = "/dui";
+        end
+    end);
+end
