@@ -53,7 +53,7 @@ local DefaultValues = {
         BookKeepUIOpen = false,
         BookShowLocation = true,                --Retail: false
         BookUIItemDescription = true,           --Retail: false
-        BookDarkenScreen = true,
+        BookDarkenScreen = false,
 
     --Not shown in the Settings. Accessible by other means
     DebugGossip = false,                        --Prints the raw gossip lists: /run DialogueUI_335_DB.DebugGossip = true

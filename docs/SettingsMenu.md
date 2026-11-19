@@ -27,6 +27,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Readables group: **Keep Window Open** checkbox (`BookKeepUIOpen`) | written, **not tested in the game**, see "Readables Keep Window Open: what was done" |
 | Readables group: **Show Location** checkbox (`BookShowLocation`, live toggle added) | written, **not tested in the game**, see "Readables Show Location: what was done" |
 | Readables group: **Show Item Description** checkbox (`BookUIItemDescription`, live toggle added) | written, **not tested in the game**, see "Readables Show Item Description: what was done" |
+| Readables group: **Darken Screen** checkbox (`BookDarkenScreen`, logic and live toggle already existed) | written, **not tested in the game**, see "Readables Darken Screen: what was done" |
 | Other options (Font, Hide UI sub-options, Book, ...), Control tab, Gameplay tab | not started |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
@@ -226,6 +227,15 @@ Retail (`BookUI.lua` `Settings_BookUIItemDescription`, `BookUI_Component.lua` `S
 - Added: checkbox after Show Location (`Settings.lua`), strings `BookUI Show Item Description (Desc)` (retail enUS) and a live `SettingChanged.BookUIItemDescription` callback in `BookUI.lua` (shows / hides the strip on an open book from a bag item).
 - Not done: retail's tooltip re-poll (ours scans the bag slot directly), the first-time-on case for an item whose tooltip is not loaded yet.
 - To look at: a bag readable with a quoted line (e.g. a letter) with the option on / off, toggling with the book open, a world readable (no change), both themes for the row.
+
+## Readables Darken Screen: what was done (not tested in the game)
+
+Retail (`BookUI.lua` `Settings_BookDarkenScreen`, `BookUI.xml` `ScreenVignette`): `BookDarkenScreen` (default true in retail, **false here**) only shows / hides a dark gradient texture (`ScreenDarken`) behind the **Book** frame, on the side of the screen under the book. It affects nothing else. It is a Readables option, not a dialogue one: retail's dialogue frame has its own always-on `SharedVignette` (full-screen `ScreenVignette`, fades in 0.74 s / out 0.5 s, shared with the Book through `TryShow` / `TryHide`), which no setting controls.
+
+- Already in ours: `Book.vignette` (`ScreenDarken.blp`, full-screen anchors, drawn behind the pages), shown in `Book:ShowUI` from `BookDarkenScreen` (default now false), and a live `SettingChanged.BookDarkenScreen` callback. Only the menu row was missing.
+- Added: checkbox after Show Item Description (`Settings.lua`), strings `BookUI Darken Screen (Desc)` (retail enUS).
+- Not done: the dialogue frame has **no** screen vignette in this addon (retail's `SharedVignette`), and it is not tied to this setting in retail either, so it was left out. It could be added as a separate visual feature.
+- To look at: book open with the option on / off, toggling with the book open, vignette side and size at the four book sizes.
 
 ## Simplify Currency Rewards: skipped
 

@@ -64,7 +64,7 @@ Scale: `0.53333` px per atlas px times the frame size setting. Frame 409.6 × up
 | `BookUIEnabled` | true | Off switch: `/run DialogueUI_335_DB.BookUIEnabled = false` then `/reload`. The old key `BookSizeIndex` is migrated to `BookUISize` |
 | `BookUISize` | 1 | 0 to 4 = 0.9, 1.0, 1.1, 1.25, 1.4 times |
 | `BookFontSize` | 12 | Paragraph size 8–24 (headings are +4 / +6, small print −2) |
-| `BookDarkenScreen` | true | Dark vignette |
+| `BookDarkenScreen` | false | Dark vignette |
 | `BookShowLocation` | true | Zone and coordinates for world objects |
 | `BookUIItemDescription` | true | Item icon and flavor text above the book |
 | `BookKeepUIOpen` | false | Keep the book when the game closes the readable |
