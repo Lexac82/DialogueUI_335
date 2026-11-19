@@ -175,5 +175,12 @@ L["Format Reward Experience"] = "You will gain %d experience%s.";
 L["Format Of Your Level"] = " (%d%% of your level)";
 
 -- Quest Item Display
+L["Quest Item Display"] = "Quest Item Display";
+L["Quest Item Display Desc"] = "Auto display the quest item's description and allow you to use it without opening bags.";
+L["Quest Item Display Hide Seen"] = "Ignore Seen Items";
+L["Quest Item Display Hide Seen Desc"] = "Ignore items that have been discovered by any of your characters.";
+L["Quest Item Display Await World Map"] = " Await World Map";
+L["Quest Item Display Await World Map Desc"] = "When you open the World Map, temporarily hide the Quest Item Display and pause the auto close timer.";
+L["Quest Item Display Reset Position Desc"] = "Reset the window's position.";
 L["Click To Read"] = "Left Click to Read";
 L["Begins A Quest"] = "Begins a Quest";

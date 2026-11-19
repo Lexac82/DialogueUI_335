@@ -288,6 +288,23 @@ local function OrientationPosition_Validation()
     return addon.DialogueUI:IsUsingCustomPosition()
 end
 
+-- Quest Item Display: Move shows a sample popup to drag, Reset puts it back at the default place.
+local function QuestItemDisplay_Move_OnClick()
+    addon.QuestItemDisplay:ToggleEditMode();
+end
+
+local function QuestItemDisplay_Move_IsToggled()
+    return addon.QuestItemDisplay:IsEditMode()
+end
+
+local function QuestItemDisplay_Reset_OnClick()
+    addon.QuestItemDisplay:ResetPosition();
+end
+
+local function QuestItemDisplayPosition_Validation()
+    return addon.QuestItemDisplay:IsUsingCustomPosition()
+end
+
 -- Retail's requiredParentValueAnd = {dbKey = value or {values}} (all must match) and validationFunc.
 local function IsOptionValid(optionData)
     local required = optionData.requiredParentValueAnd;
@@ -462,7 +479,19 @@ local Schematic = {
         options = ControlOptions,
     },
     {   -- Gameplay
-        options = {},
+        options = {
+            {type = "Checkbox", name = L["Quest Item Display"], description = L["Quest Item Display Desc"], dbKey = "QuestItemDisplay", preview = "QuestItemDisplay", ratio = 2},
+            {type = "Checkbox", name = L["Quest Item Display Hide Seen"], description = L["Quest Item Display Hide Seen Desc"], dbKey = "QuestItemDisplayHideSeen",
+                requiredParentValueAnd = {QuestItemDisplay = true}},
+            {type = "Checkbox", name = L["Quest Item Display Await World Map"], description = L["Quest Item Display Await World Map Desc"], dbKey = "QuestItemDisplayAwaitWorldMap",
+                requiredParentValueAnd = {QuestItemDisplay = true}},
+            {type = "Custom", name = L["Move Position"], description = L["Move Position Desc"], icon = "Settings-Move.blp",
+                onClickFunc = QuestItemDisplay_Move_OnClick, isToggledFunc = QuestItemDisplay_Move_IsToggled,
+                requiredParentValueAnd = {QuestItemDisplay = true}},
+            {type = "Custom", name = L["Reset Position"], description = L["Quest Item Display Reset Position Desc"], icon = "Settings-Reset.blp",
+                onClickFunc = QuestItemDisplay_Reset_OnClick, validationFunc = QuestItemDisplayPosition_Validation,
+                requiredParentValueAnd = {QuestItemDisplay = true}},
+        },
     },
 };
 
@@ -1628,6 +1657,13 @@ end
 CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
+
+-- The Quest Item Display was dragged (or reset): the Reset row appears (or goes) at once.
+CallbackRegistry:Register("SettingChanged.QuestItemDisplayPosition", function()
+    if frame and frame:IsShown() and frame.tabID == 3 then
+        SettingsUI:LayoutRows(3);
+    end
+end);
 
 -- optionData (optional): when it has `preview` (file name in Textures\PreviewPicture, no extension) and `ratio`
 -- (1 square, 2 twice as wide as high) the picture is shown above the text, as retail.

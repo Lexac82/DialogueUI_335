@@ -32,7 +32,8 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Control tab: **Quest** subheader label (same Subheader row type as the UI tab), placed before Press Tab To Select Reward | written, **not tested in the game** |
 | Control tab: **Press Button To Scroll Down** checkbox (`ScrollDownThenAcceptQuest`) | written, **not tested in the game**, see "Press Button To Scroll Down: what was done" |
 | Control tab: **Press Escape To Decline Quest** checkbox (`EscapeToDeclineQuest`; Decline / Cancel now go back to the list only for quests chosen from a list) | written, **not tested in the game**, see "Press Escape To Decline Quest: what was done" |
-| Other options (Font, Hide UI sub-options, ...), Control tab extras (Right Click To Close, Press Tab To Select Reward, Disable Hotkey For Teleport), Gameplay tab | not started |
+| Other options (Font, Hide UI sub-options, ...), Control tab extras (Right Click To Close, Press Tab To Select Reward, Disable Hotkey For Teleport), rest of the Gameplay tab | not started |
+| Gameplay tab: Quest Item Display + Ignore Seen Items, Await World Map, Move, Reset Position (Auto Quest Popup skipped) | done |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
 
@@ -276,6 +277,21 @@ Retail (`DialogueUI.lua` `HideUI(cancelPopupFirst, fromPressingKey)`, `MarkQuest
 - Not ported: retail's `not InCombatLockdown()` check (a modern restriction), the gossip-confirm popup cancel (`requireGossipConfirm`, no such popup here), `FlagQuestDeclined` (repeat-decline hint, not in 335).
 - Unverified: whether `DeclineQuest()` makes the 3.3.5a client send the list again (GOSSIP_SHOW / QUEST_GREETING). If it does not, Decline just closes the dialogue, as before.
 - To look at: quest chosen from a gossip list and from a quest greeting list (Decline button, Esc with the option on and off, Cancel on QUEST_PROGRESS), a quest from an NPC without a list (Decline / Esc close), option rows (no mark), Esc on the list and on QUEST_COMPLETE (closes), Esc with the Settings window open, accept a quest and see the list again (mark cleared), right click still closes.
+
+## Auto Quest Popup (and its Move Position): skipped
+
+Retail reroutes QUEST_DETAIL to a popup when the event carries a `questStartItemID`, when `QuestIsFromAreaTrigger()` is true (declined before, or `QuestGetAutoAccept()` / in combat), and uses `AddAutoQuestPopUp`, `RemoveAutoQuestPopUp`, `ShowQuestOffer`, `PlayAutoAcceptQuestSound`, `AcknowledgeAutoAcceptQuest` and the QUEST_ACCEPTED questID payload. 3.3.5a has none of these (only an undocumented `QuestGetAutoAccept` stub in wow-docs; Objective Tracker popups came with Cataclysm), so the feature cannot trigger. Not implemented; both rows stay off the Gameplay tab. Not verified in game (no Blizzard FrameXML source available); if auto-accept quests turn out to matter, print `QuestGetAutoAccept()` on QUEST_DETAIL for a known one (e.g. the Death Knight start) and revisit.
+
+## Gameplay tab: Quest Item Display (not tested in the game)
+
+Retail rows: Quest Item Display (checkbox, preview picture, ratio 2) with four sub-rows shown only while it is on: Ignore Seen Items, Await World Map, Move, Reset Position. The popup and its options (`QuestItemDisplay`, `QuestItemDisplayHideSeen`, `QuestItemDisplayAwaitWorldMap`, `QuestItemDisplayPosition`) already existed in `Widget_QuestItemDisplay.lua`; they had no menu rows and no Move mode.
+
+- Rows: `Settings.lua` Gameplay tab, sub-rows use `requiredParentValueAnd = {QuestItemDisplay = true}`. Retail's `requireSameParentValue` has no equivalent here, this is the same thing. Retail calls the world map key `QuestItemDisplayDynamicFrameStrata`; ours stays `QuestItemDisplayAwaitWorldMap`.
+- Move: `QuestItemDisplay:ToggleEditMode()` shows a sample popup (question mark icon, title, "Left-click and drag to move the window.", no button, no countdown) at the current position. Drag to move, close button or right click ends it. It also ends when the Settings window closes, the tab is left, or the option is turned off. Not started in combat (the popup holds a secure button).
+- Reset Position: shown only when a custom position is saved (`validationFunc`). Dragging the popup updates the row at once (`SettingChanged.QuestItemDisplayPosition`).
+- Await World Map: now applies at once (`SettingChanged.QuestItemDisplayAwaitWorldMap` calls `ApplyWorldMapState`), not only on the next popup.
+- Texture: preview picture `Textures\PreviewPicture\QuestItemDisplay.blp` (converted, in place).
+- To look at: the preview picture, the sub-rows appearing and going with the checkbox, Move (sample appears, drag, Reset appears, Reset, close with the X / right click / switching tab / closing Settings), Move during combat (does nothing), Await World Map toggled with the map open and a popup showing, Ignore Seen Items on and off with a looted quest item.
 
 ## Simplify Currency Rewards: skipped
 

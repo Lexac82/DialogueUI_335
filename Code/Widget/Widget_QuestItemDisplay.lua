@@ -833,7 +833,7 @@ function QuestItemDisplay:StartSlideIn()
 end
 
 function QuestItemDisplay:IsPaused()
-    return self.isMoving or self.worldMapOpen or IsCursorOver(self) or IsCursorOver(self.closeButton);
+    return self.isMoving or self.isEditMode or self.worldMapOpen or IsCursorOver(self) or IsCursorOver(self.closeButton);
 end
 
 function QuestItemDisplay:OnUpdate(elapsed)
@@ -878,6 +878,8 @@ function QuestItemDisplay:OnUpdate(elapsed)
 end
 
 function QuestItemDisplay:Clear()
+    local wasEditMode = self.isEditMode;
+    self.isEditMode = nil;
     self:SetScript("OnUpdate", nil);
     self.phase = nil;
     self.current = nil;
@@ -887,12 +889,66 @@ function QuestItemDisplay:Clear()
     end
     self:SetAlpha(1);
     self:Hide();
+    if wasEditMode and addon.SettingsUI then
+        addon.SettingsUI:RefreshToggles();      -- the Move row is no longer on
+    end
+end
+
+-- Settings > Gameplay > Quest Item Display > Move: a sample popup (no countdown) that can be dragged without
+-- having to loot a quest item. Left-click drag moves it, the close button or a right click ends it.
+function QuestItemDisplay:IsEditMode()
+    return self.isEditMode and self:IsShown() and true or false
+end
+
+function QuestItemDisplay:ToggleEditMode()
+    if self:IsEditMode() then
+        self:Clear();
+        return
+    end
+    if InCombatLockdown() then
+        return      -- the popup holds a secure button: it cannot be shown in combat
+    end
+    if self.Init then
+        self:Init();
+    end
+
+    self:Clear();
+    self.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
+    self.title:SetText(L["Quest Item Display"]);
+    self.desc:SetText(L["Drag To Move"]);
+    self:ShowLogMark(false);
+    self.textButton:Hide();
+    self.textButton.visual:Hide();
+    self:Layout(true, false);
+    self:SetRingProgress(0);
+    self.isEditMode = true;
+    self:StartSlideIn();
+    addon.SettingsUI:RefreshToggles();
 end
 
 -- Turning the popup off removes whatever is showing or waiting.
 addon.CallbackRegistry:Register("SettingChanged.QuestItemDisplay", function(state)
     if not state then
         QuestItemDisplay:Clear();
+    end
+end);
+
+-- The sample goes away with the Settings window or when the Gameplay tab is left.
+addon.CallbackRegistry:Register("SettingsUI.Hide", function()
+    if QuestItemDisplay.isEditMode then
+        QuestItemDisplay:Clear();
+    end
+end);
+addon.CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
+    if tabID ~= 3 and QuestItemDisplay.isEditMode then
+        QuestItemDisplay:Clear();
+    end
+end);
+
+-- Await World Map: takes effect at once (the popup on screen hides behind an open map, or comes back).
+addon.CallbackRegistry:Register("SettingChanged.QuestItemDisplayAwaitWorldMap", function()
+    if QuestItemDisplay.Init == nil then
+        QuestItemDisplay:ApplyWorldMapState();
     end
 end);
 
