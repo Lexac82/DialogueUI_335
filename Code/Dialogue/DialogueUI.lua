@@ -146,6 +146,14 @@ addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("SettingChanged.ShowNPCNameOnPage", RedrawPage);    -- text only, the page is kept
 
+-- Settings > Control: the keys changed, so the key labels of a list page are laid out again (quest pages: the Footer
+-- updates its own button).
+addon.CallbackRegistry:Register("CustomBindingChanged", function()
+    if MainFrame:IsShown() and lastPage and LIST_EVENTS[lastEvent] then
+        RedrawPage();
+    end
+end);
+
 -- Settings > Quest Difficulty: level prefix and right-hand note of the quest rows are rebuilt, then the list is redrawn.
 addon.CallbackRegistry:Register("SettingChanged.QuestDifficultyStyle", function()
     if MainFrame:IsShown() and lastPage and LIST_EVENTS[lastEvent] then

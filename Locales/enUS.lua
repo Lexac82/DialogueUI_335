@@ -68,6 +68,31 @@ L["BookUI Show Item Description"] = "Show Item Description";
 L["BookUI Show Item Description Desc"] = "If the item has any description on its tooltip, display it on the top of the UI.";
 L["BookUI Darken Screen"] = "Darken Screen";
 L["BookUI Darken Screen Desc"] = "Darken the area below the UI to help you concentrate on the content.";
+
+-- Settings: Control tab (retail enUS where it exists)
+L["Input Device"] = "Input Device";
+L["Input Device Desc"] = "Affects hotkey icons and UI layout.";
+L["Input Device KBM"] = "Keyboard & Mouse";
+L["Use Custom Bindings"] = "Use Custom Bindings";
+L["Use Custom Bindings Desc"] = "Enable this option to use your own bindings.";
+L["Primary Control Key Desc"] = "Press this key to select the first available option like Accept Quest.";
+L["Keybinding Hint"] = "Click, then press the key you want to use.\nRight click: back to the default key.\nEsc: cancel.";
+L["Bound To"] = "Bound to: ";
+L["Not Bound"] = NOT_BOUND or "Not Bound";
+L["Action Confirm"] = "Confirm";
+L["Action Settings"] = "Toggle Settings";
+L["Action Option1"] = "Option 1";
+L["Action Option2"] = "Option 2";
+L["Action Option3"] = "Option 3";
+L["Action Option4"] = "Option 4";
+L["Action Option5"] = "Option 5";
+L["Action Option6"] = "Option 6";
+L["Action Option7"] = "Option 7";
+L["Action Option8"] = "Option 8";
+L["Action Option9"] = "Option 9";
+L["Action Option Desc"] = "Press this key to select option %d of the list (quests and gossip options).";
+L["Action Settings Desc"] = "Press this key to open or close the settings window while the dialogue is shown.";
+
 L["Quest Frequency Daily"] = "Daily";
 L["Quest Frequency Weekly"] = "Weekly";
 L["Quest Type Repeatable"] = "Repeatable";

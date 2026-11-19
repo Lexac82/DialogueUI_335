@@ -11,6 +11,7 @@ Locales\enUS.lua
 Code\CallbackRegistry.lua
 API.lua
 Code\Utility\UIRoot.lua
+Code\Utility\Keybindings.lua
 Code\Utility\ThemeUtil.lua
 Code\Utility\FrameSize.lua
 Code\Utility\FontUtil.lua

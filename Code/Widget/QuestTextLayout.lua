@@ -354,12 +354,14 @@ function QuestTextLayout:SetListPage(page)
         local row = self:AcquireRow();
         row.row = data;
         local text, key = data.text, nil;
+        local slot = data.keySlot;
+        local boundKey = slot and addon.BindingUtil:GetActiveActionKey("Option" .. slot);     -- nil: unbound, the row is mouse only
         if data.kind == "option" then
-            if data.key then
-                text = data.key .. ". " .. text;
+            if boundKey then
+                text = boundKey .. ". " .. text;
             end
         else
-            key = data.key;
+            key = boundKey;
         end
         row:Configure({
             type = data.kind, text = text, art = data.art, key = key, icon = data.icon, iconSize = data.iconSize, note = data.note,
@@ -369,8 +371,8 @@ function QuestTextLayout:SetListPage(page)
         offsetY = offsetY + gaps[data.gap or "none"];
         row:SetPoint("TOPLEFT", self.ContentFrame, "TOPLEFT", 0, -offsetY);
         offsetY = Round(offsetY + row:GetHeight());
-        if data.key then
-            self.rowNames[#self.rowNames + 1] = "DialogueUI335Row" .. self.rowCount;
+        if slot then
+            self.rowNames[slot] = "DialogueUI335Row" .. self.rowCount;     -- by key slot; the Footer looks the key up
         end
     end
 

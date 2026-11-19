@@ -32,6 +32,10 @@ local DefaultValues = {
     QuestDifficultyStyle = 1,                   --0 Off, 1 Level (default), 2 Name, 3 Both (not in retail) (see GossipDataProvider.lua)
     FrameOrientation = 2,                  --1 Left, 2 Right (default), 3 Custom (not in retail: drag the frame, ParchmentPosition)
 
+    --Control
+    InputDevice = 1,                            --1 Keyboard & Mouse (the only one in 3.3.5a, no gamepad)
+    UseCustomBindings = false,                  --Own keys for Confirm / Settings / Option 1-9 (see Keybindings.lua, DB.CustomBindings)
+
     --Reward tooltip
     UseBlizzardTooltip = false,
     TooltipShowItemComparison = false,

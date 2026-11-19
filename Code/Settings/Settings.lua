@@ -347,6 +347,38 @@ local function UpgradeArrow_DisabledClick()
     addon.Clipboard:ShowContent(PAWN_URL, nil, true, 360, 40);
 end
 
+-- Control tab (retail Settings_Definitions). Retail's Input Device has Keyboard & Mouse, Xbox, PlayStation and Switch;
+-- 3.3.5a has no gamepad, so the only choice is Keyboard & Mouse (the arrows are hidden for a single choice).
+-- Use Custom Bindings shows the rows of the actions under it (retail: branch mark = depends on the option above).
+local ControlOptions = {
+    {type = "ArrowOption", name = L["Input Device"], description = L["Input Device Desc"], dbKey = "InputDevice",
+        choices = {
+            {dbValue = 1, valueText = L["Input Device KBM"]},
+        },
+    },
+    {type = "Checkbox", name = L["Use Custom Bindings"], description = L["Use Custom Bindings Desc"], dbKey = "UseCustomBindings",
+        requiredParentValueAnd = {InputDevice = 1}},
+};
+
+do
+    local requiredCustom = {InputDevice = 1, UseCustomBindings = true};
+
+    -- Description of a key row: what the key does, how to change it, and the key it has now.
+    local function AddKeybinding(action, name, description)
+        local fullDescription = function()
+            return description .. "\n\n" .. L["Keybinding Hint"] .. "\n\n" .. addon.BindingUtil:GetActionTooltip(action)
+        end;
+        ControlOptions[#ControlOptions + 1] = {type = "Keybinding", branchLevel = 2, action = action, name = name,
+            description = description, tooltip = fullDescription, requiredParentValueAnd = requiredCustom};
+    end
+
+    AddKeybinding("Confirm", L["Action Confirm"], L["Primary Control Key Desc"]);
+    AddKeybinding("Settings", L["Action Settings"], L["Action Settings Desc"]);
+    for i = 1, 9 do
+        AddKeybinding("Option" .. i, L["Action Option" .. i], L["Action Option Desc"]:format(i));
+    end
+end
+
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
 local Schematic = {
     {   -- UI
@@ -417,12 +449,259 @@ local Schematic = {
         },
     },
     {   -- Control
-        options = {},
+        options = ControlOptions,
     },
     {   -- Gameplay
         options = {},
     },
 };
+
+---------------------------------------------------------------------------
+-- Keybinding rows (retail Settings_Keybinding.lua)
+---------------------------------------------------------------------------
+
+-- Retail listens with a keyboard frame (OnKeyDown, GLOBAL_MOUSE_DOWN). 3.3.5a keyboard frames do not stop a key from
+-- also reaching the game (Space would jump), so while a key is being assigned every candidate key is an override
+-- binding that clicks one hidden button with the key's name as the mouse button argument (SetOverrideBindingClick's
+-- last parameter): the click tells which key was pressed and the key does nothing else. No GLOBAL_MOUSE_DOWN either:
+-- a click away from the button is read with IsMouseButtonDown. Override bindings cannot change in combat, so
+-- assigning is not started in combat.
+local CAPTURE_NAME = "DialogueUI335KeyCapture";
+local CAPTURE_KEYS = {
+    "SPACE", "ENTER", "TAB", "BACKSPACE", "CAPSLOCK", "DELETE", "INSERT", "HOME", "END", "PAGEUP", "PAGEDOWN",
+    "UP", "DOWN", "LEFT", "RIGHT",
+    "NUMPADPLUS", "NUMPADMINUS", "NUMPADMULTIPLY", "NUMPADDIVIDE", "NUMPADDECIMAL",
+    "`", "-", "=", "[", "]", "\\", ";", "'", ",", ".", "/",
+};
+for i = 0, 9 do
+    CAPTURE_KEYS[#CAPTURE_KEYS + 1] = tostring(i);
+    CAPTURE_KEYS[#CAPTURE_KEYS + 1] = "NUMPAD" .. i;
+end
+for i = 1, 12 do
+    CAPTURE_KEYS[#CAPTURE_KEYS + 1] = "F" .. i;
+end
+for c = 65, 90 do
+    CAPTURE_KEYS[#CAPTURE_KEYS + 1] = string.char(c);
+end
+
+local KeybindCapture = CreateFrame("Button", CAPTURE_NAME, UIParent);
+addon.KeybindCapture = KeybindCapture;
+KeybindCapture:SetWidth(1);
+KeybindCapture:SetHeight(1);
+KeybindCapture:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0);
+KeybindCapture:RegisterForClicks("AnyUp");
+KeybindCapture.active = false;
+
+function KeybindCapture:IsActive()
+    return self.active
+end
+
+-- The key row that is waiting for a key.
+function KeybindCapture:Start(owner)
+    if InCombatLockdown() then
+        return false
+    end
+    self:Stop();
+    self.active = true;
+    self.owner = owner;
+    -- The window's and the dialogue's keys are taken off first (Footer, SettingsUI:UpdateKeys), then ours are set.
+    SettingsUI:UpdateKeys();
+    CallbackRegistry:Trigger("KeyCaptureChanged");
+    for _, key in ipairs(CAPTURE_KEYS) do
+        SetOverrideBindingClick(self, true, key, CAPTURE_NAME, key);
+    end
+    self:SetScript("OnUpdate", self.OnUpdate);
+    return true
+end
+
+function KeybindCapture:Stop()
+    if not self.active then
+        return
+    end
+    self.active = false;
+    self:SetScript("OnUpdate", nil);
+    if InCombatLockdown() then
+        self.pendingClear = true;       -- cleared when combat ends (see the event below)
+    else
+        ClearOverrideBindings(self);
+    end
+    local owner = self.owner;
+    self.owner = nil;
+    if owner then
+        owner:SetKeybindingMode(false);
+    end
+    SettingsUI:UpdateKeys();
+    CallbackRegistry:Trigger("KeyCaptureChanged");
+end
+
+KeybindCapture:SetScript("OnClick", function(self, key)
+    if not self.active or not self.owner then
+        return
+    end
+    local owner = self.owner;
+    if not addon.BindingUtil:IsKeyInvalid(key) and owner.action then
+        addon.BindingUtil:CheckAndSetBindingKey(owner.action, key, true);
+    end
+    self:Stop();
+end);
+
+-- A click away from the row cancels. The row hiding (tab change, window closed, scrolled) is handled where it happens.
+function KeybindCapture:OnUpdate()
+    local owner = self.owner;
+    if not owner or not owner:IsVisible() then
+        self:Stop();
+    elseif (IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton")) and not owner:IsMouseOver() then
+        self:Stop();
+    end
+end
+KeybindCapture:SetScript("OnUpdate", nil);
+
+KeybindCapture:RegisterEvent("PLAYER_REGEN_ENABLED");
+KeybindCapture:RegisterEvent("PLAYER_REGEN_DISABLED");
+KeybindCapture:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_REGEN_DISABLED" then
+        -- Cannot change the override bindings any more, so give up the assignment at once.
+        if self.active then
+            self.active = false;
+            self:SetScript("OnUpdate", nil);
+            self.pendingClear = true;
+            local owner = self.owner;
+            self.owner = nil;
+            if owner then
+                owner:SetKeybindingMode(false);
+            end
+        end
+    elseif self.pendingClear then
+        self.pendingClear = nil;
+        ClearOverrideBindings(self);
+        SettingsUI:UpdateKeys();
+        CallbackRegistry:Trigger("KeyCaptureChanged");
+    end
+end);
+
+CallbackRegistry:Register("SettingsUI.Hide", function() KeybindCapture:Stop(); end);
+CallbackRegistry:Register("SettingsUI.TabChanged", function() KeybindCapture:Stop(); end);
+
+-- Retail's 144 x 24 key button: a 192 x 192 sheet with 8 rows of 24, the left 3/4 used. Row 1 normal, 2 hover, 3 waiting
+-- for a key (rows 4 / 5 are unused). Text colors by state and theme as retail.
+local KEYBIND_FILE = "Settings-Keybinding.blp";
+local KEYBIND_WIDTH = 6 * OPTION_WIDGET_SIZE;
+local KEYBIND_ROWS = {
+    normal = {0, 0.125},
+    hover = {0.125, 0.25},
+    binding = {0.375, 0.5},
+};
+
+local function CreateKeybinding(row, optionData)
+    local widget = CreateFrame("Button", nil, row.content);
+    widget:SetWidth(KEYBIND_WIDTH);
+    widget:SetHeight(OPTION_WIDGET_SIZE);
+    widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
+    widget:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+    widget.action = optionData.action;
+
+    local background = widget:CreateTexture(nil, "ARTWORK");
+    background:SetAllPoints(widget);
+    ThemeUtil:BindTexture(background, KEYBIND_FILE);
+
+    local valueText = widget:CreateFontString(nil, "OVERLAY");
+    valueText:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsValue", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey90" }));
+    valueText:SetJustifyH("CENTER");
+    valueText:SetWidth(120);
+    valueText:SetPoint("CENTER", widget, "CENTER", 0, 2);
+    widget.valueText = valueText;
+
+    -- state: "normal", "hover", "binding"
+    function widget:SetButtonState(state)
+        self.state = state;
+        local rows = KEYBIND_ROWS[state];
+        background:SetTexCoord(0, 0.75, rows[1], rows[2]);
+        local colorKey;
+        if ThemeUtil:IsDarkMode() then
+            colorKey = "DarkModeGold";
+        elseif state == "binding" then
+            colorKey = "Ivory";
+        else
+            colorKey = "DarkBrown";
+        end
+        valueText:SetTextColor(ThemeUtil:GetColor(colorKey));
+    end
+
+    function widget:Refresh()
+        local key = addon.BindingUtil:GetBindingKey(self.action);
+        valueText:SetText(key or L["Not Bound"]);
+        self:SetButtonState(self.isBinding and "binding" or (self:IsMouseOver() and "hover" or "normal"));
+    end
+
+    -- Called by KeybindCapture:Stop as well.
+    function widget:SetKeybindingMode(state)
+        self.isBinding = state;
+        self:Refresh();
+    end
+
+    widget:SetScript("OnEnter", function(self)
+        row:OnEnter();
+        if not self.isBinding then
+            self:SetButtonState("hover");
+        end
+    end);
+    widget:SetScript("OnLeave", function(self)
+        row:OnLeave();
+        if not self.isBinding then
+            self:SetButtonState("normal");
+        end
+    end);
+    widget:SetScript("OnMouseDown", function(self)
+        valueText:SetPoint("CENTER", self, "CENTER", 0, 1);
+    end);
+    widget:SetScript("OnMouseUp", function(self)
+        valueText:SetPoint("CENTER", self, "CENTER", 0, 2);
+    end);
+    widget:SetScript("OnClick", function(self, button)
+        if not IsPointerInList() then
+            return
+        end
+        PlaySound("igMainMenuOptionCheckBoxOn");
+        if button == "LeftButton" then
+            if self.isBinding then
+                KeybindCapture:Stop();
+            elseif KeybindCapture:Start(self) then
+                self:SetKeybindingMode(true);
+            end
+        else    -- RightButton: back to the default key
+            KeybindCapture:Stop();
+            addon.BindingUtil:CheckAndSetBindingKey(self.action, nil, true);
+        end
+    end);
+    widget:SetScript("OnHide", function(self)
+        if self.isBinding then
+            KeybindCapture:Stop();
+        end
+    end);
+
+    CallbackRegistry:Register("ThemeChanged", function()
+        widget:Refresh();
+    end);
+
+    return widget
+end
+
+-- A key changed (here or by Use Custom Bindings): the key texts and the description under the pointer follow.
+CallbackRegistry:Register("CustomBindingChanged", function()
+    if not frame then
+        return
+    end
+    local rows = frame.rows[2];
+    for i = 1, #rows do
+        local widget = rows[i].widget;
+        if widget and widget.action then
+            widget:Refresh();
+        end
+    end
+    if frame:IsShown() then
+        SettingsUI:RefreshHover();
+    end
+end);
 
 -- One arrow of the arrow option. The 128x128 sheet holds the arrow (top left) and its hover glow (top right),
 -- drawn pointing right; the left arrow flips them.
@@ -521,6 +800,12 @@ local function CreateArrowOption(row, optionData)
         slice:Update(barWidth, ARROWOPTION_BAR_HEIGHT);
         ThemeUtil:BindSlice(slice, ARROW_FILE);
         widget.bars[i] = bar;
+    end
+
+    -- A single choice (Input Device: only Keyboard & Mouse in 3.3.5a) has nothing to step to: no arrows.
+    if numChoices == 1 then
+        widget.leftArrow:Hide();
+        widget.rightArrow:Hide();
     end
 
     function widget:ShowChoice(id)
@@ -779,30 +1064,17 @@ local function CreateOptionRow(page, index, optionData)
         row.widget = CreateArrowOption(row, optionData);
     elseif optionData.type == "Checkbox" then
         row.widget = CreateCheckbox(row, optionData);
-    elseif optionData.type == "Custom" then
-        -- A plain button row (retail: branch mark when it depends on another option, icon, then the label).
-        row:RegisterForClicks("LeftButtonUp");
-        row:SetScript("OnClick", function(self)
-            if not IsPointerInList() then
-                return
-            end
-            PlaySound("igMainMenuOptionCheckBoxOn");
-            if optionData.onClickFunc then
-                optionData.onClickFunc(self);
-            end
-            SettingsUI:LayoutRows(frame.tabID);     -- Reset hides itself once there is nothing to reset
-            if self:IsShown() then
-                self:OnEnter();
-            else
-                SettingsUI:HighlightButton(nil);
-                SettingsUI:SetDescription(nil);
-            end
-        end);
+    elseif optionData.type == "Keybinding" then
+        row.widget = CreateKeybinding(row, optionData);
+    end
 
+    -- Retail: a branch mark in front of the label when the option depends on another one (branchLevel steps in,
+    -- default 1, 0 = no mark), then an optional icon.
+    do
         local nameOffset = OPTION_LABEL_OFFSET;
-        if optionData.requiredParentValueAnd then
+        if optionData.requiredParentValueAnd and optionData.branchLevel ~= 0 then
             local branchSize = OPTIONBUTTON_HEIGHT * 0.5;
-            nameOffset = OPTION_LABEL_OFFSET + (branchSize * 0.5 + 10);
+            nameOffset = OPTION_LABEL_OFFSET + (optionData.branchLevel or 1) * (branchSize * 0.5 + 10);
             local branch = content:CreateTexture(nil, "ARTWORK");
             branch:SetWidth(branchSize);
             branch:SetHeight(branchSize);
@@ -820,6 +1092,27 @@ local function CreateOptionRow(page, index, optionData)
         end
         label:ClearAllPoints();
         label:SetPoint("LEFT", content, "LEFT", nameOffset, 0);
+    end
+
+    if optionData.type == "Custom" then
+        -- A plain button row (the whole row is the button).
+        row:RegisterForClicks("LeftButtonUp");
+        row:SetScript("OnClick", function(self)
+            if not IsPointerInList() then
+                return
+            end
+            PlaySound("igMainMenuOptionCheckBoxOn");
+            if optionData.onClickFunc then
+                optionData.onClickFunc(self);
+            end
+            SettingsUI:LayoutRows(frame.tabID);     -- Reset hides itself once there is nothing to reset
+            if self:IsShown() then
+                self:OnEnter();
+            else
+                SettingsUI:HighlightButton(nil);
+                SettingsUI:SetDescription(nil);
+            end
+        end);
 
         -- A toggle row (Move) keeps the hover glow while it is on. Same glow as the hover, under the label.
         if optionData.isToggledFunc then
@@ -912,6 +1205,7 @@ function ScrollFrameMixin:ScrollBy(offset)
 end
 
 function ScrollFrameMixin:OnMouseWheel(delta)
+    KeybindCapture:Stop();      -- retail: scrolling cancels a key assignment
     if delta > 0 then
         self:ScrollBy(-OPTIONBUTTON_HEIGHT);
     else
@@ -1448,7 +1742,11 @@ function SettingsUI:UpdateKeys()
     ClearOverrideBindings(f);
     if f:IsShown() then
         SetOverrideBindingClick(f, true, "ESCAPE", CLOSE_NAME, "LeftButton");
-        SetOverrideBindingClick(f, true, "F1", TOGGLE_NAME, "LeftButton");
+        -- The toggle key is the player's "Toggle Settings" key; while a key is being assigned it is a candidate.
+        local toggleKey = addon.BindingUtil:GetActiveActionKey("Settings");
+        if toggleKey and not KeybindCapture:IsActive() then
+            SetOverrideBindingClick(f, true, toggleKey, TOGGLE_NAME, "LeftButton");
+        end
     end
 end
 
@@ -1465,7 +1763,18 @@ CreateKeyTarget(TOGGLE_NAME, function()
     SettingsUI:Toggle();
 end);
 CreateKeyTarget(CLOSE_NAME, function()
-    SettingsUI:Hide();
+    if KeybindCapture:IsActive() then
+        KeybindCapture:Stop();      -- Esc cancels a key assignment first
+    else
+        SettingsUI:Hide();
+    end
+end);
+
+-- The toggle key changed in Settings > Control: the window listens to the new one.
+CallbackRegistry:Register("CustomBindingChanged", function()
+    if frame and frame:IsShown() then
+        SettingsUI:UpdateKeys();
+    end
 end);
 
 CreateSettingsFrame();

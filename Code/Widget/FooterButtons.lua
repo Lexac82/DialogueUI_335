@@ -22,6 +22,7 @@ local EXIT_NAME = "DialogueUI335ExitButton";
 local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
 
 local L = addon.L;
+local BindingUtil = addon.BindingUtil;
 
 -- Continue is locked while the quest takes gold: 1 s, or 4 s above 500g or 5% of the player's money.
 local function CalculateLockDuration(copper)
@@ -79,9 +80,10 @@ end
 -- Left button, by page. Returns nil when the button is not shown (gossip, greeting).
 function Footer:GetAcceptConfig()
     local event, page = self.event, self.page or {};
+    local confirmKey = BindingUtil:GetActiveConfirmKey();       -- nil: no key, so no key badge on the button
 
     if event == "QUEST_DETAIL" then
-        return {type = "accept", text = L["Accept"], art = 1, key = "SPACE", onClick = OnClick_Accept}
+        return {type = "accept", text = L["Accept"], art = 1, key = confirmKey, onClick = OnClick_Accept}
     elseif event == "QUEST_PROGRESS" then
         local text = L["Continue"];
         if not page.completable then
@@ -91,13 +93,13 @@ function Footer:GetAcceptConfig()
         if page.moneyToGet and self.unlockedPage ~= page then
             lock = CalculateLockDuration(page.moneyToGet);
         end
-        return {type = "continue", text = text, art = 1, key = "SPACE", onClick = OnClick_Continue, lock = lock}
+        return {type = "continue", text = text, art = 1, key = confirmKey, onClick = OnClick_Continue, lock = lock}
     elseif event == "QUEST_COMPLETE" then
         local text = L["Complete Quest"];
         if self.owner:GetRewardChoice() == nil then
             return {type = "complete", text = text, art = 3, enabled = false, onClick = OnClick_Complete}
         end
-        return {type = "complete", text = text, art = 1, key = "SPACE", onClick = OnClick_Complete}
+        return {type = "complete", text = text, art = 1, key = confirmKey, onClick = OnClick_Complete}
     end
 end
 
@@ -188,11 +190,17 @@ function Footer:UpdateKeys()
         return
     end
 
+    -- While a key is being assigned in the settings window, every key belongs to that window.
+    if addon.KeybindCapture and addon.KeybindCapture:IsActive() then
+        return
+    end
+
     local accept, exit = self.accept, self.exit;
-    local spaceUsed = false;
-    if accept:IsShown() and accept.isEnabled and accept.hasHotkey then
-        SetOverrideBindingClick(self.keyOwner, true, "SPACE", ACCEPT_NAME, "LeftButton");
-        spaceUsed = true;
+    local confirmKey = BindingUtil:GetActiveConfirmKey();       -- Space unless the player chose another one
+    local confirmUsed = false;
+    if confirmKey and accept:IsShown() and accept.isEnabled and accept.hasHotkey then
+        SetOverrideBindingClick(self.keyOwner, true, confirmKey, ACCEPT_NAME, "LeftButton");
+        confirmUsed = true;
     end
     -- Esc belongs to the settings window while it is open (it binds Esc itself).
     local settings = addon.SettingsUI;
@@ -201,20 +209,28 @@ function Footer:UpdateKeys()
         SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", EXIT_NAME, "LeftButton");
     end
 
-    -- F1 opens the settings while the dialogue is shown (it is "target self" in the game otherwise).
-    SetOverrideBindingClick(self.keyOwner, true, "F1", SETTINGS_TOGGLE_NAME, "LeftButton");
+    -- F1 (or the player's key) opens the settings while the dialogue is shown (F1 is "target self" in the game otherwise).
+    local settingsKey = BindingUtil:GetActiveActionKey("Settings");
+    if settingsKey then
+        SetOverrideBindingClick(self.keyOwner, true, settingsKey, SETTINGS_TOGGLE_NAME, "LeftButton");
+    end
 
-    -- First-contact page: keys 1-9 click the rows in order. Space takes the first row (retail "Confirm"),
-    -- or says goodbye when the page has no rows.
+    -- First-contact page: the keys of Option 1-9 click the rows in order. The Confirm key takes the first row
+    -- (retail "Confirm"), or says goodbye when the page has no rows.
     local rowNames = self.rowNames;
-    if rowNames and not spaceUsed then
-        for i = 1, #rowNames do
-            SetOverrideBindingClick(self.keyOwner, true, tostring(i), rowNames[i], "LeftButton");
+    if rowNames and not confirmUsed then
+        for i = 1, 9 do
+            local key = rowNames[i] and BindingUtil:GetActiveActionKey("Option" .. i);
+            if key then
+                SetOverrideBindingClick(self.keyOwner, true, key, rowNames[i], "LeftButton");
+            end
         end
-        if rowNames[1] then
-            SetOverrideBindingClick(self.keyOwner, true, "SPACE", rowNames[1], "LeftButton");
-        elseif exit:IsShown() then
-            SetOverrideBindingClick(self.keyOwner, true, "SPACE", EXIT_NAME, "LeftButton");
+        if confirmKey then
+            if rowNames[1] then
+                SetOverrideBindingClick(self.keyOwner, true, confirmKey, rowNames[1], "LeftButton");
+            elseif exit:IsShown() then
+                SetOverrideBindingClick(self.keyOwner, true, confirmKey, EXIT_NAME, "LeftButton");
+            end
         end
     end
 end
@@ -278,6 +294,18 @@ local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom
         self:UpdateKeys();
     end);
     addon.CallbackRegistry:Register("SettingsUI.Hide", function()
+        self:UpdateKeys();
+    end);
+
+    -- The player's keys changed (settings > Control): new key badge on the button, new override bindings.
+    addon.CallbackRegistry:Register("CustomBindingChanged", function()
+        if self.event and self.parent:IsShown() then
+            self:ApplyAccept();
+        end
+        self:UpdateKeys();
+    end);
+    -- A key is being assigned in the settings window (or it stopped): all the keys are released or taken back.
+    addon.CallbackRegistry:Register("KeyCaptureChanged", function()
         self:UpdateKeys();
     end);
 

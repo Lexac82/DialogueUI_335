@@ -446,7 +446,7 @@ local function BuildRows(quests, options)
 
     for i, row in ipairs(rows) do
         if i <= 9 then
-            row.key = tostring(i);
+            row.keySlot = i;        -- Option 1-9 of Settings > Control (the key itself is looked up when the row is laid out)
         end
     end
     return rows
