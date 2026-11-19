@@ -36,6 +36,7 @@ Port of retail's settings window (`..\DialogueUI\Code\Settings\Settings.xml` / `
 | Gameplay tab: Quest Item Display + Ignore Seen Items, Await World Map, Move, Reset Position (Auto Quest Popup skipped) | done |
 | Gameplay tab: **Quest** subheader, **Valuable Reward Popup** (equipment upgrades by Pawn, new popup) with Move / Reset Position rows | written, **not tested in the game**, see "Valuable Reward Popup: what was done". Textures converted and in place |
 | Gameplay tab: **Auto Complete Quest** | skipped, see "Auto Complete Quest: skipped" |
+| Gameplay tab: **Gossip** group (Auto Select Option, Force Gossip, Skip GameObject, Show Hint) | skipped, no label either, see "Gossip group: skipped" |
 
 Rules for every session (from `CLAUDE.md`): only APIs documented in `D:\PersonalProjects\wow-docs`, no retail-only APIs, text through `addon.L`, flat `.toc`, settings go through `addon.GetDBValue` / `SetDBValue` with a `SettingChanged.<key>` callback, PNGs go to `temp\` for BLP conversion (the user converts them, then you move them to `Textures\`). Nothing here has been tested in the game client, say so in your reports.
 
@@ -309,6 +310,15 @@ Retail (`Widget_QuickSlot.lua`, `Widget_ItemButton.lua`, `ItemEvaluator.lua`): `
 - Not the same as retail: no `GLOBAL_MOUSE_DOWN` (right click uses the button's own `OnClick`), no `HideUI` handling (the popup is on `UIParent`, like the Quest Item Display; it fades in with the UI when the dialogue closes), the loot message pattern is used to find the link (`|Hitem:...|h[name]|h`, assumes the 3.3.5a format). A ring / trinket goes to the slot the game picks (the first), even when Pawn compared it to the second.
 - **Textures (converted, in place):** `Textures\Shared\QuestFlyoutButton.blp` (512 x 512), `Textures\PreviewPicture\QuickSlotQuestReward.blp` (512 x 256, shown with `ratio = 2`).
 - To look at: with Pawn installed and a Pawn scale enabled, turn in a quest with a reward that beats the equipped item (popup appears above the action bar, slides up, ring fills in 4 s, click equips -> "Equipped", closes ~1 s later); a reward that is not an upgrade, a reward already worn (2 s), several loot lines in a row (the last upgrade replaces the earlier popup), combat while it shows (greyed out, back after combat), bind-on-equip confirmation, hover pauses the ring, right click closes, an item still uncached; Move sample (drag, Reset appears, Reset, close with X / right click / tab change / closing Settings), position survives /reload; no Pawn (greyed checkbox, copy link, no Move rows); option off while a popup shows.
+
+## Gossip group: skipped
+
+Retail's Gameplay tab has a **Gossip** subheader with Auto Select Option, Force Gossip (+ Skip GameObject sub-option) and Show Hint. None of them can do anything in 3.3.5a, so by decision the whole group is left out: no label, no rows, no settings, no `DefaultValues`, no code.
+
+- **Auto Select Option** (`AutoSelectGossip`): retail's `GossipData_AutoSelect.lua` is a table keyed by `gossipOptionID`, all Legion to Midnight content (Delves, Dornogal, Trading Post, Horrific Visions, Suramar). 3.3.5a gossip options have no ID (`GetGossipOptions` returns text and type only), and none of the listed options exists in WotLK. Nothing to select.
+- **Force Gossip** (`ForceGossip`, `ForceGossipSkipGameObject`): retail's client auto-selects a gossip menu that has a single option and no quests, and `C_GossipInfo.ForceGossip()` / this option overrides that so the dialogue is shown. 3.3.5a has no such client behaviour (it always fires `GOSSIP_SHOW` and shows the list; whether a banker or similar shows a menu at all is decided by the server) and no `C_GossipInfo`. Nothing to force. Based on the retail code and the 3.3.5a docs; no Blizzard FrameXML source was available to confirm, so if an NPC is found in game whose gossip never reaches the addon, revisit.
+- **Show Hint** (`ShowDialogHint`): adds a button that answers the Timewalking quiz. Timewalking is Mists of Pandaria and later, so nothing exists to support.
+- The 335 addon has no `HandleAutoSelect` / `ForceGossip` logic either (checked with a search), so there was nothing to hide.
 
 ## Auto Complete Quest: skipped
 
