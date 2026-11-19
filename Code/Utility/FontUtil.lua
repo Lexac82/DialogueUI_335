@@ -65,6 +65,7 @@ local FONT_HEIGHT = {
     DUI335_ItemSelect = HEIGHT_2,
     DUI335_Hotkey = HEIGHT_2,
     DUI335_QuestType = HEIGHT_2,
+    DUI335_QuickSlot_Text = HEIGHT_2,       -- Valuable Reward Popup: retail's ButtonText uses DUIFont_Item
 
     DUI335_ItemCount = { [0] = 8, 10, 10, 12 },
 };

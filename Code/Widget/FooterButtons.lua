@@ -82,6 +82,7 @@ local function OnClick_Complete(button)
         return
     end
     GetQuestReward(choice);
+    addon.CallbackRegistry:Trigger("TriggerQuestFinished");     -- the Valuable Reward Popup starts listening for loot
 end
 
 ---------------------------------------------------------------------------

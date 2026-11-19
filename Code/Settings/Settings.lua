@@ -305,6 +305,37 @@ local function QuestItemDisplayPosition_Validation()
     return addon.QuestItemDisplay:IsUsingCustomPosition()
 end
 
+-- Valuable Reward Popup: Move shows a sample popup to drag, Reset puts it back. Needs Pawn like the upgrade arrow,
+-- so without it the checkbox is greyed out (UpgradeArrow_* below) and the rows under it stay hidden.
+local function QuickSlot_Move_OnClick()
+    addon.QuickSlot:ToggleEditMode();
+end
+
+local function QuickSlot_Move_IsToggled()
+    return addon.QuickSlot:IsEditMode()
+end
+
+local function QuickSlot_Reset_OnClick()
+    addon.QuickSlot:ResetItemButtonPosition();
+end
+
+local function QuickSlot_Move_Validation()
+    return addon.TooltipCompare:IsPawnAvailable()
+end
+
+local function QuickSlotPosition_Validation()
+    return addon.TooltipCompare:IsPawnAvailable() and addon.QuickSlot:IsUsingCustomPosition()
+end
+
+-- Press Button To Use: names the Confirm key the player has now.
+local function UseItemHotkey_Tooltip()
+    local key = addon.BindingUtil:GetActiveConfirmKey();
+    if key == "SPACE" then
+        return L["Press Key To Use Item Desc PC"]
+    end
+    return L["Press Key To Use Item Desc Generic"]:format(key or L["Not Bound"])
+end
+
 -- Retail's requiredParentValueAnd = {dbKey = value or {values}} (all must match) and validationFunc.
 local function IsOptionValid(optionData)
     local required = optionData.requiredParentValueAnd;
@@ -349,6 +380,13 @@ end
 -- Description with the arrow drawn inline (retail ItemEvaluatorTooltip uses UpgradeArrowSmall the same way).
 local UPGRADE_ARROW_ICON = "|TInterface\\AddOns\\DialogueUI_335\\Textures\\Shared\\UpgradeArrowSmall.blp:0:0:0:-6|t";     -- retail's numbers (0 = font height)
 local PAWN_URL = "https://warperia.com/addon-wotlk/pawn/download/";
+local function QuickSlot_Tooltip()
+    local text = L["Valuable Reward Popup Desc"];
+    if not addon.TooltipCompare:IsPawnAvailable() then
+        text = text .. "\n\n" .. L["Show Upgrade Arrow Pawn Missing"]:format(PAWN_URL);
+    end
+    return text
+end
 local function UpgradeArrow_Tooltip()
     local text = L["Show Upgrade Arrow Desc"]:format(UPGRADE_ARROW_ICON);
     if not addon.TooltipCompare:IsPawnAvailable() then
@@ -491,6 +529,17 @@ local Schematic = {
             {type = "Custom", name = L["Reset Position"], description = L["Quest Item Display Reset Position Desc"], icon = "Settings-Reset.blp",
                 onClickFunc = QuestItemDisplay_Reset_OnClick, validationFunc = QuestItemDisplayPosition_Validation,
                 requiredParentValueAnd = {QuestItemDisplay = true}},
+            {type = "Subheader", name = L["Quest"]},
+            {type = "Checkbox", name = L["Valuable Reward Popup"], description = L["Valuable Reward Popup Desc"], tooltip = QuickSlot_Tooltip, dbKey = "QuickSlotQuestReward",
+                preview = "QuickSlotQuestReward", ratio = 2, isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
+            {type = "Custom", name = L["Move Position"], description = L["Move Position Desc"], icon = "Settings-Move.blp",
+                onClickFunc = QuickSlot_Move_OnClick, isToggledFunc = QuickSlot_Move_IsToggled, validationFunc = QuickSlot_Move_Validation,
+                requiredParentValueAnd = {QuickSlotQuestReward = true}},
+            {type = "Custom", name = L["Reset Position"], description = L["Quest Item Display Reset Position Desc"], icon = "Settings-Reset.blp",
+                onClickFunc = QuickSlot_Reset_OnClick, validationFunc = QuickSlotPosition_Validation,
+                requiredParentValueAnd = {QuickSlotQuestReward = true}},
+            {type = "Checkbox", name = L["Press Key To Use Item"], tooltip = UseItemHotkey_Tooltip, dbKey = "QuickSlotUseHotkey",
+                requiredParentValueAnd = {QuickSlotQuestReward = true}, validationFunc = QuickSlot_Move_Validation, branchLevel = 0},
         },
     },
 };
@@ -1657,6 +1706,13 @@ end
 CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
+
+-- The Valuable Reward Popup was dragged (or reset): same for its Reset row.
+CallbackRegistry:Register("SettingChanged.QuickSlotPosition", function()
+    if frame and frame:IsShown() and frame.tabID == 3 then
+        SettingsUI:LayoutRows(3);
+    end
+end);
 
 -- The Quest Item Display was dragged (or reset): the Reset row appears (or goes) at once.
 CallbackRegistry:Register("SettingChanged.QuestItemDisplayPosition", function()

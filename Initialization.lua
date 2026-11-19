@@ -54,6 +54,10 @@ local DefaultValues = {
         QuestItemDisplayAwaitWorldMap = false,
         QuestItemDisplayFontSize = 14,          --Not in retail (it follows FontSizeBase)
 
+    --Valuable Reward Popup (Widget_QuickSlot.lua). Needs Pawn, like the upgrade arrow
+    QuickSlotQuestReward = false,
+        QuickSlotUseHotkey = true,              --The Confirm key equips the item (Press Button To Use)
+
     --Book Settings
     BookUIEnabled = true,
         BookUISize = 1,                         --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
@@ -69,7 +73,8 @@ local DefaultValues = {
     --ParchmentPosition = {point, relativePoint, x, y}
     --BookPosition = {point, relativePoint, x, y}
     --QuestItemDisplayPosition = {x, y}
-    --QuestItems = {[itemID] = true}            --Items the Quest Item Display has shown
+    --QuickSlotPosition = {x, y}               --Center of the Valuable Reward Popup, from the bottom left of the screen
+    --QuestItems = {[itemID] = true}          --Items the Quest Item Display has shown
 };
 
 -- Keys that were renamed to match retail. The old value is moved to the new key once.

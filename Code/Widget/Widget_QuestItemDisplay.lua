@@ -1058,6 +1058,8 @@ local function IsOwnLoot(text, playerName)
     return false
 end
 
+addon.IsOwnLootMessage = IsOwnLoot;     -- also used by Widget_QuickSlot.lua
+
 local pendingLoot = {};
 
 function QuestItemDisplay:OnItemLooted(itemID, isRetry)
