@@ -9,6 +9,7 @@
 
 Initialization.lua
 Locales\enUS.lua
+Locales\frFR.lua
 Code\CallbackRegistry.lua
 API.lua
 Code\Utility\UIRoot.lua
