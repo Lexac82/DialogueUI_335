@@ -20,6 +20,8 @@ local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
 local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
+local CYCLE_NAME = "DialogueUI335CycleReward";                  -- hidden buttons the Tab keys click (created below)
+local CYCLE_BACK_NAME = "DialogueUI335CycleRewardBack";
 
 local L = addon.L;
 local BindingUtil = addon.BindingUtil;
@@ -209,6 +211,12 @@ function Footer:UpdateKeys()
         SetOverrideBindingClick(self.keyOwner, true, "ESCAPE", EXIT_NAME, "LeftButton");
     end
 
+    -- Tab / Shift-Tab choose the next / previous reward while a reward must be chosen (Settings > Control).
+    if addon.GetDBBool("CycleRewardHotkeyEnabled") and self.event == "QUEST_COMPLETE" and self.page and self.page.canChoose then
+        SetOverrideBindingClick(self.keyOwner, true, "TAB", CYCLE_NAME, "LeftButton");
+        SetOverrideBindingClick(self.keyOwner, true, "SHIFT-TAB", CYCLE_BACK_NAME, "LeftButton");
+    end
+
     -- F1 (or the player's key) opens the settings while the dialogue is shown (F1 is "target self" in the game otherwise).
     local settingsKey = BindingUtil:GetActiveActionKey("Settings");
     if settingsKey then
@@ -294,6 +302,22 @@ local function CreateFooterButtons(parent, owner, width, paddingH, paddingBottom
         self:UpdateKeys();
     end);
     addon.CallbackRegistry:Register("SettingsUI.Hide", function()
+        self:UpdateKeys();
+    end);
+
+    -- Press Tab To Select Reward: the keys are override bindings that click these 1 px buttons.
+    local function CreateCycleButton(name, delta)
+        local button = CreateFrame("Button", name, UIParent);
+        button:SetWidth(1);
+        button:SetHeight(1);
+        button:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0);
+        button:SetScript("OnClick", function()
+            owner:CycleRewardChoice(delta);
+        end);
+    end
+    CreateCycleButton(CYCLE_NAME, 1);
+    CreateCycleButton(CYCLE_BACK_NAME, -1);
+    addon.CallbackRegistry:Register("SettingChanged.CycleRewardHotkeyEnabled", function()
         self:UpdateKeys();
     end);
 

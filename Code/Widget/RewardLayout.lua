@@ -375,6 +375,29 @@ function RewardLayout:SelectChoice(button)
     end
 end
 
+-- Settings > Control > Press Tab To Select Reward (retail CycleRewardChoice): the next (delta 1) or previous (-1)
+-- choosable reward, wrapping around. Nothing chosen yet: Tab picks the first one. Returns true when it did something.
+function RewardLayout:CycleChoice(delta)
+    local buttons = self.choiceButtons;
+    if not (self.page and self.page.canChoose) or #buttons == 0 then
+        return false
+    end
+    local current = 0;
+    for i = 1, #buttons do
+        if buttons[i] == self.chosen then
+            current = i;
+        end
+    end
+    local id = current + delta;
+    if id > #buttons then
+        id = 1;
+    elseif id < 1 then
+        id = #buttons;
+    end
+    self:SelectChoice(buttons[id]);
+    return true
+end
+
 -- 1-based choice index passed to GetQuestReward, 0 when there is no choice to make, nil while undecided.
 function RewardLayout:GetChoiceIndex()
     local page = self.page;

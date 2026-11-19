@@ -35,7 +35,8 @@ local DefaultValues = {
     --Control
     InputDevice = 1,                            --1 Keyboard & Mouse (the only one in 3.3.5a, no gamepad)
     RightClickToCloseUI = true,                 --Right click on the dialogue or a readable closes it
-    UseCustomBindings = false,                 --Own keys for Confirm / Settings / Option 1-9 (see Keybindings.lua, DB.CustomBindings)
+    CycleRewardHotkeyEnabled = false,           --Tab / Shift-Tab choose the next / previous quest reward (see FooterButtons.lua)
+    UseCustomBindings = false,                --Own keys for Confirm / Settings / Option 1-9 (see Keybindings.lua, DB.CustomBindings)
 
     --Reward tooltip
     UseBlizzardTooltip = false,

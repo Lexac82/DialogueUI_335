@@ -262,6 +262,11 @@ function ParchmentBackground:FlashRewardChoices()
     self.QuestText.rewards:FlashChoices();
 end
 
+-- Tab / Shift-Tab: choose the next / previous reward.
+function ParchmentBackground:CycleRewardChoice(delta)
+    return self.QuestText.rewards:CycleChoice(delta)
+end
+
 -- Puts the frame back where the player left it (UIParent offsets), else the default CENTER.
 -- FrameOrientation: 1 Left, 2 Right, 3 Custom. Left / Right put the frame centered at 1/4 of the screen width from
 -- the middle (retail FRAME_OFFSET_RATIO = 3/4); Custom uses the dragged position (ParchmentPosition).
