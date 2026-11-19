@@ -74,7 +74,7 @@ Books, notes and other readable objects open in their own window. Choose its siz
 ![Readables](Preview/BookUI.png)
 
 ### Settings
-Open the settings with **/dui** or **/dialogui**, with **F1** while a dialogue is open, or with the minimap button. Tabs: **UI**, **Control** (including custom key bindings), **Gameplay** and **Minimap**.
+Open the settings with **/dui** or **/dialogueui**, with **F1** while a dialogue is open, or with the minimap button. Tabs: **UI**, **Control** (including custom key bindings), **Gameplay** and **Minimap**.
 
 ## Installation
 

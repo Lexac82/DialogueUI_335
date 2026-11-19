@@ -1906,7 +1906,7 @@ CreateSettingsFrame();
 SettingsUI:SelectTab(1, true);
 
 SLASH_DIALOGUEUI3351 = "/dui";
-SLASH_DIALOGUEUI3352 = "/dialogui";
+SLASH_DIALOGUEUI3352 = "/dialogueui";
 SlashCmdList["DIALOGUEUI335"] = function()
     SettingsUI:Toggle();
 end;
