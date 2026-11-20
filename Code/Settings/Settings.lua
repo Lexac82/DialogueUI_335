@@ -577,6 +577,9 @@ local Schematic = {
             {type = "Checkbox", name = L["Use Separate Tooltip for Comparison"], description = L["Use Separate Tooltip for Comparison Desc"], tooltip = SeparateCompare_Tooltip, dbKey = "TooltipSeparateCompare",
                 isDisabledFunc = SeparateCompare_IsDisabled, keepValueWhenDisabled = true},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
+            {type = "Checkbox", name = L["Show EXP Bar"], description = L["Show EXP Bar Desc"], dbKey = "ShowEXPBar"},
+            {type = "Checkbox", name = L["Always Show EXP Bar"], description = L["Always Show EXP Bar Desc"], dbKey = "ShowEXPBarAlways",
+                requiredParentValueAnd = {ShowEXPBar = true}},
             {type = "Subheader", name = L["Readables"], extraWidth = 20},
             {type = "ArrowOption", name = L["Frame Size"], description = L["BookUI Frame Size Desc"], dbKey = "BookUISize",
                 choices = {

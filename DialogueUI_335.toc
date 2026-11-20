@@ -44,6 +44,7 @@ Code\Dialogue\Clipboard.lua
 Code\Dialogue\DialogueUI.lua
 Code\Dialogue\AlertFrame.lua
 Code\Dialogue\HideUI.lua
+Code\Dialogue\ExperienceBar.lua
 Code\Widget\Widget_QuestItemDisplay.lua
 Code\Widget\Widget_QuickSlot.lua
 Code\Book\BookFormatter.lua

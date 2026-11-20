@@ -41,6 +41,10 @@ local DefaultValues = {
     EscapeToDeclineQuest = false,               --Esc on a quest chosen from a list goes back to the list instead of closing (see FooterButtons.lua)
     UseCustomBindings = false,                --Own keys for Confirm / Settings / Option 1-9 (see Keybindings.lua, DB.CustomBindings)
 
+    --Experience bar at the bottom of the screen (see ExperienceBar.lua)
+    ShowEXPBar = true,                          --Shown while the parchment is open
+        ShowEXPBarAlways = false,               --Also without a conversation, as the game's experience bar (needs ShowEXPBar). Not in retail
+
     --Reward tooltip
     UseBlizzardTooltip = false,
     TooltipShowItemComparison = false,
