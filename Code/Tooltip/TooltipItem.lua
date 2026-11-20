@@ -145,7 +145,25 @@ local function AddComparison(tip, link)
     end
 end
 
+-- Lines from other addons (see TooltipExtensions.lua), e.g. Auctionator prices.
+-- `early` picks the providers drawn above the transmog line.
+local function AddProviderLines(tip, entry, link, early)
+    if not link then
+        return
+    end
+    local extra = addon.TooltipExtensions:GetItemLines(link, entry.count, early);
+    for i = 1, #extra do
+        local line = extra[i];
+        if line.right then
+            tip:AddDoubleLine(line.left, line.right, line.lr, line.lg, line.lb, line.rr, line.rg, line.rb);
+        else
+            tip:AddLine(line.left, line.lr, line.lg, line.lb);
+        end
+    end
+end
+
 local function AddItemExtras(tip, entry, link)
+    AddProviderLines(tip, entry, link, true);
     -- Appearance not collected yet (server transmog module). Same pink as the module's own tooltip line.
     local TransmogStatus = addon.TransmogStatus;
     if link and entry.itemType ~= "required" and TooltipCompare:IsEquippable(link) then
@@ -176,18 +194,7 @@ local function AddItemExtras(tip, entry, link)
         end
     end
 
-    -- Lines from other addons (see TooltipExtensions.lua), e.g. Auctionator prices.
-    if link then
-        local extra = addon.TooltipExtensions:GetItemLines(link, entry.count);
-        for i = 1, #extra do
-            local line = extra[i];
-            if line.right then
-                tip:AddDoubleLine(line.left, line.right, line.lr, line.lg, line.lb, line.rr, line.rg, line.rb);
-            else
-                tip:AddLine(line.left, line.lr, line.lg, line.lb);
-            end
-        end
-    end
+    AddProviderLines(tip, entry, link, false);
 
     if link and TooltipCompare:IsEquippable(link) then
         local showComparison = GetDBBool("TooltipShowItemComparison");

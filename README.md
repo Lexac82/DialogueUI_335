@@ -88,6 +88,7 @@ Books, notes and other readable objects open in their own window. Choose its siz
 Dialogue UI's own tooltip is not a `GameTooltip`, so addons that hook `GameTooltip` cannot add to it. Supported addons are added by Dialogue UI itself (`Code/SupportedAddOns`):
 
 - **Auctionator**: auction price, median price and disenchant value. The vendor line is left out, because the tooltip already shows the sell price.
+- **Journal: Gear (JournalGearBIS)**: an "On your gear list" line (and "Exchange it for" on raid tokens) for items that are an upgrade for your spec.
 
 Any addon can add lines itself:
 
@@ -100,7 +101,7 @@ if DialogueUI_335_API then
 end
 ```
 
-`tooltip` records `AddLine` and `AddDoubleLine` calls. `count` is the reward's stack size (or nil). The function runs every time the tooltip is drawn.
+`tooltip` records `AddLine` and `AddDoubleLine` calls. `count` is the reward's stack size (or nil). The function runs every time the tooltip is drawn. Pass `true` as a third argument to draw the lines above the "Appearance not collected" line instead of after the sell price.
 
 ## Installation
 

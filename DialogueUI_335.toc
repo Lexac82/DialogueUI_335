@@ -54,5 +54,6 @@ Code\Settings\Settings.lua
 Code\Widget\MinimapButton.lua
 Code\SupportedAddOns\SupportedAddOns.lua
 Code\SupportedAddOns\Auctionator.lua
+Code\SupportedAddOns\JournalGearBIS.lua
 Code\Core.lua
 Code\Utility\DevTool.lua

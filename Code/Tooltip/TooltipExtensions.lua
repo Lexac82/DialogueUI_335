@@ -23,39 +23,45 @@ local type = type;
 local providers = {};              -- ordered list of {name, func}
 local reported = {};               -- provider name -> true once its error was reported
 
-function TooltipExtensions:RegisterItemProvider(name, func)
+-- `early` (optional) draws the provider's lines above the transmog line instead of after the sell price.
+function TooltipExtensions:RegisterItemProvider(name, func, early)
     if type(name) ~= "string" or type(func) ~= "function" then
         return false
     end
+    early = early and true or false;
     for i = 1, #providers do
         if providers[i].name == name then
             providers[i].func = func;          -- the same addon registering again replaces itself
+            providers[i].early = early;
             return true
         end
     end
-    providers[#providers + 1] = {name = name, func = func};
+    providers[#providers + 1] = {name = name, func = func, early = early};
     return true
 end
 
--- Runs every provider for `link`. Returns the recorded lines in registration order.
+-- Runs the providers for `link` that match `early`. Returns the recorded lines in registration order.
 -- A provider that errors is skipped and its error is reported once, so a broken addon cannot break the tooltip.
-function TooltipExtensions:GetItemLines(link, count)
+function TooltipExtensions:GetItemLines(link, count, early)
     local lines = {};
     if not link then
         return lines
     end
+    early = early and true or false;
     for i = 1, #providers do
         local provider = providers[i];
-        local capture = TooltipCapture:New();
-        capture.link = link;
-        local ok, err = pcall(provider.func, capture, link, count);
-        if ok then
-            for j = 1, #capture.lines do
-                lines[#lines + 1] = capture.lines[j];
+        if provider.early == early then
+            local capture = TooltipCapture:New();
+            capture.link = link;
+            local ok, err = pcall(provider.func, capture, link, count);
+            if ok then
+                for j = 1, #capture.lines do
+                    lines[#lines + 1] = capture.lines[j];
+                end
+            elseif not reported[provider.name] then
+                reported[provider.name] = true;
+                geterrorhandler()("DialogueUI_335: tooltip provider \"" .. provider.name .. "\" failed: " .. tostring(err));
             end
-        elseif not reported[provider.name] then
-            reported[provider.name] = true;
-            geterrorhandler()("DialogueUI_335: tooltip provider \"" .. provider.name .. "\" failed: " .. tostring(err));
         end
     end
     return lines
@@ -64,7 +70,7 @@ end
 -- The only global of the extension API. `version` changes only when an existing call breaks.
 DialogueUI_335_API = {
     version = 1,
-    RegisterItemTooltipProvider = function(name, func)
-        return TooltipExtensions:RegisterItemProvider(name, func)
+    RegisterItemTooltipProvider = function(name, func, early)
+        return TooltipExtensions:RegisterItemProvider(name, func, early)
     end,
 };
