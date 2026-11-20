@@ -26,6 +26,7 @@ local RETRY_INTERVAL = 0.3;
 local RETRY_MAX = 10;
 local GOLD = {1, 0.82, 0};
 local RED = {1, 0.125, 0.125};
+local TRANSMOG_COLOR = {244 / 255, 113 / 255, 245 / 255};     -- |cfff471f5, as in wow-mod-transmog-plus
 
 -- Retail brightens poor/common (grey), rare (blue) and epic (purple) so they read on the dark background.
 local QUALITY_OVERRIDE = {
@@ -45,6 +46,7 @@ local function GetQualityColor(quality)
 end
 
 local tooltip;
+local shownEntry;                          -- entry of our tooltip while it is open, for a late transmog answer
 local function GetTooltip()
     if not tooltip then
         tooltip = addon.CreateTooltipFrame();
@@ -139,6 +141,15 @@ local function AddComparison(tip, link)
 end
 
 local function AddItemExtras(tip, entry, link)
+    -- Appearance not collected yet (server transmog module). Same pink as the module's own tooltip line.
+    local TransmogStatus = addon.TransmogStatus;
+    if link and entry.itemType ~= "required" and TooltipCompare:IsEquippable(link) then
+        entry.itemID = entry.itemID or TransmogStatus:GetItemID(link);
+        TransmogStatus:Request(entry.itemID);
+        if TransmogStatus:IsUncollected(entry.itemID) then
+            tip:AddLine(L["Transmog Not Collected"], TRANSMOG_COLOR[1], TRANSMOG_COLOR[2], TRANSMOG_COLOR[3]);
+        end
+    end
     -- "You have N" for required items, with a bank variant (retail L["Format You Have X"]).
     if entry.itemType == "required" and link then
         local have = GetItemCount(link) or 0;
@@ -332,6 +343,7 @@ function RewardTooltip:Show(owner, anchor, entry)
 
     local tip = GetTooltip();
     tip:Hide();
+    shownEntry = entry;
     tip:SetOwnerAnchor(owner, anchor);
     local retrieving = Render(tip, entry);
     tip:Show();
@@ -365,6 +377,7 @@ function RewardTooltip:Show(owner, anchor, entry)
 end
 
 function RewardTooltip:Hide()
+    shownEntry = nil;
     if tooltip then
         tooltip:Hide();
     end
@@ -400,6 +413,13 @@ function RewardTooltip:RestoreGameTooltip()
     GameTooltip:SetParent(UIParent);
     GameTooltip:SetFrameStrata("TOOLTIP");
 end
+
+-- The server answers after the tooltip opened: draw it again with the new line.
+addon.CallbackRegistry:Register("TransmogStatusChanged", function(itemID)
+    if shownEntry and tooltip and tooltip:IsShown() and (not itemID or shownEntry.itemID == itemID) then
+        Render(tooltip, shownEntry);
+    end
+end);
 
 addon.CallbackRegistry:Register("SettingChanged.UseBlizzardTooltip", function(dbValue)
     if dbValue ~= true then

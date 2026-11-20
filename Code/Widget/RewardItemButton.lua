@@ -41,6 +41,7 @@ local UPGRADE_DURATION = 0.5;
 local UPGRADE_RISE = 12;
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
+local OVERLAY_TRANSMOG_INDEX = 8;         -- retail's "cosmetic" cell: magenta corner, here for an appearance not collected yet
 
 local COLOR_NORMAL = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
 local COLOR_CHOOSE = {"Ivory", "DarkModeGold"};           -- DUIFont_ItemSelect
@@ -90,6 +91,28 @@ function RewardItemButton:UpdateNameColor()
     else
         self.name:SetTextColor(font:GetTextColor());     -- explicit, so a quality color from before is gone
     end
+end
+
+-- Marker for an appearance the player has not collected (server transmog module, see TransmogStatus.lua).
+-- Drawn next to the quality overlay, not instead of it, so the rarity stays visible. Not shown with the
+-- unusable "!" (retail gives the alert priority), nor on required items.
+function RewardItemButton:UpdateTransmogMarker()
+    local entry = self.entry;
+    local show = entry and entry.kind == "item" and entry.itemType ~= "required" and entry.isUsable
+        and addon.TransmogStatus:IsUncollected(entry.itemID);
+    SetOverlay(self.transmogOverlay, show and OVERLAY_TRANSMOG_INDEX or nil);
+end
+
+-- Asks the server for the appearance state of equippable items, then shows what is known.
+function RewardItemButton:RefreshTransmog()
+    local entry = self.entry;
+    if entry and entry.kind == "item" and entry.link then
+        entry.itemID = entry.itemID or addon.TransmogStatus:GetItemID(entry.link);
+        if entry.itemType ~= "required" and addon.TooltipCompare:IsEquippable(entry.link) then
+            addon.TransmogStatus:Request(entry.itemID);
+        end
+    end
+    self:UpdateTransmogMarker();
 end
 
 function RewardItemButton:SetCount(text)
@@ -155,6 +178,7 @@ function RewardItemButton:SetEntry(entry)
     self:UpdateNameColor();
     self:SetCount(count);
     SetOverlay(self.overlay, overlay);
+    self:RefreshTransmog();
     self:SetSellMarker(false);
     self:SetUpgradeMarker(false);
     self.frame:SetAlpha(1);
@@ -293,6 +317,7 @@ function RewardItemButton:Release()
     self.sheenFrame:SetScript("OnUpdate", nil);
     self.sheen:Hide();
     self.entry = nil;
+    self.transmogOverlay:Hide();
     self:SetUpgradeMarker(false);
     self.frame:ClearAllPoints();
     self.frame:Hide();
@@ -346,6 +371,14 @@ local function CreateRewardItemButton(parent, host)
     overlay:Hide();
     self.overlay = overlay;
 
+    local transmogOverlay = topFrame:CreateTexture(nil, "OVERLAY");
+    ThemeUtil:BindTexture(transmogOverlay, OVERLAY_FILE);
+    transmogOverlay:SetWidth(BORDER_SIZE);
+    transmogOverlay:SetHeight(BORDER_SIZE);
+    transmogOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
+    transmogOverlay:Hide();
+    self.transmogOverlay = transmogOverlay;
+
     local name = frame:CreateFontString(nil, "ARTWORK");
     name:SetJustifyH("LEFT");
     name:SetJustifyV("MIDDLE");
@@ -389,6 +422,14 @@ local function CreateRewardItemButton(parent, host)
     -- The border file and the name color depend on the style.
     addon.CallbackRegistry:Register("ThemeChanged", function()
         self:SetStyle(self.style);
+    end);
+
+    -- The server answers later than the button is filled. itemID nil: everything may have changed.
+    addon.CallbackRegistry:Register("TransmogStatusChanged", function(itemID)
+        local entry = self.entry;
+        if entry and frame:IsShown() and (not itemID or entry.itemID == itemID) then
+            self:RefreshTransmog();
+        end
     end);
     return self
 end

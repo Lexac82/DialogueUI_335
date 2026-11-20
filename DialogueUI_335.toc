@@ -18,6 +18,7 @@ Code\Utility\FrameSize.lua
 Code\Utility\FontUtil.lua
 Code\Utility\TextureSlice.lua
 Code\Utility\MoneyUtil.lua
+Code\Utility\TransmogStatus.lua
 Code\Dialogue\QuestData.lua
 Code\GossipData\GossipDataProvider.lua
 Code\Tooltip\TooltipFrame.lua

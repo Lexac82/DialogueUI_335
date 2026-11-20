@@ -47,6 +47,8 @@ local DefaultValues = {
 
     --Quest rewards
     MarkHighestSellPrice = false,
+    ShowTransmogStatus = false,                 --"Appearance not collected" marker and tooltip line. Needs the server's transmog module (see TransmogStatus.lua)
+    UseTransmogPlus = false,                    --The server runs mod-transmog-plus (own protocol) instead of the original mod-transmog (.transmog sync)
     ShowUpgradeArrow = true,                    --Green arrow on reward items with a higher item level than the equipped one (see RewardLayout.lua)
 
     --Quest Item Display
