@@ -4,7 +4,7 @@ A port of the retail **Dialogue UI** addon to **World of Warcraft: Wrath of the 
 
 ## Opening the settings
 
-- Type **/dui** or **/dialogueui** in chat. If DragonUI is loaded, **/dui** belongs to DragonUI, so use **/dialogueui**.
+- Type **/dialogueui**, **/dialogui** or **/dui** in chat. If DragonUI is loaded, **/dui** belongs to DragonUI, so use **/dialogueui** or **/dialogui**.
 - Press **F1** while a dialogue is open.
 - Click the **minimap button**.
 
