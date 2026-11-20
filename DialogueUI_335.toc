@@ -51,6 +51,7 @@ Code\Book\BookFormatter.lua
 Code\Book\BookItem.lua
 Code\Book\BookUI.lua
 Code\Book\BookEvents.lua
+Code\Settings\DropdownMenu.lua
 Code\Settings\Settings.lua
 Code\Widget\MinimapButton.lua
 Code\SupportedAddOns\SupportedAddOns.lua

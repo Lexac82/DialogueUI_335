@@ -507,6 +507,26 @@ do
         dbKey = "EscapeToDeclineQuest"};
 end
 
+-- Font: names what is wrong when the saved font is gone, and where to get more fonts.
+local function Font_Tooltip()
+    local text = L["Font Desc"];
+    local value = GetDBValue("FontText");
+    if value ~= "default" and value ~= "system" and FontUtil:GetFontFile(value) ~= value then
+        text = text .. "\n\n" .. L["Font Missing"];
+    end
+    if not FontUtil:HasSharedMedia() then
+        text = text .. "\n\n" .. L["Font No Shared Media"];
+    end
+    return text
+end
+-- The menu draws each name in its own font; the files are resolved when a page is shown.
+local function Font_GetChoices()
+    return FontUtil:GetFontChoices()
+end
+local function Font_GetChoiceFile(choice)
+    return FontUtil:GetFontFile(choice.dbValue)
+end
+
 -- The tabs, in the order of TAB_ENTRIES. Option fields follow retail: type, name, description, dbKey, choices.
 local Schematic = {
     {   -- UI
@@ -546,6 +566,8 @@ local Schematic = {
                     {dbValue = 3, valueText = "16"},
                 },
             },
+            {type = "DropdownButton", name = L["Font"], description = L["Font Desc"], tooltip = Font_Tooltip, dbKey = "FontText",
+                choices = Font_GetChoices, getChoiceFile = Font_GetChoiceFile},
             {type = "ArrowOption", name = L["Frame Orientation"], description = L["Frame Orientation Desc"], dbKey = "FrameOrientation",
                 choices = {
                     {dbValue = 1, valueText = L["Orientation Left"]},
@@ -1059,6 +1081,132 @@ local function CreateArrowOption(row, optionData)
     return widget
 end
 
+-- Retail's dropdown button (DUIDialogSettingsDropdownButtonTemplate): 192 x 24, from a 512 x 256 sheet. The button is the
+-- top row (the hover state a row below), the small arrow sits in the bottom left corner (shut, then open). Opens DropdownMenu.
+local DROPDOWN_FILE = "Settings-DropdownButton.blp";
+local DROPDOWN_WIDTH = 8 * OPTION_WIDGET_SIZE;
+local DROPDOWN_ARROW_SIZE = 0.5 * OPTION_WIDGET_SIZE;
+local DROPDOWN_PADDING = 8;
+local DROPDOWN_MIN_TEXT_HEIGHT = 9;
+
+local function CreateDropdownButton(row, optionData)
+    local widget = CreateFrame("Button", nil, row.content);
+    widget:SetWidth(DROPDOWN_WIDTH);
+    widget:SetHeight(OPTION_WIDGET_SIZE);
+    widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
+    widget:SetHitRectInsets(0, 0, -4, -4);      -- as tall as an arrow option
+    widget:RegisterForClicks("LeftButtonUp");
+    widget.dbKey = optionData.dbKey;
+
+    local background = widget:CreateTexture(nil, "ARTWORK");
+    background:SetAllPoints(widget);
+    background:SetTexCoord(0, 1, 0, 64 / 256);
+    ThemeUtil:BindTexture(background, DROPDOWN_FILE);
+
+    local arrow = widget:CreateTexture(nil, "OVERLAY");
+    arrow:SetWidth(DROPDOWN_ARROW_SIZE);
+    arrow:SetHeight(DROPDOWN_ARROW_SIZE);
+    arrow:SetPoint("RIGHT", widget, "RIGHT", -DROPDOWN_PADDING, 0);
+    arrow:SetTexCoord(0, 32 / 512, 224 / 256, 1);
+    ThemeUtil:BindTexture(arrow, DROPDOWN_FILE);
+
+    -- Retail's DUIFont_Quest_Quest: light text on the dark button.
+    local valueFont = FontUtil:GetColoredFont("DUI335_SettingsTabSelected", FONT_HEIGHT, { "Ivory", "DarkModeGold" });
+    local valueText = widget:CreateFontString(nil, "OVERLAY");
+    valueText:SetFontObject(valueFont);
+    valueText:SetJustifyH("LEFT");
+    valueText:SetPoint("LEFT", widget, "LEFT", DROPDOWN_PADDING, 0);
+    widget.valueText = valueText;
+
+    -- A long name is made smaller until it fits (retail SetAutoScalingText), down to a minimum.
+    local function SetValueText(text)
+        valueText:SetFontObject(valueFont);
+        valueText:SetText(text);
+        local available = DROPDOWN_WIDTH - 2 * DROPDOWN_PADDING - DROPDOWN_ARROW_SIZE - 10;
+        local file, _, flags = valueFont:GetFont();
+        local height = FONT_HEIGHT;
+        while valueText:GetStringWidth() > available and height > DROPDOWN_MIN_TEXT_HEIGHT do
+            height = height - 1;
+            valueText:SetFont(file, height, flags);
+        end
+    end
+
+    -- Shows the saved choice. A saved value that is not on the list (the font's addon was removed) shows the first
+    -- choice, the default, which is what is used then.
+    function widget:Refresh()
+        local choices = optionData.choices();
+        local value = GetDBValue(self.dbKey);
+        local name = choices[1] and choices[1].name or "-";
+        for _, choice in ipairs(choices) do
+            if choice.dbValue == value then
+                name = choice.name;
+                break
+            end
+        end
+        SetValueText(name);
+    end
+
+    function widget:OnMenuClosed()
+        arrow:SetTexCoord(0, 32 / 512, 224 / 256, 1);
+    end
+
+    -- Retail: the menu closes once the button is scrolled out of the list.
+    function widget:IsInRange()
+        local top, bottom = self:GetTop(), self:GetBottom();
+        local listTop, listBottom = frame.list:GetTop(), frame.list:GetBottom();
+        if top and bottom and listTop and listBottom then
+            return top > listBottom and bottom < listTop
+        end
+        return true
+    end
+
+    function widget:ToggleMenu()
+        if addon.DropdownMenu:IsOpenFor(self) then
+            addon.DropdownMenu:Close();
+            return
+        end
+        arrow:SetTexCoord(36 / 512, 68 / 512, 224 / 256, 1);
+        addon.DropdownMenu:Open(self, frame, {
+            choices = optionData.choices(),
+            getFontFile = optionData.getChoiceFile,
+            getSelected = function()
+                return GetDBValue(self.dbKey)
+            end,
+            onSelect = function(dbValue)
+                SetDBValue(self.dbKey, dbValue, true);
+                self:Refresh();
+                row:OnEnter();      -- the description may depend on the choice
+            end,
+        });
+    end
+
+    widget:SetScript("OnEnter", function()
+        background:SetTexCoord(0, 1, 68 / 256, 132 / 256);
+        row:OnEnter();
+    end);
+    widget:SetScript("OnLeave", function()
+        background:SetTexCoord(0, 1, 0, 64 / 256);
+        row:OnLeave();
+    end);
+    widget:SetScript("OnClick", function(self)
+        if not IsPointerInList() then
+            return
+        end
+        PlaySound("igMainMenuOptionCheckBoxOn");
+        self:ToggleMenu();
+    end);
+
+    -- The name is fitted to the font and the colors of the theme.
+    CallbackRegistry:Register("ThemeChanged", function()
+        widget:Refresh();
+    end);
+    CallbackRegistry:Register("FontChanged", function()
+        widget:Refresh();
+    end);
+
+    return widget
+end
+
 -- Retail's checkbox: a 24 px box from Settings-Checkbox (top left cell empty, top right cell ticked background) and
 -- a 12 px tick on top (bottom left cell). Clicking anywhere on the row toggles it.
 local CHECKBOX_FILE = "Settings-Checkbox.blp";
@@ -1275,6 +1423,8 @@ local function CreateOptionRow(page, index, optionData)
         row.widget = CreateCheckbox(row, optionData);
     elseif optionData.type == "Keybinding" then
         row.widget = CreateKeybinding(row, optionData);
+    elseif optionData.type == "DropdownButton" then
+        row.widget = CreateDropdownButton(row, optionData);
     end
 
     -- Retail: a branch mark in front of the label when the option depends on another one (branchLevel steps in,
@@ -1827,6 +1977,20 @@ end
 CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
+
+-- Another font has other glyph widths: the tabs are as wide as their text again.
+CallbackRegistry:Register("FontChanged", function()
+    if not frame or not frame.tabButtons then
+        return
+    end
+    for _, button in ipairs(frame.tabButtons) do
+        button:SetWidth(max(TAB_MIN_WIDTH, Round(button.Name:GetStringWidth() + 2 * FONT_HEIGHT)));
+    end
+    local selected = frame.tabButtons[frame.tabID];
+    if selected then
+        frame.selection:Update(selected:GetWidth(), selected:GetHeight());
+    end
+end);
 
 -- The Other Addons tab asks the server which transmog module it has (the answer greys out the options of the missing one).
 CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)

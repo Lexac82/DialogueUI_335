@@ -25,6 +25,7 @@ local DefaultValues = {
     Theme = 1,                                  --1 Brown, 2 Dark
     FrameSize = 2,                              --0..3 = 0.9, 1.0, 1.1, 1.25 (retail default 2, see FrameSize.lua)
     FontSizeBase = 1,                           --0..3 = 10, 12, 14, 16 (see FontUtil.lua)
+    FontText = "default",                       --"default" Friz Quadrata, "system" the client font, or the file of a LibSharedMedia font (see FontUtil.lua)
     OpenAnimationDuration = 0.25,               --Seconds the parchment takes to open, 0..2 in steps of 0.25 (not in retail, see ParchmentBackground.lua)
     HideUI = true,                              --Fade out the game UI during a conversation (see HideUI.lua)
     ShowCopyTextButton = false,                 --Copy Text button in the top right corner (see Clipboard.lua)
