@@ -36,6 +36,7 @@ addon.INSTANT_TEXT_CVAR = INSTANT_TEXT_CVAR;            -- the Settings checkbox
 local REVEAL_CPS = 40;                                  -- characters per second
 local REVEAL_GRADIENT = 30;                             -- soft edge width in pixels
 local REVEAL_TAIL = 5;                                  -- extra characters so the last ones fully fade in (~30 px)
+addon.TEXT_REVEAL = {cps = REVEAL_CPS, gradient = REVEAL_GRADIENT, tail = REVEAL_TAIL};     -- Readables (BookUI.lua) sweep the same way
 
 local pcall = pcall;
 local GetCVarBool = GetCVarBool;
@@ -46,6 +47,7 @@ local function IsInstantText()
     local ok, value = pcall(GetCVarBool, INSTANT_TEXT_CVAR);
     return ok and value and true or false
 end
+addon.IsInstantText = IsInstantText;        -- Readables (BookUI.lua) skip their text sweep too
 
 local QuestTextLayout = {};
 QuestTextLayout.__index = QuestTextLayout;
@@ -92,10 +94,20 @@ function QuestTextLayout:StartReveal()
         return true
     end
 
-    Advance();
+    local started = false;
 
     -- Own frame: the scroll area's OnUpdate belongs to the scroll easing.
     self.revealFrame:SetScript("OnUpdate", function(frame, elapsed)
+        -- The client ignores the alpha gradient while the frame is still fading in (the text would show fully
+        -- opaque, then jump back when the fade ends). The text stays hidden until the open animation is done.
+        if self.isRevealBlocked and self.isRevealBlocked() then
+            return
+        end
+        if not started then
+            started = true;
+            Advance();
+            return
+        end
         progress = progress + elapsed * REVEAL_CPS;
         local item = items[index];
         while item do

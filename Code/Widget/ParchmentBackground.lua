@@ -500,6 +500,9 @@ local function CreateParchmentBackground(parent)
     -- Created before the footer so SetFooterOffset can reach it.
     self.QuestText = addon.CreateQuestTextLayout(frame, M.width, M.multiplier, FOOTER_OFFSET_Y, M.fullH, M.footerInset);
     self.QuestText.owner = self;
+    self.QuestText.isRevealBlocked = function()
+        return self.playing         -- the text sweep waits for the open animation
+    end;
 
     -- Saved variables are loaded after this file runs, so the position is only known once the DB is ready. The
     -- setting announces itself once at load, which places the frame.

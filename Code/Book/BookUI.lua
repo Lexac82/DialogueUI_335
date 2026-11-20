@@ -316,6 +316,8 @@ end
 -- Frame construction ---------------------------------------------------------------------------------------
 
 local fontStringPool, texturePool, pagePool;
+local revealFrame;              -- OnUpdate host of the text sweep
+local animPlaying = false;      -- the fly-in is running (the text sweep waits for it, see StartReveal)
 
 -- Anchor kept for the fly-in animation (the frame is moved by the animation and by the player).
 local anchor = { point = "LEFT", relPoint = "LEFT", x = EDGE_DISTANCE, y = 0 };
@@ -955,7 +957,80 @@ function Book:MeasureText(fontTag, text)
     return height
 end
 
+-- Text sweep (same look as the parchment, see QuestTextLayout.lua): paragraphs appear one after another once the
+-- fly-in has finished. Skipped when Settings > Instant Text is on.
+function Book:StopReveal()
+    if revealFrame then
+        revealFrame:SetScript("OnUpdate", nil);
+    end
+    local items = self.revealItems;
+    if items then
+        for i = 1, #items do
+            items[i].fs:SetAlphaGradient(0, 0);     -- length 0 restores full opacity
+            items[i].fs:Show();
+        end
+    end
+    self.revealItems = nil;
+end
+
+function Book:StartReveal(items)
+    if #items == 0 or (addon.IsInstantText and addon.IsInstantText()) then
+        return
+    end
+    local reveal = addon.TEXT_REVEAL;
+    revealFrame = revealFrame or CreateFrame("Frame", nil, frame);
+    self.revealItems = items;
+    for i = 1, #items do
+        items[i].fs:Hide();
+    end
+
+    local index, progress, started = 0, 0, false;
+
+    local function Advance()
+        index = index + 1;
+        progress = 0;
+        local item = items[index];
+        if not item then
+            return false
+        end
+        item.fs:SetAlphaGradient(0, reveal.gradient);       -- gradient first so it never shows fully opaque
+        item.fs:Show();
+        return true
+    end
+
+    revealFrame:SetScript("OnUpdate", function(f, elapsed)
+        -- The client ignores the alpha gradient while the frame is fading in: wait for the fly-in to end.
+        if animPlaying then
+            return
+        end
+        if not started then
+            started = true;
+            Advance();
+            return
+        end
+        progress = progress + elapsed * reveal.cps;
+        local item = items[index];
+        while item do
+            if progress < item.length + reveal.tail then
+                item.fs:SetAlphaGradient(progress, reveal.gradient);
+                return
+            end
+            item.fs:SetAlphaGradient(0, 0);
+            if not Advance() then
+                f:SetScript("OnUpdate", nil);
+                self.revealItems = nil;
+                return
+            end
+            item = items[index];
+        end
+    end);
+end
+
 function Book:ReleaseContent()
+    if revealFrame then
+        revealFrame:SetScript("OnUpdate", nil);
+    end
+    self.revealItems = nil;
     if fontStringPool then
         fontStringPool:ReleaseAll();
         texturePool:ReleaseAll();
@@ -967,10 +1042,13 @@ end
 function Book:RenderContent()
     self:ReleaseContent();
     local child = self.scrollChild;
+    self.textItems = {};
 
     for _, block in ipairs(Cache.content) do
         if block.text then
             local fs = fontStringPool:Acquire();
+            self.textItems[#self.textItems + 1] = {fs = fs, length = string.len(block.text), top = block.offsetY,
+                bottom = block.offsetY + (block.textHeight or 0)};
             fs:SetFontObject(Fonts[block.fontTag] or Fonts.p);
             fs:SetSpacing(Metrics.TEXT_SPACING);
             fs:SetWidth(cs.CONTENT_WIDTH);
@@ -1306,6 +1384,7 @@ local function AnimOnUpdate(self, elapsed)
     local ease = animElapsed >= ANIM_DURATION and 0 or OutQuart(animElapsed, ANIM_DURATION);
     self:SetAlpha(min(1, 4 * animElapsed));
     if animElapsed >= ANIM_DURATION then
+        animPlaying = false;
         self:SetScript("OnUpdate", nil);
         self:SetAlpha(1);
     end
@@ -1322,6 +1401,7 @@ function Book:ShowUI()
     if not frame:IsShown() then
         RestorePosition();      -- the mode or the saved spot may have changed since the last book
         animElapsed = 0;
+        animPlaying = true;
         frame:SetAlpha(0);
         ApplyAnchor(-ANIM_OFFSET);
         frame:Show();
@@ -1367,6 +1447,7 @@ function Book:OnHide()
         end);
     end
     self:SavePosition();
+    animPlaying = false;
     frame:SetScript("OnUpdate", nil);
     frame:SetAlpha(1);
     self:UpdateKeys();
@@ -1404,8 +1485,21 @@ end
 -- Every page is cached: lay out and show.
 function Book:FinishReading(maxPage)
     Cache.maxPage = maxPage;
+    local wasShown = frame:IsShown();
     self:Build();
     self:ShowUI();
+    if not wasShown then
+        -- Only the paragraphs in view are swept; the rest of a long book is not hidden behind the sweep.
+        local viewTop = self.scrollFrame.scrollTarget or 0;
+        local viewBottom = viewTop + self.scrollFrame:GetHeight();
+        local items = {};
+        for _, item in ipairs(self.textItems or {}) do
+            if item.bottom > viewTop and item.top < viewBottom then
+                items[#items + 1] = item;
+            end
+        end
+        self:StartReveal(items);
+    end
 end
 
 

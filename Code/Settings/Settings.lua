@@ -599,8 +599,6 @@ local Schematic = {
                 onClickFunc = Orientation_Reset_OnClick, validationFunc = OrientationPosition_Validation,
                 requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
             {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
-            {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
-            {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
             {type = "Checkbox", name = L["Instant Quest Text"], description = L["Instant Quest Text Desc"], cvarFunc = function() return addon.INSTANT_TEXT_CVAR end},
             {type = "Subheader", name = L["Quest"]},
             {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
@@ -612,6 +610,8 @@ local Schematic = {
                     {dbValue = 3, valueText = L["QuestDifficultyStyle Both"]},
                 },
             },
+            {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
+            {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
             {type = "Checkbox", name = L["Show EXP Bar"], description = L["Show EXP Bar Desc"], dbKey = "ShowEXPBar"},
