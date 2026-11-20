@@ -8,8 +8,7 @@
 ## SavedVariables: DialogueUI_335_DB
 
 Initialization.lua
-Locales\enUS.lua
-Locales\frFR.lua
+Locales\Localization.xml
 Code\CallbackRegistry.lua
 API.lua
 Code\Utility\UIRoot.lua

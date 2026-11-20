@@ -1,0 +1,218 @@
+-- Español (España). Strings come from the retail Dialogue UI locale where it has the same text, the rest are written for this port.
+if not (GetLocale() == "esES") then return end;
+
+local _, addon = ...;
+local L = addon.L;
+
+-- Blizzard's own global strings are used where they exist (they follow the client language). The text below is the fallback.
+
+-- Footer buttons
+L["Accept"] = ACCEPT or "Aceptar";
+L["Continue"] = CONTINUE or "Continuar";
+L["Complete Quest"] = COMPLETE or "Completar misión";
+L["Incomplete"] = INCOMPLETE or "Incompleta";
+L["Decline"] = DECLINE or "Rechazar";
+L["Cancel"] = CANCEL or "Cancelar";
+L["Goodbye"] = GOODBYE or "Adiós";
+
+-- Settings window
+L["UI"] = "Interfaz";
+L["Control"] = "Controles";
+L["Gameplay"] = "Jugabilidad";
+L["Minimap"] = "Minimapa";
+
+-- Settings: Compatibility
+L["Compatibility"] = "Compatibilidad";
+L["Disable DUI In Instance"] = "Usar la interfaz predeterminada del juego en estancias";
+L["Disable DUI In Instance Desc"] = "Desactiva la interfaz de diálogo y usa la predeterminada del juego cuando estás en una mazmorra o banda.";
+
+-- Settings: Minimap tab and minimap button
+L["Show Minimap Button"] = "Mostrar botón del minimapa";
+L["Show Minimap Button Desc"] = "Muestra un botón en el minimapa que abre estos ajustes. Arrástralo para moverlo alrededor del minimapa.";
+L["Minimap Button Tooltip"] = "Haz clic para abrir los ajustes.";
+L["Minimap Button Drag"] = "Arrastra para mover";
+
+-- Settings: UI tab
+L["Theme"] = "Tema";
+L["Theme Desc"] = "Selecciona un tema de color para la interfaz.";
+L["Theme Brown"] = "Marrón";
+L["Theme Dark"] = "Oscuro";
+L["Frame Size"] = "Tamaño de la ventana";
+L["Frame Size Desc"] = "Establece el tamaño de la ventana.\n\nPor defecto: Mediano";
+L["Size Extra Small"] = "Muy pequeña";
+L["Size Small"] = "Pequeña";
+L["Size Medium"] = "Mediana";
+L["Size Large"] = "Grande";
+L["Open Animation"] = "Animación de apertura";
+L["Open Animation Desc"] = "Cuánto tarda en abrirse la ventana de diálogo. 0s la muestra al instante.\n\nPor defecto: 0,25s";
+L["Font Size"] = "Tamaño de Fuente";
+L["Font Size Desc"] = "Establece el tamaño de la fuente de la interfaz.\n\nPor defecto: 12";
+L["Frame Orientation"] = "Posición";
+L["Frame Orientation Desc"] = "Coloca la interfaz en el lado izquierdo o derecho de la pantalla.\n\nCon Personalizada puedes arrastrar la interfaz a donde quieras mientras esta ventana esté abierta.\n\nPor defecto: Derecha";
+L["Orientation Left"] = "Izquierda";
+L["Orientation Right"] = "Derecha";
+L["Orientation Custom"] = "Personalizada";
+L["Move Position"] = "Mover";
+L["Reset Position"] = "Reiniciar posición";
+L["Move Position Desc"] = "Muestra la interfaz para que puedas arrastrarla a una nueva posición.";
+L["Reset Position Desc"] = "Restablece la posición de la interfaz.";
+L["Hide UI"] = "Ocultar IU";
+L["Hide UI Desc"] = "Oculta la interfaz del juego cuado interactúas con un PNJ.";
+L["Show NPC Name On Page"] = "Mostrar nombre del PNJ";
+L["Show NPC Name On Page Desc"] = "Mostrar el nombre del PNJ en la página.";
+L["Show Quest Type"] = "Mostrar tipo de misión";
+L["Show Quest Type Desc"] = "Muestra el tipo de misión (misión, diaria, semanal, mazmorra, ...) encima del título de la misión.";
+L["Show Copy Text Button"] = "Mostrar Botón Copiar Texto";
+L["Show Copy Text Button Desc"] = "Muestra un botón Copiar texto arriba a la derecha de la interfaz de diálogo.\n\nTambién incluye datos del juego como los ID de PNJ y de objetos (y los ID de las misiones que ya están en tu registro).";
+L["Copy Text"] = "Copiar texto";
+L["Drag To Move"] = "Clic izquierdo y arrastrar para mover la ventana.";
+L["Edit Mode Title"] = "Dialogue UI";
+L["Edit Mode Body"] = "Arrastra esta ventana a donde quieras. Cierra la ventana de ajustes para ocultarla.";
+
+-- Quest types and tags
+L["Quest"] = "Misión";
+L["Readables"] = "Legibles";
+L["BookUI Frame Size Desc"] = "Establece el tamaño de la interfaz de libros.\n\nPor defecto: Pequeño";
+L["BookUI Keep UI Open"] = "Mantener la ventana abierta";
+L["BookUI Keep UI Open Desc"] = "Mantiene la ventana abierta cuando te alejas del objeto.\n\nPresiona Escape o has click derecho en la interfaz de usuario para cerrarla.";
+L["BookUI Show Location"] = "Mostrar ubicación";
+L["BookUI Show Location Desc"] = "Mostrar la ubicación del objeto en el encabezado.\n\nSolo funciona con objetos del juego, no con los items que llevas en tus bolsas.";
+L["BookUI Show Item Description"] = "Mostrar descripción del item";
+L["BookUI Show Item Description Desc"] = "Si el elemento tiene alguna descripción en su información emergente, se mostrará en la parte superior de la interfaz.";
+L["BookUI Darken Screen"] = "Oscurecer pantalla";
+L["BookUI Darken Screen Desc"] = "Oscurece el área debajo de la interfaz de usuario para ayudarte a concentrarte en el contenido.";
+
+-- Settings: Control tab (retail enUS where it exists)
+L["Input Device"] = "Dispositivo de entrada";
+L["Input Device Desc"] = "Afecta a los iconos de teclas y organización de la interfaz.";
+L["Input Device KBM"] = "Teclado y ratón";
+L["Use Custom Bindings"] = "Usar bindeos personalizados";
+L["Use Custom Bindings Desc"] = "Habilita esta opción para utilizar tus propios bindeos.";
+L["Primary Control Key Desc"] = "Presiona esta tecla para seleccionar la primera opción disponible, como Aceptar Misión.";
+L["Right Click To Close UI"] = "Click derecho para cerrar la interfaz";
+L["Right Click To Close UI Desc"] = "Click derecho en dialogue UI para cerrarlo.";
+L["Press Button To Scroll Down"] = "Presionar Botón para deslizar verticalmente";
+L["Press Button To Scroll Down Desc"] = "Si el contenido es más alto que la ventana, presionar el botón de confirmación deslizará verticalmente la página hacia abajo en vez de aceptar la misión.";
+L["Press Escape To Decline Quest"] = "Presionar Escape para rechazar la misión";
+L["Press Escape To Decline Quest Desc"] = "Cuando veas una misión de un PNJ que tiene otros diálogos, al presionar la tecla Escape volverás a la página anterior en lugar de cerrar la interfaz.";
+L["Press Tab To Select Reward"] = "Presionar la tecla Tab para seleccionar la recompensa";
+L["Press Tab To Select Reward Desc"] = "Pulsa Tab para recorrer las recompensas elegibles al entregar la misión. Mayús+Tab retrocede.";
+L["Keybinding Hint"] = "Haz clic y pulsa la tecla que quieras usar.\nClic derecho: volver a la tecla por defecto.\nEsc: cancelar.";
+L["Bound To"] = "Vinculado a: ";
+L["Not Bound"] = NOT_BOUND or "Sin vincular";
+L["Action Confirm"] = "Confirmar";
+L["Action Settings"] = "Alternar configuración";
+L["Action Option1"] = "Opción 1";
+L["Action Option2"] = "Opción 2";
+L["Action Option3"] = "Opción 3";
+L["Action Option4"] = "Opción 4";
+L["Action Option5"] = "Opción 5";
+L["Action Option6"] = "Opción 6";
+L["Action Option7"] = "Opción 7";
+L["Action Option8"] = "Opción 8";
+L["Action Option9"] = "Opción 9";
+L["Action Option Desc"] = "Pulsa esta tecla para seleccionar la opción %d de la lista (misiones y opciones de diálogo).";
+L["Action Settings Desc"] = "Pulsa esta tecla para abrir o cerrar la ventana de ajustes mientras se muestra el diálogo.";
+
+L["Quest Frequency Daily"] = "Diaria";
+L["Quest Frequency Weekly"] = "Semanal";
+L["Quest Type Repeatable"] = "Repetible";
+L["Quest Difficulty VeryHard"] = "Muy difícil";
+L["Quest Difficulty Hard"] = "Difícil";
+L["Quest Difficulty Easy"] = "Fácil";
+L["Quest Difficulty Trivial"] = "Nivel bajo";
+L["Quest Difficulty Option"] = "Dificultad de misión";
+L["Instant Quest Text"] = "Texto de misión instantáneo";
+L["Instant Quest Text Desc"] = "Muestra el texto de la misión de golpe en lugar de hacerlo aparecer poco a poco. Usa el mismo ajuste del juego que la opción de texto de misión de Blizzard.";
+L["Mark Highest Sell Price"] = "Marcar precio de venta más alto";
+L["Mark Highest Sell Price Desc"] = "Muestra qué objeto tiene el mayor precio de venta al elegir una recompensa.";
+L["Use Blizzard Tooltip"] = "Utilizar tooltip de Blizzard";
+L["Use Blizzard Tooltip Desc"] = "Utiliza el tooltip de Blizzard para las recompensas de misión en vez de nuestro tooltip especial.";
+L["Show Transmog Status"] = "Mostrar apariencias sin coleccionar";
+L["Show Transmog Status Desc"] = "Marca los objetos de recompensa cuya apariencia de transfiguración aún no has coleccionado y añade una línea a su descripción emergente.\n\n|cffff8040El servidor debe tener instalado el módulo del sistema de transfiguración (mod-transmog).|r Sin él no se muestra nada.\n\nEl addon ejecuta una vez el comando .transmog sync y oculta su salida en la ventana de chat.";
+L["Use Transmog Plus"] = "Usando Mod Transmog Plus";
+L["Use Transmog Plus Desc"] = "Marca esta casilla si el servidor usa mod-transmog-plus en lugar del mod-transmog original. El servidor responde entonces por cada objeto y cuenta una apariencia como coleccionada cuando lo está cualquier objeto con el mismo modelo.\n\nDéjala sin marcar para el mod-transmog original.";
+L["Transmog Not Collected"] = "Apariencia sin coleccionar";
+L["Click To Copy To Clipboard"] = "Haz clic para copiar al portapapeles";
+L["Show Upgrade Arrow"] = "Mostrar flecha de mejora (requiere Pawn)";
+L["Show Upgrade Arrow Desc"] = "Muestra una flecha verde %s en un objeto de recompensa si es una mejora para tu personaje según el addon Pawn: el objeto puntúa más que el que llevas equipado en esa ranura en al menos una de tus escalas de Pawn.\n\nLa armadura de un tipo distinto al que llevas equipado (tela en lugar de cuero, por ejemplo) nunca se marca.";
+L["Show Upgrade Arrow Pawn Missing"] = "Requiere el addon Pawn (no encontrado).\n\nDescarga: |cff0000ee%s|r\n\nHaz clic en el icono de copiar, pulsa Ctrl+C y pega el enlace en tu navegador.";
+L["Quest Difficulty Option Desc"] = "Elige cómo se muestra la dificultad de las misiones cuando el PNJ te ofrece una lista de misiones.";
+L["QuestDifficultyStyle Off"] = "NO";
+L["QuestDifficultyStyle Off Desc"] = "El nivel y la dificultad de las misiones están ahora ocultos.";
+L["QuestDifficultyStyle Level"] = "Nivel";
+L["QuestDifficultyStyle Level Desc"] = "Muestra el nivel de la misión a la izquierda de su título.";
+L["QuestDifficultyStyle Name"] = "Nombre";
+L["QuestDifficultyStyle Both"] = "Ambos";
+L["QuestDifficultyStyle Both Desc"] = "Muestra el nivel de la misión a la izquierda de su título y el nombre de la dificultad a la derecha del botón de la misión si el nivel de la misión está fuera del rango recomendado.";
+L["QuestDifficultyStyle Name Desc"] = "Muestra el nombre de la dificultad a la derecha del botón de la misión si el nivel de la misión está fuera del rango recomendado.\n(El nivel de la misión es 3 niveles superior o inferior al de tu personaje.)";
+L["Quest Type Trivial"] = "Trivial";
+L["Quest Type Dungeon"] = "Mazmorra";
+L["Quest Type Raid"] = "Banda";
+L["Quest Type Heroic"] = "Heroica";
+L["Quest Type Elite"] = "Élite";
+L["Quest Type Group"] = "Grupo";
+L["Quest Type PvP"] = "JcJ";
+
+-- Quest text
+L["Quest Objectives"] = "Objetivos";
+L["Format Suggested Players"] = QUEST_SUGGESTED_GROUP_NUM or "Jugadores sugeridos [%d]";
+L["Quest Accepted Alert"] = ERR_QUEST_ACCEPTED_S or "Misión aceptada: %s";
+
+-- Rewards
+L["Reward"] = "Recompensa";
+L["Rewards"] = "Recompensas";
+L["Reward Choose"] = REWARD_CHOOSE or "Elige tu recompensa:";
+L["Reward Choices"] = REWARD_CHOICES or "Podrás elegir una de estas recompensas:";
+L["Reward Items"] = REWARD_ITEMS or "También recibirás:";
+L["Requirements"] = "Requisitos";
+L["Money"] = MONEY or "Dinero";
+L["Honor Points"] = "Honor";
+L["Arena Points"] = "Puntos de arena";
+L["Talent Points"] = "Puntos de talento";
+L["Experience"] = "Experiencia";
+L["Title"] = "Título";
+L["Format Talent Point Row"] = "+%d punto de talento";
+L["Format Talent Points Row"] = "+%d puntos de talento";
+
+-- Reward tooltip
+L["Show Comparison"] = "Mostrar comparación";
+L["Hide Comparison"] = "Ocultar comparación";
+L["Sell Price"] = SELL_PRICE or "Precio de venta";
+L["Format Item Level"] = ITEM_LEVEL or "Nivel de objeto %d";
+L["Format You Have"] = "- Tienes |cffffffff%d|r";
+L["Format In Bank"] = " (|cffffffff%d|r en el banco)";
+L["Format Replace Item"] = "Reemplaza %s";
+L["Equipped Item"] = "objeto equipado";
+L["Different Item Type"] = "Tipo de objeto distinto al equipado.";
+L["Identical Stats"] = "Estadísticas idénticas";
+L["Format Reward Title"] = "Se te concederá el título «%s».";
+L["Format Reward Honor"] = "Recibirás %d puntos de honor.";
+L["Format Reward Talent Point"] = "Recibirás %d punto de talento.";
+L["Format Reward Talent Points"] = "Recibirás %d puntos de talento.";
+L["Format Reward Arena"] = "Recibirás %d puntos de arena.";
+L["Format Reward Experience"] = "Ganarás %d puntos de experiencia%s.";
+L["Format Of Your Level"] = " (%d%% de tu nivel)";
+
+-- Quest Item Display
+L["Quest Item Display"] = "Mostrar Objeto de Misión";
+L["Quest Item Display Desc"] = "Muestra la descripción del Objeto de Misión aiutomáticamente y te permite utilizarlo sin abrir la bolsa.";
+L["Quest Item Display Hide Seen"] = "Ignorar Objetos ya vistos";
+L["Quest Item Display Hide Seen Desc"] = "Ignorar objetos que ya han sido descubiertos por tus otros personajes.";
+L["Quest Item Display Await World Map"] = " Esperar al Mapa de Mundo";
+L["Quest Item Display Await World Map Desc"] = "Al abrir el Mapa de Mundo, oculta temporalmente la interfaz de Objeto de Misión y pausa el temporizador de cerrado automático.";
+L["Quest Item Display Reset Position Desc"] = "Reiniciar la posición de la ventana.";
+L["Valuable Reward Popup"] = "Ventana de recompensa valiosa (requiere Pawn)";
+L["Valuable Reward Popup Sample"] = "Ventana de recompensa valiosa";
+L["Valuable Reward Popup Desc"] = "Cuando una misión te da un objeto que es una mejora para tu personaje según el addon Pawn, muestra un botón que te permite equiparlo directamente.\n\nEl botón está desactivado durante el combate.";
+L["Item Equipped"] = "Equipado";
+L["Press Key To Use Item"] = "Presionar el botón para usar";
+L["Press Key To Use Item Desc Generic"] = "Pressione o botão de confirmação (atual: %s) para usar o item quando estiver fora de combate.";
+L["Press Key To Use Item Desc PC"] = "Pulsa la barra espaciadora para usar el objeto fuera de combate.";
+L["Click To Read"] = "Clic izquierdo para leer";
+L["Begins A Quest"] = "Inicia una misión";
+
+-- Supported addons
+L["Format Reward Title Row"] = "Título: %s";
+L["On Your Gear List"] = "En tu lista de equipo";
+L["Format Exchange It For"] = "Cámbialo por: %s";

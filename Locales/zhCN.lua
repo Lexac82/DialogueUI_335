@@ -1,0 +1,218 @@
+-- 简体中文. Strings come from the retail Dialogue UI locale where it has the same text, the rest are written for this port.
+if not (GetLocale() == "zhCN") then return end;
+
+local _, addon = ...;
+local L = addon.L;
+
+-- Blizzard's own global strings are used where they exist (they follow the client language). The text below is the fallback.
+
+-- Footer buttons
+L["Accept"] = ACCEPT or "接受";
+L["Continue"] = CONTINUE or "继续";
+L["Complete Quest"] = COMPLETE or "完成任务";
+L["Incomplete"] = INCOMPLETE or "未完成";
+L["Decline"] = DECLINE or "拒绝";
+L["Cancel"] = CANCEL or "取消";
+L["Goodbye"] = GOODBYE or "再见";
+
+-- Settings window
+L["UI"] = "界面";
+L["Control"] = "控制";
+L["Gameplay"] = "游戏功能";
+L["Minimap"] = "小地图";
+
+-- Settings: Compatibility
+L["Compatibility"] = "兼容性";
+L["Disable DUI In Instance"] = "在副本内使用游戏原始对话界面";
+L["Disable DUI In Instance Desc"] = "当你进入地下城或团本时使用游戏原始对话界面。";
+
+-- Settings: Minimap tab and minimap button
+L["Show Minimap Button"] = "显示小地图按钮";
+L["Show Minimap Button Desc"] = "在小地图旁显示一个按钮，点击可打开这些设置。拖动可沿小地图移动它。";
+L["Minimap Button Tooltip"] = "点击打开设置。";
+L["Minimap Button Drag"] = "拖动以移动";
+
+-- Settings: UI tab
+L["Theme"] = "主题";
+L["Theme Desc"] = "选择一个主题色。";
+L["Theme Brown"] = "棕色";
+L["Theme Dark"] = "深色";
+L["Frame Size"] = "界面大小";
+L["Frame Size Desc"] = "设置对话界面的大小。\n\n默认：中";
+L["Size Extra Small"] = "特小";
+L["Size Small"] = "小";
+L["Size Medium"] = "中";
+L["Size Large"] = "大";
+L["Open Animation"] = "打开动画";
+L["Open Animation Desc"] = "对话窗口打开所需的时间。0秒表示立即显示。\n\n默认：0.25秒";
+L["Font Size"] = "字号";
+L["Font Size Desc"] = "设置界面的字体大小。\n\n默认：12";
+L["Frame Orientation"] = "界面位置";
+L["Frame Orientation Desc"] = "将界面放在屏幕左侧或右侧。\n\n选择“自定义”后，此窗口打开期间可将界面拖动到任意位置。\n\n默认：右侧";
+L["Orientation Left"] = "左侧";
+L["Orientation Right"] = "右侧";
+L["Orientation Custom"] = "自定义";
+L["Move Position"] = "移动";
+L["Reset Position"] = "重置位置";
+L["Move Position Desc"] = "显示界面，以便你将其拖动到新位置。";
+L["Reset Position Desc"] = "重置界面位置。";
+L["Hide UI"] = "隐藏界面";
+L["Hide UI Desc"] = "与NPC交互时隐藏其他界面。";
+L["Show NPC Name On Page"] = "显示NPC名字";
+L["Show NPC Name On Page Desc"] = "在页面上显示交互对象的名字。";
+L["Show Quest Type"] = "显示任务类型";
+L["Show Quest Type Desc"] = "在任务标题上方显示任务类型（任务、日常、每周、地下城等）。";
+L["Show Copy Text Button"] = "显示复制文本按钮";
+L["Show Copy Text Button Desc"] = "在对话界面右上角显示“复制文本”按钮。\n\n其中还包含游戏数据，如 NPC 和物品 ID（以及已在你任务日志中的任务 ID）。";
+L["Copy Text"] = "复制文本";
+L["Drag To Move"] = "左键点击并拖拽以移动该窗口。";
+L["Edit Mode Title"] = "Dialogue UI";
+L["Edit Mode Body"] = "将此窗口拖动到你想要的位置。关闭设置窗口即可将其隐藏。";
+
+-- Quest types and tags
+L["Quest"] = "任务";
+L["Readables"] = "可阅读物品";
+L["BookUI Frame Size Desc"] = "设置书籍界面的大小。\n\n默认：小";
+L["BookUI Keep UI Open"] = "保持窗口打开";
+L["BookUI Keep UI Open Desc"] = "离开该物体后保持窗口打开。\n\n按 Esc 或在界面上点击右键可将其关闭。";
+L["BookUI Show Location"] = "显示地点";
+L["BookUI Show Location Desc"] = "在标题中显示该物体的位置。\n\n仅适用于游戏对象，不适用于背包中的物品。";
+L["BookUI Show Item Description"] = "显示物品描述";
+L["BookUI Show Item Description Desc"] = "若物品有描述，则在书籍界面上方显示它。";
+L["BookUI Darken Screen"] = "屏幕变暗";
+L["BookUI Darken Screen Desc"] = "让界面后方区域变暗来帮助你将注意力集中在内容上。";
+
+-- Settings: Control tab (retail enUS where it exists)
+L["Input Device"] = "输入设备";
+L["Input Device Desc"] = "此选项影响快捷键图标和界面布局。";
+L["Input Device KBM"] = "键盘和鼠标";
+L["Use Custom Bindings"] = "使用自定义按键";
+L["Use Custom Bindings Desc"] = "勾选此选项以启用自定义按键。";
+L["Primary Control Key Desc"] = "按下此按钮将自动选择第一个最佳选项，例如接受任务。";
+L["Right Click To Close UI"] = "右键关闭界面";
+L["Right Click To Close UI Desc"] = "在对话界面上按右键即可关闭窗口。";
+L["Press Button To Scroll Down"] = "按确认键来向下滚屏";
+L["Press Button To Scroll Down Desc"] = "如果当前页面盛不下所有任务文本，按下确认键会向下滚屏而不是接受任务。";
+L["Press Escape To Decline Quest"] = "按Esc键拒绝任务";
+L["Press Escape To Decline Quest Desc"] = "在你浏览任务详情时，如果该NPC还有其他对话选项，按Esc键会尝试返回上一级而不是直接关闭对话界面。";
+L["Press Tab To Select Reward"] = "按Tab键选择任务奖励";
+L["Press Tab To Select Reward Desc"] = "交付任务时，按 Tab 键在可选奖励之间循环切换。Shift+Tab 返回上一个。";
+L["Keybinding Hint"] = "点击，然后按下你想使用的按键。\n右键点击：恢复默认按键。\nEsc：取消。";
+L["Bound To"] = "绑定到：";
+L["Not Bound"] = NOT_BOUND or "未绑定";
+L["Action Confirm"] = "确认键";
+L["Action Settings"] = "打开/关闭设置界面";
+L["Action Option1"] = "对话选项 1";
+L["Action Option2"] = "对话选项 2";
+L["Action Option3"] = "对话选项 3";
+L["Action Option4"] = "对话选项 4";
+L["Action Option5"] = "对话选项 5";
+L["Action Option6"] = "对话选项 6";
+L["Action Option7"] = "对话选项 7";
+L["Action Option8"] = "对话选项 8";
+L["Action Option9"] = "对话选项 9";
+L["Action Option Desc"] = "按下此键选择列表（任务和对话选项）中的第 %d 项。";
+L["Action Settings Desc"] = "显示对话时，按下此键可打开或关闭设置窗口。";
+
+L["Quest Frequency Daily"] = "日常";
+L["Quest Frequency Weekly"] = "周常";
+L["Quest Type Repeatable"] = "可重复";
+L["Quest Difficulty VeryHard"] = "非常困难";
+L["Quest Difficulty Hard"] = "困难";
+L["Quest Difficulty Easy"] = "简单";
+L["Quest Difficulty Trivial"] = "低等级";
+L["Quest Difficulty Option"] = "任务难度";
+L["Instant Quest Text"] = "即时显示任务文本";
+L["Instant Quest Text Desc"] = "直接显示任务文本，而不是渐显。使用与暴雪任务文本选项相同的游戏设置。";
+L["Mark Highest Sell Price"] = "标记出最值钱的物品";
+L["Mark Highest Sell Price Desc"] = "在你选择任务奖励时标记出卖店价格最高的物品。";
+L["Use Blizzard Tooltip"] = "使用暴雪鼠标提示";
+L["Use Blizzard Tooltip Desc"] = "使用暴雪自带的鼠标提示来显示任务奖励详情。";
+L["Show Transmog Status"] = "显示未收集的外观";
+L["Show Transmog Status Desc"] = "标记你尚未收集其幻化外观的奖励物品，并在其提示中添加一行。\n\n|cffff8040服务器必须安装幻化系统模块（mod-transmog）。|r 否则不会显示任何内容。\n\n插件会运行一次 .transmog sync 命令，并在聊天窗口中隐藏其输出。";
+L["Use Transmog Plus"] = "使用 Mod Transmog Plus";
+L["Use Transmog Plus Desc"] = "如果服务器运行的是 mod-transmog-plus 而不是原版 mod-transmog，请勾选此项。服务器将针对每件物品作答，只要有任何相同模型的物品已收集，就视为该外观已收集。\n\n使用原版 mod-transmog 时请不要勾选。";
+L["Transmog Not Collected"] = "外观未收集";
+L["Click To Copy To Clipboard"] = "点击复制到剪贴板";
+L["Show Upgrade Arrow"] = "显示升级箭头（需要 Pawn）";
+L["Show Upgrade Arrow Desc"] = "根据 Pawn 插件，如果奖励物品对你的角色是升级，则在其上显示绿色箭头 %s：该物品在你至少一个 Pawn 评分方案中的得分高于该栏位已装备的物品。\n\n与你所装备的护甲类型不同的护甲（例如用布甲代替皮甲）永远不会被标记。";
+L["Show Upgrade Arrow Pawn Missing"] = "需要 Pawn 插件（未找到）。\n\n下载：|cff0000ee%s|r\n\n点击复制图标，按 Ctrl+C，然后将链接粘贴到浏览器中。";
+L["Quest Difficulty Option Desc"] = "选择任务列表界面上任务难度的显示方式。";
+L["QuestDifficultyStyle Off"] = "不显示";
+L["QuestDifficultyStyle Off Desc"] = "任务等级和难度已被隐藏。";
+L["QuestDifficultyStyle Level"] = "任务等级";
+L["QuestDifficultyStyle Level Desc"] = "在任务名称的左侧显示任务等级。";
+L["QuestDifficultyStyle Name"] = "难度名称";
+L["QuestDifficultyStyle Both"] = "两者";
+L["QuestDifficultyStyle Both Desc"] = "在任务标题左侧显示任务等级；如果任务等级超出推荐范围，则在任务按钮右侧显示难度名称。";
+L["QuestDifficultyStyle Name Desc"] = "如果任务不在推荐等级范围内，在任务按钮的最右侧显示难度名称。\n（推荐范围为只比你角色高两级或只低两级）";
+L["Quest Type Trivial"] = "低等级";
+L["Quest Type Dungeon"] = "地下城任务";
+L["Quest Type Raid"] = "团本任务";
+L["Quest Type Heroic"] = "英雄";
+L["Quest Type Elite"] = "精英";
+L["Quest Type Group"] = "小队";
+L["Quest Type PvP"] = "PvP";
+
+-- Quest text
+L["Quest Objectives"] = "任务目标";
+L["Format Suggested Players"] = QUEST_SUGGESTED_GROUP_NUM or "建议玩家人数：[%d]";
+L["Quest Accepted Alert"] = ERR_QUEST_ACCEPTED_S or "已接受任务：%s";
+
+-- Rewards
+L["Reward"] = "奖励";
+L["Rewards"] = "奖励";
+L["Reward Choose"] = REWARD_CHOOSE or "请选择你的奖励：";
+L["Reward Choices"] = REWARD_CHOICES or "你可以从这些奖励中选择一件：";
+L["Reward Items"] = REWARD_ITEMS or "你还将获得：";
+L["Requirements"] = "所需条件";
+L["Money"] = MONEY or "金钱";
+L["Honor Points"] = "荣誉";
+L["Arena Points"] = "竞技场点数";
+L["Talent Points"] = "天赋点数";
+L["Experience"] = "经验值";
+L["Title"] = "头衔";
+L["Format Talent Point Row"] = "+%d 点天赋点数";
+L["Format Talent Points Row"] = "+%d 点天赋点数";
+
+-- Reward tooltip
+L["Show Comparison"] = "显示物品对比";
+L["Hide Comparison"] = "隐藏物品对比";
+L["Sell Price"] = SELL_PRICE or "出售价格";
+L["Format Item Level"] = ITEM_LEVEL or "物品等级 %d";
+L["Format You Have"] = "- 你拥有 |cffffffff%d|r";
+L["Format In Bank"] = "（银行中有 |cffffffff%d|r）";
+L["Format Replace Item"] = "替换 %s";
+L["Equipped Item"] = "已装备的物品";
+L["Different Item Type"] = "与已装备的物品类型不同。";
+L["Identical Stats"] = "属性相同";
+L["Format Reward Title"] = "你将获得“%s”头衔。";
+L["Format Reward Honor"] = "你将获得 %d 点荣誉点数。";
+L["Format Reward Talent Point"] = "你将获得 %d 点天赋点数。";
+L["Format Reward Talent Points"] = "你将获得 %d 点天赋点数。";
+L["Format Reward Arena"] = "你将获得 %d 点竞技场点数。";
+L["Format Reward Experience"] = "你将获得 %d 点经验值%s。";
+L["Format Of Your Level"] = "（你当前等级的 %d%%）";
+
+-- Quest Item Display
+L["Quest Item Display"] = "任务物品说明";
+L["Quest Item Display Desc"] = "自动显示任务物品上的说明，并且允许你在不打开背包的情况下就能使用它。";
+L["Quest Item Display Hide Seen"] = "忽略见过的物品";
+L["Quest Item Display Hide Seen Desc"] = "忽略你账号上角色见过的物品。";
+L["Quest Item Display Await World Map"] = " 等待世界地图";
+L["Quest Item Display Await World Map Desc"] = "当你打开世界地图时，将正在显示的任务物品说明隐藏并暂停自动关闭倒计时。";
+L["Quest Item Display Reset Position Desc"] = "重置窗口位置。";
+L["Valuable Reward Popup"] = "珍贵奖励弹窗（需要 Pawn）";
+L["Valuable Reward Popup Sample"] = "珍贵奖励弹窗";
+L["Valuable Reward Popup Desc"] = "当任务奖励了根据 Pawn 插件对你的角色是升级的物品时，显示一个可直接装备它的按钮。\n\n战斗中该按钮不可用。";
+L["Item Equipped"] = "已装备";
+L["Press Key To Use Item"] = "按键使用物品";
+L["Press Key To Use Item Desc Generic"] = "非战斗时按确认键（当前为：%s）使用物品。";
+L["Press Key To Use Item Desc PC"] = "非战斗状态下，按空格键即可使用该物品。";
+L["Click To Read"] = "左键点击阅读";
+L["Begins A Quest"] = "开始一个任务";
+
+-- Supported addons
+L["Format Reward Title Row"] = "头衔：%s";
+L["On Your Gear List"] = "在你的装备清单中";
+L["Format Exchange It For"] = "可换取：%s";

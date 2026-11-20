@@ -1,4 +1,5 @@
--- Reserved space below so all localization files line up
+-- Français. Les chaînes avec des valeurs sont des formats : "%d" = nombre, "%s" = texte.
+if not (GetLocale() == "frFR") then return end;
 
 local _, addon = ...;
 local L = addon.L;
@@ -23,6 +24,11 @@ L["Control"] = "Commandes";
 L["Gameplay"] = "Jeu";
 L["Minimap"] = "Mini-carte";
 
+-- Paramètres : compatibilité
+L["Compatibility"] = "Compatibilité";
+L["Disable DUI In Instance"] = "Utiliser l'interface par défaut de WoW en instance";
+L["Disable DUI In Instance Desc"] = "Désactive Dialogue UI et utilise l'interface par défaut de WoW lorsque vous êtes dans un donjon ou un raid.";
+
 -- Paramètres : onglet Mini-carte et bouton de la mini-carte
 L["Show Minimap Button"] = "Afficher le bouton de la mini-carte";
 L["Show Minimap Button Desc"] = "Affiche un bouton sur la mini-carte pour ouvrir ces paramètres. Faites-le glisser pour le déplacer autour de la mini-carte.";
@@ -40,6 +46,8 @@ L["Size Extra Small"] = "Très petite";
 L["Size Small"] = "Petite";
 L["Size Medium"] = "Moyenne";
 L["Size Large"] = "Grande";
+L["Open Animation"] = "Animation d'ouverture";
+L["Open Animation Desc"] = "Durée d'ouverture de la fenêtre de dialogue. 0 s l'affiche immédiatement.\n\nPar défaut : 0,25 s";
 L["Font Size"] = "Taille de la police";
 L["Font Size Desc"] = "Définissez la taille de la police de l'interface.\n\nPar défaut : 12";
 L["Frame Orientation"] = "Position";
@@ -123,6 +131,11 @@ L["Mark Highest Sell Price"] = "Indiquer le prix de vente le plus élevé";
 L["Mark Highest Sell Price Desc"] = "Indique quel objet possède le prix de vente le plus élevé lorsque vous choisissez une récompense.";
 L["Use Blizzard Tooltip"] = "Utiliser l'infobulle de Blizzard";
 L["Use Blizzard Tooltip Desc"] = "Utilise l'infobulle de Blizzard pour le bouton de récompense de quête à la place de notre infobulle personnalisée.";
+L["Show Transmog Status"] = "Afficher les apparences non collectées";
+L["Show Transmog Status Desc"] = "Marque les objets de récompense dont l'apparence de transmogrification n'a pas encore été collectée et ajoute une ligne à leur infobulle.\n\n|cffff8040Le serveur doit avoir le module du système de transmogrification (mod-transmog) installé.|r Rien n'est affiché sur un serveur qui ne l'a pas.\n\nL'addon exécute une fois la commande .transmog sync et masque son résultat dans la fenêtre de discussion.";
+L["Use Transmog Plus"] = "Utilisation de Mod Transmog Plus";
+L["Use Transmog Plus Desc"] = "Cochez cette option si le serveur utilise mod-transmog-plus au lieu du mod-transmog d'origine. Le serveur répond alors pour chaque objet et considère une apparence comme collectée dès qu'un objet ayant le même modèle l'est.\n\nLaissez-la décochée pour le mod-transmog d'origine.";
+L["Transmog Not Collected"] = "Apparence non collectée";
 L["Click To Copy To Clipboard"] = "Cliquer pour copier dans le presse-papiers";
 L["Show Upgrade Arrow"] = "Afficher la flèche d'amélioration (Pawn requis)";
 L["Show Upgrade Arrow Desc"] = "Affiche une flèche verte %s sur un objet de récompense s'il constitue une amélioration pour votre personnage selon l'addon Pawn : l'objet obtient un meilleur score que celui que vous portez dans cet emplacement avec au moins l'une de vos échelles Pawn.\n\nLes armures d'un type différent de celui que vous portez (du tissu à la place du cuir, par exemple) ne sont jamais signalées.";
@@ -201,3 +214,8 @@ L["Press Key To Use Item Desc Generic"] = "Appuyez sur le bouton de confirmation
 L["Press Key To Use Item Desc PC"] = "Appuyez sur Espace pour utiliser l'objet hors combat.";
 L["Click To Read"] = "Clic gauche pour lire";
 L["Begins A Quest"] = "Commence une quête";
+
+-- Addons pris en charge
+L["Format Reward Title Row"] = "Titre : %s";
+L["On Your Gear List"] = "Dans votre liste d'équipement";
+L["Format Exchange It For"] = "À échanger contre : %s";

@@ -2,6 +2,7 @@ local _, addon = ...;
 
 -- Big reward button (item, spell, title). Port of retail's DUIDialogItemButtonMixin
 -- (UITemplates.lua 1396-1979, DialogueUI.xml 210-287) for 3.3.5a.
+local L = addon.L;
 local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
@@ -163,7 +164,7 @@ function RewardItemButton:SetEntry(entry)
         name = entry.name or "";
     elseif entry.kind == "title" then
         texture = ICON_TITLE;
-        name = "Title: " .. (entry.name or "");
+        name = L["Format Reward Title Row"]:format(entry.name or "");
     end
 
     self.icon:SetTexture(texture);

@@ -212,3 +212,8 @@ L["Press Key To Use Item Desc Generic"] = "Press the Confirm Button (current: %s
 L["Press Key To Use Item Desc PC"] = "Press Space to use the item when you are out of combat.";
 L["Click To Read"] = "Left Click to Read";
 L["Begins A Quest"] = "Begins a Quest";
+
+-- Supported addons
+L["Format Reward Title Row"] = "Title: %s";
+L["On Your Gear List"] = "On your gear list";
+L["Format Exchange It For"] = "Exchange it for: %s";

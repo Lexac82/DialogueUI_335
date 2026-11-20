@@ -1,0 +1,218 @@
+-- Deutsch. Strings come from the retail Dialogue UI locale where it has the same text, the rest are written for this port.
+if not (GetLocale() == "deDE") then return end;
+
+local _, addon = ...;
+local L = addon.L;
+
+-- Blizzard's own global strings are used where they exist (they follow the client language). The text below is the fallback.
+
+-- Footer buttons
+L["Accept"] = ACCEPT or "Akzeptieren";
+L["Continue"] = CONTINUE or "Weiter";
+L["Complete Quest"] = COMPLETE or "Quest abschließen";
+L["Incomplete"] = INCOMPLETE or "Unvollständig";
+L["Decline"] = DECLINE or "Ablehnen";
+L["Cancel"] = CANCEL or "Abbrechen";
+L["Goodbye"] = GOODBYE or "Auf Wiedersehen";
+
+-- Settings window
+L["UI"] = "Benutzerinterface";
+L["Control"] = "Steuerung";
+L["Gameplay"] = "Gameplay";
+L["Minimap"] = "Minikarte";
+
+-- Settings: Compatibility
+L["Compatibility"] = "Kompatibilität";
+L["Disable DUI In Instance"] = "Standardfenster in Instanzen";
+L["Disable DUI In Instance Desc"] = "In Dungeons und Schlachtzügen wird das Standard-Dialogfenster anstatt das von Dialogue UI verwendet.";
+
+-- Settings: Minimap tab and minimap button
+L["Show Minimap Button"] = "Minikarten-Schaltfläche anzeigen";
+L["Show Minimap Button Desc"] = "Zeigt eine Schaltfläche an der Minikarte, die diese Einstellungen öffnet. Ziehen, um sie um die Minikarte zu bewegen.";
+L["Minimap Button Tooltip"] = "Klicken, um die Einstellungen zu öffnen.";
+L["Minimap Button Drag"] = "Ziehen zum Verschieben";
+
+-- Settings: UI tab
+L["Theme"] = "Farbschema";
+L["Theme Desc"] = "Ändert das Farbschema des Addons.";
+L["Theme Brown"] = "Braun";
+L["Theme Dark"] = "Schwarz";
+L["Frame Size"] = "Fenstergröße";
+L["Frame Size Desc"] = "Legt die Größe der Dialogoberfläche fest.\n\nStandard: Mittel";
+L["Size Extra Small"] = "Sehr klein";
+L["Size Small"] = "Klein";
+L["Size Medium"] = "Mittelgroß";
+L["Size Large"] = "Sehr groß";
+L["Open Animation"] = "Öffnungsanimation";
+L["Open Animation Desc"] = "Wie lange das Dialogfenster zum Öffnen braucht. 0s zeigt es sofort an.\n\nStandard: 0,25s";
+L["Font Size"] = "Schriftgröße";
+L["Font Size Desc"] = "Ändert die Schriftgröße des Addons.\n\nStandard: 12";
+L["Frame Orientation"] = "Positionierung";
+L["Frame Orientation Desc"] = "Platziere die Oberfläche links oder rechts auf dem Bildschirm.\n\nMit „Benutzerdefiniert“ kannst du die Oberfläche beliebig ziehen, solange dieses Fenster geöffnet ist.\n\nStandard: Rechts";
+L["Orientation Left"] = "Links";
+L["Orientation Right"] = "Rechts";
+L["Orientation Custom"] = "Benutzerdefiniert";
+L["Move Position"] = "Verschieben";
+L["Reset Position"] = "Zurücksetzen";
+L["Move Position Desc"] = "Zeigt die Oberfläche an, damit du sie an eine neue Position ziehen kannst.";
+L["Reset Position Desc"] = "Setzt die Position der Oberfläche zurück.";
+L["Hide UI"] = "Benutzerinterface ausblenden";
+L["Hide UI Desc"] = "Das komplette Benutzerinterface (außer dem Dialogfenster) wird ausgeblendet, wenn man einen NPC anspricht.";
+L["Show NPC Name On Page"] = "NPC-Namen anzeigen";
+L["Show NPC Name On Page Desc"] = "Zeigt den Namen des NPCs im Dialogtext an.";
+L["Show Quest Type"] = "Questtyp anzeigen";
+L["Show Quest Type Desc"] = "Zeigt den Questtyp (Quest, Täglich, Wöchentlich, Dungeon, ...) über dem Questtitel an.";
+L["Show Copy Text Button"] = "\"Text kopieren\" Symbol anzeigen";
+L["Show Copy Text Button Desc"] = "Zeigt oben rechts in der Dialogoberfläche eine Schaltfläche „Text kopieren“ an.\n\nSie enthält auch Spieldaten wie NPC- und Gegenstands-IDs (und Quest-IDs von Quests, die sich bereits in deinem Questlog befinden).";
+L["Copy Text"] = "Text kopieren";
+L["Drag To Move"] = "Verschiebt das Fenster mit einem Linksklick.";
+L["Edit Mode Title"] = "Dialogue UI";
+L["Edit Mode Body"] = "Ziehe dieses Fenster an die gewünschte Stelle. Schließe das Einstellungsfenster, um es auszublenden.";
+
+-- Quest types and tags
+L["Quest"] = "Quest";
+L["Readables"] = "Dokumente";
+L["BookUI Frame Size Desc"] = "Legt die Größe der Buchoberfläche fest.\n\nStandard: Klein";
+L["BookUI Keep UI Open"] = "Fenster nicht ausblenden";
+L["BookUI Keep UI Open Desc"] = "Das Fenster wird nicht ausgeblendet, wenn man sich vom Dokument entfernt.\n\nDas Fenster kann über die ESC-Taste oder einem Rechtsklick ausgeblendet werden.";
+L["BookUI Show Location"] = "Standort anzeigen";
+L["BookUI Show Location Desc"] = "Der momentane Standort, sowie Koordinaten des angeklickten Dokuments, werden oberhalb des Titels angezeigt.\n\nDies gilt nicht für Dokumente in Eurem Inventar.";
+L["BookUI Show Item Description"] = "Beschreibung anzeigen";
+L["BookUI Show Item Description Desc"] = "Falls der Gegenstand eine zusätzliche Beschreibung in deren Tooltip vorweist, wird diese im Dialogfenster zusätzlich zum Haupttext oben angezeigt.";
+L["BookUI Darken Screen"] = "Besserer Kontrast";
+L["BookUI Darken Screen Desc"] = "Zeigt einen Halbschatten hinter dem Dialogfenster an, wenn Ihr euch Dokumente anschaut.";
+
+-- Settings: Control tab (retail enUS where it exists)
+L["Input Device"] = "Eingabegerät";
+L["Input Device Desc"] = "Dies beeinflusst die Tastenkombinationen sowie das Benutzerinterface.";
+L["Input Device KBM"] = "Tastatur & Maus";
+L["Use Custom Bindings"] = "Benutzerdefinierte Tastenkürzel verwenden";
+L["Use Custom Bindings Desc"] = "Aktiviert diese Funktion, um Eure eigenen Tastenkürzel zu verwenden.";
+L["Primary Control Key Desc"] = "Verwendet dieses Tastenkürzel, um die erste Option wie z.B. \"Quest akzeptieren\" auszuwählen.";
+L["Right Click To Close UI"] = "Rechtsklick, um das Menü auszublenden";
+L["Right Click To Close UI Desc"] = "Ein Rechtsklick innerhalb des Dialogfensters wird dasselbige ausblenden.";
+L["Press Button To Scroll Down"] = "Bestätigungstaste zum Herunterscrollen";
+L["Press Button To Scroll Down Desc"] = "Wenn der Textinhalt zu groß für das Dialogfenster ist, wird durch das Drücken der Bestätigungstaste der Text nach unten gescrollt, anstatt die Quest zu akzeptieren.";
+L["Press Escape To Decline Quest"] = "ESC-Taste, um eine Quest abzubrechen";
+L["Press Escape To Decline Quest Desc"] = "Wenn man eine Dialogoption ausgewählt hat, bring Euch die ESC-Taste zurück zur Startseite anstatt das Dialogfenster zu schließen.";
+L["Press Tab To Select Reward"] = "Tabulatortaste, um die Belohnung auszuwählen";
+L["Press Tab To Select Reward Desc"] = "Drücke die Tabulatortaste, um beim Abgeben der Quest durch die wählbaren Belohnungen zu wechseln. Umschalt+Tab geht zurück.";
+L["Keybinding Hint"] = "Klicken und dann die gewünschte Taste drücken.\nRechtsklick: zurück zur Standardtaste.\nEsc: abbrechen.";
+L["Bound To"] = "Wird verwendet von: ";
+L["Not Bound"] = NOT_BOUND or "Nicht belegt";
+L["Action Confirm"] = "Bestätigen";
+L["Action Settings"] = "Optionsmenü";
+L["Action Option1"] = "Option 1";
+L["Action Option2"] = "Option 2";
+L["Action Option3"] = "Option 3";
+L["Action Option4"] = "Option 4";
+L["Action Option5"] = "Option 5";
+L["Action Option6"] = "Option 6";
+L["Action Option7"] = "Option 7";
+L["Action Option8"] = "Option 8";
+L["Action Option9"] = "Option 9";
+L["Action Option Desc"] = "Drücke diese Taste, um Option %d der Liste (Quests und Gesprächsoptionen) auszuwählen.";
+L["Action Settings Desc"] = "Drücke diese Taste, um das Einstellungsfenster zu öffnen oder zu schließen, solange der Dialog angezeigt wird.";
+
+L["Quest Frequency Daily"] = "Täglich";
+L["Quest Frequency Weekly"] = "Wöchentlich";
+L["Quest Type Repeatable"] = "Wiederholbar";
+L["Quest Difficulty VeryHard"] = "Sehr schwer";
+L["Quest Difficulty Hard"] = "Schwer";
+L["Quest Difficulty Easy"] = "Leicht";
+L["Quest Difficulty Trivial"] = "Niedrige Stufe";
+L["Quest Difficulty Option"] = "Questschwierigkeit";
+L["Instant Quest Text"] = "Questtext sofort anzeigen";
+L["Instant Quest Text Desc"] = "Zeigt den Questtext sofort an, statt ihn einzublenden. Dies nutzt dieselbe Spieleinstellung wie die Questtext-Option von Blizzard.";
+L["Mark Highest Sell Price"] = "Höchsten Verkaufspreis anzeigen";
+L["Mark Highest Sell Price Desc"] = "Bei der Auswahl einer Questbelohnung wird der Gegenstand mit dem höchsten Verkaufspreis hervorgehoben.";
+L["Use Blizzard Tooltip"] = "Blizzard-Tooltips verwenden";
+L["Use Blizzard Tooltip Desc"] = "Wenn man einen Gegenstand in Dialogfenster mit der Maus inspiziert, wird der Tooltip-Stil von Blizzard anstatt dem vom Dialogue UI verwendet.";
+L["Show Transmog Status"] = "Nicht gesammelte Erscheinungsbilder anzeigen";
+L["Show Transmog Status Desc"] = "Markiert Belohnungsgegenstände, deren Transmog-Erscheinungsbild du noch nicht gesammelt hast, und fügt ihrem Tooltip eine Zeile hinzu.\n\n|cffff8040Auf dem Server muss das Transmog-System-Modul (mod-transmog) installiert sein.|r Ohne dieses wird nichts angezeigt.\n\nDas Addon führt den Befehl .transmog sync einmal aus und blendet dessen Ausgabe im Chatfenster aus.";
+L["Use Transmog Plus"] = "Mod Transmog Plus verwenden";
+L["Use Transmog Plus Desc"] = "Aktiviere dies, wenn der Server mod-transmog-plus statt des originalen mod-transmog verwendet. Der Server antwortet dann für jeden Gegenstand und wertet ein Erscheinungsbild als gesammelt, wenn ein beliebiger Gegenstand mit demselben Modell gesammelt wurde.\n\nFür das originale mod-transmog deaktiviert lassen.";
+L["Transmog Not Collected"] = "Erscheinungsbild nicht gesammelt";
+L["Click To Copy To Clipboard"] = "Klicken, um in die Zwischenablage zu kopieren";
+L["Show Upgrade Arrow"] = "Verbesserungspfeil anzeigen (Pawn erforderlich)";
+L["Show Upgrade Arrow Desc"] = "Zeigt einen grünen Pfeil %s bei einem Belohnungsgegenstand, wenn er laut dem Addon Pawn eine Verbesserung für deinen Charakter ist: Der Gegenstand erreicht in mindestens einer deiner Pawn-Skalen einen höheren Wert als der, den du in diesem Platz trägst.\n\nRüstung eines anderen Typs als der getragenen (zum Beispiel Stoff statt Leder) wird nie markiert.";
+L["Show Upgrade Arrow Pawn Missing"] = "Erfordert das Addon Pawn (nicht gefunden).\n\nDownload: |cff0000ee%s|r\n\nKlicke auf das Kopiersymbol, drücke Strg+C und füge den Link in deinen Browser ein.";
+L["Quest Difficulty Option Desc"] = "Wähle, wie die Questschwierigkeit angezeigt wird, wenn dir der NPC eine Liste von Quests anbietet.";
+L["QuestDifficultyStyle Off"] = "AUS";
+L["QuestDifficultyStyle Off Desc"] = "Queststufe und Schwierigkeit sind jetzt ausgeblendet.";
+L["QuestDifficultyStyle Level"] = "Stufe";
+L["QuestDifficultyStyle Level Desc"] = "Zeigt die Queststufe links vom Questtitel an.";
+L["QuestDifficultyStyle Name"] = "Name";
+L["QuestDifficultyStyle Both"] = "Beides";
+L["QuestDifficultyStyle Both Desc"] = "Zeigt die Queststufe links vom Questtitel und den Namen der Schwierigkeit rechts der Quest-Schaltfläche an, wenn die Queststufe außerhalb des empfohlenen Bereichs liegt.";
+L["QuestDifficultyStyle Name Desc"] = "Zeigt den Namen der Schwierigkeit rechts der Quest-Schaltfläche an, wenn die Queststufe außerhalb des empfohlenen Bereichs liegt.\n(Die Queststufe liegt 3 Stufen über oder unter deiner Charakterstufe.)";
+L["Quest Type Trivial"] = "Trivial";
+L["Quest Type Dungeon"] = "Dungeon";
+L["Quest Type Raid"] = "Schlachtzug";
+L["Quest Type Heroic"] = "Heroisch";
+L["Quest Type Elite"] = "Elite";
+L["Quest Type Group"] = "Gruppe";
+L["Quest Type PvP"] = "PvP";
+
+-- Quest text
+L["Quest Objectives"] = "Ziele";
+L["Format Suggested Players"] = QUEST_SUGGESTED_GROUP_NUM or "Empfohlene Spieler [%d]";
+L["Quest Accepted Alert"] = ERR_QUEST_ACCEPTED_S or "Quest angenommen: %s";
+
+-- Rewards
+L["Reward"] = "Belohnung";
+L["Rewards"] = "Belohnungen";
+L["Reward Choose"] = REWARD_CHOOSE or "Wählt Eure Belohnung:";
+L["Reward Choices"] = REWARD_CHOICES or "Ihr könnt eine dieser Belohnungen wählen:";
+L["Reward Items"] = REWARD_ITEMS or "Ihr erhaltet außerdem:";
+L["Requirements"] = "Anforderungen";
+L["Money"] = MONEY or "Geld";
+L["Honor Points"] = "Ehrenpunkte";
+L["Arena Points"] = "Arenapunkte";
+L["Talent Points"] = "Talentpunkte";
+L["Experience"] = "Erfahrung";
+L["Title"] = "Titel";
+L["Format Talent Point Row"] = "+%d Talentpunkt";
+L["Format Talent Points Row"] = "+%d Talentpunkte";
+
+-- Reward tooltip
+L["Show Comparison"] = "Vergleich anzeigen";
+L["Hide Comparison"] = "Vergleich ausblenden";
+L["Sell Price"] = SELL_PRICE or "Verkaufspreis";
+L["Format Item Level"] = ITEM_LEVEL or "Gegenstandsstufe %d";
+L["Format You Have"] = "- Du besitzt |cffffffff%d|r";
+L["Format In Bank"] = " (|cffffffff%d|r in der Bank)";
+L["Format Replace Item"] = "Ersetze %s";
+L["Equipped Item"] = "angelegter Gegenstand";
+L["Different Item Type"] = "Anderer Gegenstandstyp als der angelegte.";
+L["Identical Stats"] = "Identische Werte";
+L["Format Reward Title"] = "Dir wird der Titel „%s“ verliehen.";
+L["Format Reward Honor"] = "Du erhältst %d Ehrenpunkte.";
+L["Format Reward Talent Point"] = "Du erhältst %d Talentpunkt.";
+L["Format Reward Talent Points"] = "Du erhältst %d Talentpunkte.";
+L["Format Reward Arena"] = "Du erhältst %d Arenapunkte.";
+L["Format Reward Experience"] = "Du erhältst %d Erfahrung%s.";
+L["Format Of Your Level"] = " (%d%% deiner Stufe)";
+
+-- Quest Item Display
+L["Quest Item Display"] = "Questgegenstand anzeigen";
+L["Quest Item Display Desc"] = "Zeigt die Beschreibung eines Quest-Gegenstandes an. Man kann außerdem den Gegenstand benutzen, ohne dafür das Inventarfenster zu öffnen.";
+L["Quest Item Display Hide Seen"] = "Bekannte Gegenstände ignorieren";
+L["Quest Item Display Hide Seen Desc"] = "Ignoriert Gegenstände, die bereits von einem Eurer anderen Charakteren entdeckt wurden.";
+L["Quest Item Display Await World Map"] = "Bei Weltkarte ausblenden";
+L["Quest Item Display Await World Map Desc"] = "Das Pop-up wird beim Öffnen der Weltkarte ausgeblendet. Der Timer, welcher das Pop-up nach kurzer Zeit ausblendet, wird dabei pausiert.";
+L["Quest Item Display Reset Position Desc"] = "Pop-up Position zurücksetzen";
+L["Valuable Reward Popup"] = "Wertvolles Belohnungs-Popup (Pawn erforderlich)";
+L["Valuable Reward Popup Sample"] = "Wertvolles Belohnungs-Popup";
+L["Valuable Reward Popup Desc"] = "Wenn dir eine Quest einen Gegenstand gibt, der laut dem Addon Pawn eine Verbesserung für deinen Charakter ist, wird eine Schaltfläche angezeigt, mit der du ihn direkt anlegen kannst.\n\nDie Schaltfläche ist im Kampf deaktiviert.";
+L["Item Equipped"] = "Angelegt";
+L["Press Key To Use Item"] = "Tastenkürzel";
+L["Press Key To Use Item Desc Generic"] = "Drücke die Bestätigungstaste (aktuell: %s), um den Gegenstand außerhalb des Kampfes zu benutzen.";
+L["Press Key To Use Item Desc PC"] = "Drücke die Leertaste, um den Gegenstand außerhalb des Kampfes zu benutzen.";
+L["Click To Read"] = "Rechtsklick zum Lesen";
+L["Begins A Quest"] = "Startet eine Quest";
+
+-- Supported addons
+L["Format Reward Title Row"] = "Titel: %s";
+L["On Your Gear List"] = "Auf deiner Ausrüstungsliste";
+L["Format Exchange It For"] = "Eintauschen gegen: %s";

@@ -1,4 +1,5 @@
 local _, addon = ...;
+local L = addon.L;
 
 -- Journal: Gear (JournalGearBIS): "On your gear list" for items that are an upgrade for your spec.
 -- The addon adds that line by hooking GameTooltip, which our tooltip is not, so we ask it the same question
@@ -78,13 +79,13 @@ local function OnAddOnLoaded()
             return
         end
         -- Its own line adds "Roll Need", which means nothing for quest rewards.
-        tooltip:AddLine(GOLD .. "On your gear list|r");
+        tooltip:AddLine(GOLD .. L["On Your Gear List"] .. "|r");
         if becomes then
             local names = {};
             for _, other in ipairs(becomes) do
                 names[#names + 1] = ItemName(other);
             end
-            tooltip:AddLine("Exchange it for: " .. table_concat(names, ", "), 1, 1, 1);
+            tooltip:AddLine(L["Format Exchange It For"]:format(table_concat(names, ", ")), 1, 1, 1);
         end
     end
 
