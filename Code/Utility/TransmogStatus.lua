@@ -173,7 +173,9 @@ function TransmogStatus:StartSync()
     syncStartedAt = GetTime();
     syncDeadline = syncStartedAt + SYNC_TIMEOUT;
     ArmTimer();
-    SendChatMessage(SYNC_COMMAND, "SAY");
+    -- The server runs "." commands whatever the chat type is. A whisper to yourself is never broadcast, so if the
+    -- server does not take it as a command (no module, no rights), nobody else sees the text, unlike with /say.
+    SendChatMessage(SYNC_COMMAND, "WHISPER", nil, UnitName("player"));
 end
 
 local function FinishSync()
@@ -243,6 +245,11 @@ local function SystemFilter(_, _, message)
     return false
 end
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", SystemFilter);
+
+-- Our own sync command is not shown back as "To <you>: .transmog sync" either.
+ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", function(_, _, message)
+    return message == SYNC_COMMAND
+end);
 
 local function GetSyncStatus(itemID)
     if not syncSet then
