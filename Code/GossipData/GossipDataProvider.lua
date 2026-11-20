@@ -144,21 +144,20 @@ end
 
 -- Header pill text of the quest details page (Settings > Quest Difficulty), coloured like the quest list:
 -- Level "36 Quest", Name "Quest - Very Hard", Both "36 Quest - Very Hard". Off, or no known level: the type alone.
+-- Plain text: the level and difficulty share the font and colour of the Quest label.
 function GossipDataProvider:FormatHeaderType(typeText, title)
     local style = GetDifficultyStyle();
     local level = style ~= 0 and FindQuestLevel(title) or nil;
     if not level then
         return typeText
     end
-    local diff = level - (UnitLevel("player") or level);
-    local hex = GetLevelColor(diff);
     local text = typeText;
     if (style % 2) == 1 then
-        text = format("|cff%s%d|r %s", hex, level, text);
+        text = format("%d %s", level, text);
     end
     local label = style >= 2 and GetDifficultyLabel({level = level}) or nil;     -- nil for Normal, as in the list
     if label then
-        text = format("%s - |cff%s%s|r", text, hex, label);
+        text = format("%s - %s", text, label);
     end
     return text
 end
