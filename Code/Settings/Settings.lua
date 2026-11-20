@@ -617,6 +617,8 @@ local Schematic = {
             {type = "Checkbox", name = L["Show EXP Bar"], description = L["Show EXP Bar Desc"], dbKey = "ShowEXPBar"},
             {type = "Checkbox", name = L["Always Show EXP Bar"], description = L["Always Show EXP Bar Desc"], dbKey = "ShowEXPBarAlways",
                 requiredParentValueAnd = {ShowEXPBar = true}},
+            {type = "Checkbox", name = L["Color Player Name"], description = L["Color Player Name Desc"], dbKey = "ColorPlayerName"},
+            {type = "Checkbox", name = L["Color Class Name"], description = L["Color Class Name Desc"], dbKey = "ColorClassName"},
             {type = "Subheader", name = L["Tooltip"], extraWidth = 15},
             {type = "Checkbox", name = L["Use Separate Tooltip for Comparison"], description = L["Use Separate Tooltip for Comparison Desc"], tooltip = SeparateCompare_Tooltip, dbKey = "TooltipSeparateCompare",
                 isDisabledFunc = SeparateCompare_IsDisabled, keepValueWhenDisabled = true},

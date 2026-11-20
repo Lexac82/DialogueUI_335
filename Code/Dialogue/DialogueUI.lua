@@ -145,6 +145,8 @@ end
 addon.CallbackRegistry:Register("FrameSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("FontSizeChanged", RedrawPage);
 addon.CallbackRegistry:Register("SettingChanged.ShowNPCNameOnPage", RedrawPage);    -- text only, the page is kept
+addon.CallbackRegistry:Register("SettingChanged.ColorPlayerName", RedrawPage);
+addon.CallbackRegistry:Register("SettingChanged.ColorClassName", RedrawPage);
 
 -- Settings > Control: the keys changed, so the key labels of a list page are laid out again (quest pages: the Footer
 -- updates its own button).
@@ -224,6 +226,7 @@ addon.CallbackRegistry:Register("ThemeChanged", function(themeID)
         CopyTextButton:SetTheme(themeID);
     end
     RefreshHeaderType();
+    RedrawPage();       -- the name colors only apply on the Dark theme
 end);
 
 -- The window shows the text of the page it was opened on: a new page or the end of the conversation closes it.

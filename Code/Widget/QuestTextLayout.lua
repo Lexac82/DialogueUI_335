@@ -315,6 +315,70 @@ function QuestTextLayout:InsertSubHeader(offsetY, text)
     return Round(offsetY + SUBHEADER_SIZE)
 end
 
+-- Wraps every whole-word match of word in the color code. plural: also takes "word" + "s".
+-- ignoreCase: the client writes $c in lower case ("a young warrior"). Lowering keeps byte positions for ASCII.
+local function ColorWord(text, word, open, plural, ignoreCase)
+    local out, pos = {}, 1;
+    local haystack = ignoreCase and string.lower(text) or text;
+    if ignoreCase then
+        word = string.lower(word);
+    end
+    while true do
+        local first, last = string.find(haystack, word, pos, true);
+        if not first then
+            break
+        end
+        if plural and string.sub(haystack, last + 1, last + 1) == "s" and not string.find(string.sub(haystack, last + 2, last + 2), "^%a") then
+            last = last + 1;
+        end
+        -- Whole word only: "Ann" must not color the start of "Anna".
+        local before = first > 1 and string.sub(text, first - 1, first - 1) or "";
+        local after = string.sub(text, last + 1, last + 1);
+        if string.find(before, "^%a") or string.find(after, "^%a") then
+            out[#out + 1] = string.sub(text, pos, last);
+        else
+            out[#out + 1] = string.sub(text, pos, first - 1) .. open .. string.sub(text, first, last) .. "|r";
+        end
+        pos = last + 1;
+    end
+    if pos == 1 then
+        return text
+    end
+    out[#out + 1] = string.sub(text, pos);
+    return table.concat(out)
+end
+
+-- The client has no inline bold, so the player's name and class name are shown in the class color instead.
+-- Settings > Color Player Name, Color Class Name. Dark theme only. Done at layout time, the stored text stays plain.
+-- RAID_CLASS_COLORS is a FrameXML table, not in wow-docs: UNVERIFIED, so a missing entry just skips the color.
+local function ColorPlayerText(text)
+    if not addon.ThemeUtil:IsDarkMode() then
+        return text
+    end
+    local colorName = addon.GetDBBool("ColorPlayerName");
+    local colorClass = addon.GetDBBool("ColorClassName");
+    if not (colorName or colorClass) then
+        return text
+    end
+
+    local className, classFile = UnitClass("player");
+    local colors = RAID_CLASS_COLORS;
+    local color = colors and classFile and colors[classFile];
+    if not color then
+        return text
+    end
+    local open = string.format("|cff%02x%02x%02x", color.r * 255 + 0.5, color.g * 255 + 0.5, color.b * 255 + 0.5);
+
+    if colorClass and className and className ~= "" then
+        text = ColorWord(text, className, open, true, true);
+    end
+    local name = UnitName("player");
+    if colorName and name and name ~= "" then
+        text = ColorWord(text, name, open, false);
+    end
+    return text
+end
+
 -- Lays out each paragraph as its own FontString. Returns the offset below the last one.
 function QuestTextLayout:FormatParagraph(offsetY, text)
     local paragraphs = SplitParagraph(text);
@@ -327,7 +391,7 @@ function QuestTextLayout:FormatParagraph(offsetY, text)
         -- Explicit width sets the wrap width. Word wrap is on (see AcquireFontString).
         fs:SetWidth(self.textWidth);
         fs:SetPoint("TOPLEFT", self.ContentFrame, "TOPLEFT", 0, -offsetY);
-        fs:SetText(paragraph);
+        fs:SetText(ColorPlayerText(paragraph));
         local items = self.revealItems;
         items[#items + 1] = {region = fs, fs = fs, length = strlen(paragraph)};
         offsetY = Round(offsetY + fs:GetStringHeight() + PARAGRAPH_SPACING);
@@ -365,6 +429,10 @@ local function ConcatenateNPCName(text)
     if text and text ~= "" and addon.GetDBBool("ShowNPCNameOnPage") and UnitExists("npc") then
         local name = UnitName("npc");
         if name and name ~= "" then
+            local hex = addon.GossipDataProvider.GetNormalColor();
+            if hex then
+                name = "|cff" .. hex .. name .. "|r";
+            end
             return name .. ": " .. text
         end
     end

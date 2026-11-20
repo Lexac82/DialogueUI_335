@@ -38,6 +38,13 @@ local function GetColors()
     return addon.ThemeUtil:IsDarkMode() and DIFFICULTY_COLORS.Dark or DIFFICULTY_COLORS.Bright
 end
 
+-- The "Normal" quest level color as RRGGBB for the NPC name on the page (QuestTextLayout.lua). Dark theme only, nil otherwise.
+function GossipDataProvider.GetNormalColor()
+    if addon.ThemeUtil:IsDarkMode() then
+        return DIFFICULTY_COLORS.Dark.Normal
+    end
+end
+
 local function GetLevelColor(levelDiff)
     local colors = GetColors();
     if levelDiff > 5 then
