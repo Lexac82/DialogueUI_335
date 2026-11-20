@@ -25,6 +25,8 @@ Code\Tooltip\TooltipFrame.lua
 Code\Tooltip\TooltipScan.lua
 Code\Tooltip\TooltipModel.lua
 Code\Tooltip\TooltipCompare.lua
+Code\Tooltip\TooltipCapture.lua
+Code\Tooltip\TooltipExtensions.lua
 Code\Tooltip\TooltipItem.lua
 Code\Scroll\Scroll_EasySmooth.lua
 Code\Scroll\Scroll_Bar.lua
@@ -50,5 +52,7 @@ Code\Book\BookUI.lua
 Code\Book\BookEvents.lua
 Code\Settings\Settings.lua
 Code\Widget\MinimapButton.lua
+Code\SupportedAddOns\SupportedAddOns.lua
+Code\SupportedAddOns\Auctionator.lua
 Code\Core.lua
 Code\Utility\DevTool.lua
