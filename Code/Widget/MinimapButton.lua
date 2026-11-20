@@ -3,7 +3,7 @@ local L = addon.L;
 
 -- Minimap button that opens the Settings window. Same idea as DragonUI's settings button (a round button that orbits
 -- the minimap rim at a saved angle, dragged with the left mouse button), simplified: no collector, no skinning.
--- The Minimap tab of the Settings window shows / hides it (ShowMinimapButton).
+-- The Minimap section of the Gameplay tab shows / hides it (ShowMinimapButton).
 
 local cos, sin, atan2, rad, deg = math.cos, math.sin, math.atan2, math.rad, math.deg;
 
@@ -146,7 +146,7 @@ function MinimapButton:Update()
     end
 end
 
--- Fires once at load with the saved value, and again when the Minimap tab checkbox changes.
+-- Fires once at load with the saved value, and again when the Minimap checkbox changes.
 addon.CallbackRegistry:Register("SettingChanged.ShowMinimapButton", function()
     MinimapButton:Update();
 end);

@@ -44,7 +44,6 @@ local TAB_ENTRIES = {
     { name = L["UI"] },
     { name = L["Control"] },
     { name = L["Gameplay"] },
-    { name = L["Minimap"] },
     { name = L["Other Addons"] },
 };
 
@@ -56,7 +55,7 @@ local DECOR_MASK_OFFSET = 24;           -- mask edge below the description text
 local DECOR_MASK_ALPHA = 0.875;         -- alpha of the mask's opaque part (0xDF)
 local DECOR_FADE_ROWS = 8 / 128;        -- fade height as a part of the picture (8 of the mask's 128 rows)
 
-local OTHER_ADDONS_TAB = 5;                   -- index in TAB_ENTRIES
+local OTHER_ADDONS_TAB = 4;                   -- index in TAB_ENTRIES
 
 local TOGGLE_NAME ="DialogueUI335SettingsToggle";      -- global names so key bindings can click them
 local CLOSE_NAME = "DialogueUI335SettingsClose";
@@ -648,10 +647,7 @@ local Schematic = {
                 requiredParentValueAnd = {QuickSlotQuestReward = true}, validationFunc = QuickSlot_Move_Validation, branchLevel = 0},
             {type = "Subheader", name = L["Compatibility"], extraWidth = 15},
             {type = "Checkbox", name = L["Disable DUI In Instance"], description = L["Disable DUI In Instance Desc"], dbKey = "DisableDUIInInstance"},
-        },
-    },
-    {   -- Minimap
-        options = {
+            {type = "Subheader", name = L["Minimap"], extraWidth = 15},
             {type = "Checkbox", name = L["Show Minimap Button"], description = L["Show Minimap Button Desc"], dbKey = "ShowMinimapButton"},
         },
     },
