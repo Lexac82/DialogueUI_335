@@ -134,6 +134,9 @@ local function AddReplaceBlock(tip, link, equipped)
         nameText = format("|cff%02x%02x%02x%s|r", floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5), equippedName);
     end
     tip:AddLine(L["Format Replace Item"]:format(nameText), GOLD[1], GOLD[2], GOLD[3]);
+    if not GetDBBool("TooltipShowCalculations") then
+        return
+    end
 
     if TooltipCompare:IsDifferentType(link, equipped) then
         tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
@@ -187,16 +190,18 @@ local function RenderEquippedTooltip(tip, newLink, equippedLink)
     local lines = TooltipScan:ScanHyperlink(equippedLink);
     RenderScannedLines(tip, lines, {quality = quality, noCompare = true}, equippedLink);
 
-    tip:AddBlankLine();
-    if TooltipCompare:IsDifferentType(newLink, equippedLink) then
-        tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
-    end
-    local statLines, identical = TooltipCompare:GetStatLines(newLink, equippedLink);
-    if identical then
-        tip:AddLine(L["Identical Stats"], GOLD[1], GOLD[2], GOLD[3]);
-    end
-    for i = 1, #statLines do
-        tip:AddLine(statLines[i], 1, 1, 1);
+    if GetDBBool("TooltipShowCalculations") then
+        tip:AddBlankLine();
+        if TooltipCompare:IsDifferentType(newLink, equippedLink) then
+            tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
+        end
+        local statLines, identical = TooltipCompare:GetStatLines(newLink, equippedLink);
+        if identical then
+            tip:AddLine(L["Identical Stats"], GOLD[1], GOLD[2], GOLD[3]);
+        end
+        for i = 1, #statLines do
+            tip:AddLine(statLines[i], 1, 1, 1);
+        end
     end
 
     -- The large icon in the corner, like the reward's own tooltip.

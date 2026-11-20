@@ -49,7 +49,8 @@ local DefaultValues = {
     --Reward tooltip
     UseBlizzardTooltip = false,
     TooltipShowItemComparison = false,
-    TooltipSeparateCompare = false,             --Equipped items are compared in tooltips of their own, beside the reward tooltip (see TooltipItem.lua)
+    TooltipShowCalculations = true,             --Stat differences under "Replace X"; off: only the Replace line (see TooltipItem.lua)
+    TooltipSeparateCompare = false,            --Equipped items are compared in tooltips of their own, beside the reward tooltip (see TooltipItem.lua)
 
     --Quest rewards
     MarkHighestSellPrice = false,
