@@ -201,7 +201,7 @@ local function AddItemExtras(tip, entry, link)
         if showComparison then
             AddComparison(tip, link);
         end
-        tip:AddHotkey("Shift", showComparison and L["Hide Comparison"] or L["Show Comparison"]);
+        tip:AddHotkey(_G.SHIFT_KEY_TEXT or "Shift", showComparison and L["Hide Comparison"] or L["Show Comparison"]);
     end
 
     if link and TooltipModel:CanPreview(link) then
