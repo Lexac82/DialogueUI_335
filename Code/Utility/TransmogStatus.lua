@@ -43,7 +43,6 @@ local STATE_BY_NUMBER = {[0] = "uncollected", [1] = "collected", [2] = "ineligib
 local SYNC_COMMAND = ".transmog sync";
 local SYNC_BEGIN_TIMEOUT = 3;               -- after the first line: the real module sends the rest at once
 local SYNC_TIMEOUT = 10;                   -- seconds without an answer (or without the next line) before giving up
-local RESYNC_DELAY = 2;                    -- after equipping or a "learned" message, so the server has stored it
 
 -- Slots that never count for transmog: the ones the original module excludes (Transmogrification::CanNeverTransmog)
 -- plus necks, which have no look of their own. Anything else that can be equipped counts as eligible; the server's
@@ -128,7 +127,6 @@ local syncStartedAt = 0;
 local syncFirstAt;                         -- time of the first line of the answer
 local syncFinishedAt = 0;
 local syncGaveUp = false;                  -- no answer to .transmog sync: do not ask again this session
-local resyncAt;                            -- time of a planned sync (equipment changed, appearance learned)
 -- The module's own begin / complete texts are localized, so they are learned from the first sync and hidden
 -- from the next one on.
 local syncTexts = {};
@@ -149,11 +147,7 @@ local function Tick()
             CallbackRegistry:Trigger("TransmogModuleChanged");
         end
     end
-    if resyncAt and syncState == "idle" and now >= resyncAt then
-        resyncAt = nil;
-        TransmogStatus:StartSync();
-    end
-    if syncState == "idle" and not resyncAt then
+    if syncState == "idle" then
         timerFrame:SetScript("OnUpdate", nil);
     end
 end
@@ -162,10 +156,15 @@ local function ArmTimer()
     timerFrame:SetScript("OnUpdate", Tick);
 end
 
+-- The command is sent once per game session (a local, so a /reload starts over): never repeated, not even when
+-- the first answer was empty. New appearances are added to the set from the "added to your collection" message.
+local syncSent = false;
+
 function TransmogStatus:StartSync()
-    if syncState ~= "idle" then
+    if syncState ~= "idle" or syncSent then
         return
     end
+    syncSent = true;
     syncState = "waiting";
     syncNew = {};
     syncSawBegin = false;
@@ -186,10 +185,12 @@ local function FinishSync()
     CallbackRegistry:Trigger("TransmogModuleChanged");
 end
 
-local function PlanResync()
-    if syncSet and not syncGaveUp then
-        resyncAt = GetTime() + RESYNC_DELAY;
-        ArmTimer();
+-- No second command: the item of the message is added to the set we already have.
+local function AddLearnedItem(message)
+    local itemID = syncSet and tonumber(match(message, "|Hitem:(%d+)"));
+    if itemID and not syncSet[itemID] then
+        syncSet[itemID] = true;
+        CallbackRegistry:Trigger("TransmogStatusChanged");
     end
 end
 
@@ -201,7 +202,7 @@ local function OnSystemMessage(message)
     if syncState == "idle" then
         -- "<item link> added to your appearance collection": the set is out of date.
         if not TransmogStatus:IsPlus() and TransmogStatus:IsEnabled() and find(message, "|Hitem:", 1, true) then
-            PlanResync();
+            AddLearnedItem(message);
         end
         return
     end
@@ -246,10 +247,13 @@ local function SystemFilter(_, _, message)
 end
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", SystemFilter);
 
--- Our own sync command is not shown back as "To <you>: .transmog sync" either.
-ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", function(_, _, message)
+-- Our own sync command is not shown back, neither as "To <you>: .transmog sync" nor as "<you> whispers: .transmog sync"
+-- (a server that does not swallow the command delivers it as a plain whisper to ourselves).
+local function HideSyncCommand(_, _, message)
     return message == SYNC_COMMAND
-end);
+end
+ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", HideSyncCommand);
+ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", HideSyncCommand);
 
 local function GetSyncStatus(itemID)
     if not syncSet then
@@ -356,9 +360,6 @@ frame:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4)
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         -- Equipping adds the appearance to the collection.
         ClearPlusCache();
-        if not TransmogStatus:IsPlus() and TransmogStatus:IsEnabled() then
-            PlanResync();
-        end
     else
         -- The sync set survives a loading screen; plus answers are asked again.
         ClearPlusCache();
