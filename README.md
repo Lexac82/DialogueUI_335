@@ -84,24 +84,11 @@ Books, notes and other readable objects open in their own window. Choose its siz
 
 ![Readables](Preview/BookUI.png)
 
-### Other addons in the item tooltip
-Dialogue UI's own tooltip is not a `GameTooltip`, so addons that hook `GameTooltip` cannot add to it. Supported addons are added by Dialogue UI itself (`Code/SupportedAddOns`):
+### Supported addons
 
-- **Auctionator**: auction price, median price and disenchant value. The vendor line is left out, because the tooltip already shows the sell price.
+- **Auctionator**
 - **Journal: Gear (JournalGearBIS)**
 
-Any addon can add lines itself:
-
-```lua
-if DialogueUI_335_API then
-    DialogueUI_335_API.RegisterItemTooltipProvider("MyAddon", function(tooltip, itemLink, count)
-        tooltip:AddLine("Some text", 1, 1, 1);
-        tooltip:AddDoubleLine("Left", "Right");
-    end);
-end
-```
-
-`tooltip` records `AddLine` and `AddDoubleLine` calls. `count` is the reward's stack size (or nil). The function runs every time the tooltip is drawn.
 ## Installation
 
 1. Download this repository (Code > Download ZIP) or clone it.
