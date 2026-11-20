@@ -70,6 +70,9 @@ local DefaultValues = {
         BookUIItemDescription = true,           --Retail: false
         BookDarkenScreen = false,
 
+    --Compatibility
+    DisableDUIInInstance = false,               --Blizzard's gossip, quest and book windows in dungeons and raids (see Core.lua)
+
     --Minimap button (see Code\Widget\MinimapButton.lua)
     ShowMinimapButton = true,
     MinimapButtonAngle = 215,                   --Position on the minimap rim in degrees (set by dragging, not shown in the Settings)

@@ -558,6 +558,8 @@ local Schematic = {
                 requiredParentValueAnd = {QuickSlotQuestReward = true}},
             {type = "Checkbox", name = L["Press Key To Use Item"], tooltip = UseItemHotkey_Tooltip, dbKey = "QuickSlotUseHotkey",
                 requiredParentValueAnd = {QuickSlotQuestReward = true}, validationFunc = QuickSlot_Move_Validation, branchLevel = 0},
+            {type = "Subheader", name = L["Compatibility"], extraWidth = 15},
+            {type = "Checkbox", name = L["Disable DUI In Instance"], description = L["Disable DUI In Instance Desc"], dbKey = "DisableDUIInInstance"},
         },
     },
     {   -- Minimap

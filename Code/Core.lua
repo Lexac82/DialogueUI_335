@@ -3,6 +3,7 @@ local _, addon = ...;
 -- Listens to the gossip and quest events and tells the dialogue frame what to do. Same role as retail's Core.lua.
 
 local After = addon.API.After;
+local CallbackRegistry = addon.CallbackRegistry;
 local MainFrame = addon.DialogueUI;
 
 -- Opening events. Each one is a conversation step.
@@ -42,6 +43,9 @@ function EL:HideNextUpdate()
 end
 
 function EL:OnEvent(event)
+    if addon.defaultUIActive then
+        return
+    end
     if ShowEvents[event] then
         self:CancelPendingHide();
         MainFrame:ShowUI(event);
@@ -60,3 +64,33 @@ for event in pairs(HideEvents) do
 end
 EL:RegisterEvent("QUEST_ITEM_UPDATE");
 EL:SetScript("OnEvent", EL.OnEvent);
+
+-- "Use WoW's Default UI In Instance": dungeons and raids get Blizzard's windows.
+-- Zone events only matter while the setting is on.
+local InstanceWatcher = CreateFrame("Frame");
+
+local function UpdateForInstance()
+    local inInstance = IsInInstance();
+    addon.SetDefaultUIActive(inInstance and true or false);
+end
+
+InstanceWatcher:SetScript("OnEvent", UpdateForInstance);
+
+CallbackRegistry:Register("SettingChanged.DisableDUIInInstance", function(state)
+    if state == true then
+        InstanceWatcher:RegisterEvent("PLAYER_ENTERING_WORLD");
+        InstanceWatcher:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+        UpdateForInstance();
+    else
+        InstanceWatcher:UnregisterAllEvents();
+        addon.SetDefaultUIActive(false);
+    end
+end);
+
+-- Our windows close when the default UI takes over.
+CallbackRegistry:Register("DefaultUIActiveChanged", function(active)
+    if active then
+        EL:CancelPendingHide();
+        MainFrame:HideUI();
+    end
+end);

@@ -196,5 +196,10 @@ end
 
 -- Fires once when the saved variables load, and again on every change.
 CallbackRegistry:Register("SettingChanged.BookUIEnabled", function(state)
-    Book:SetEnabled(state);
+    Book:SetEnabled(state and not addon.defaultUIActive);
+end);
+
+-- In an instance with "Use WoW's Default UI In Instance", the default readable window is used.
+CallbackRegistry:Register("DefaultUIActiveChanged", function(active)
+    Book:SetEnabled(GetDBBool("BookUIEnabled") and not active);
 end);

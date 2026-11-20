@@ -22,6 +22,11 @@ L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
 L["Minimap"] = "Minimap";
 
+-- Settings: Compatibility
+L["Compatibility"] = "Compatibility";
+L["Disable DUI In Instance"] = "Use WoW's Default UI In Instance";
+L["Disable DUI In Instance Desc"] = "Disable Dialogue UI and use WoW's default one when you are in dungeon or raid.";
+
 -- Settings: Minimap tab and minimap button
 L["Show Minimap Button"] = "Show Minimap Button";
 L["Show Minimap Button Desc"] = "Show a button on the minimap that opens these settings. Drag it to move it around the minimap.";
