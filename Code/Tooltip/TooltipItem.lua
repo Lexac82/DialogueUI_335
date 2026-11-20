@@ -103,6 +103,9 @@ local function RenderScannedLines(tip, lines, entry, link)
     for i = 1, #lines do
         local line = lines[i];
         if i == 1 then
+            if entry.currentlyEquipped then
+                tip:AddSmallLine(L["Currently Equipped"], GOLD[1], GOLD[2], GOLD[3]);
+            end
             local r, g, b;
             if entry.quality then
                 r, g, b = GetQualityColor(entry.quality);
@@ -188,7 +191,7 @@ end
 local function RenderEquippedTooltip(tip, newLink, equippedLink)
     local quality = select(3, GetItemInfo(equippedLink));
     local lines = TooltipScan:ScanHyperlink(equippedLink);
-    RenderScannedLines(tip, lines, {quality = quality, noCompare = true}, equippedLink);
+    RenderScannedLines(tip, lines, {quality = quality, noCompare = true, currentlyEquipped = true}, equippedLink);
 
     if GetDBBool("TooltipShowCalculations") then
         tip:AddBlankLine();

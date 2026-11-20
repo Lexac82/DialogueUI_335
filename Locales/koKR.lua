@@ -218,6 +218,7 @@ L["Format You Have"] = "- 보유: |cffffffff%d|r";
 L["Format In Bank"] = " (은행에 |cffffffff%d|r)";
 L["Format Replace Item"] = "교체 %s";
 L["Equipped Item"] = "장착한 아이템";
+L["Currently Equipped"] = "현재 착용 중";
 L["Different Item Type"] = "장착한 아이템과 종류가 다릅니다.";
 L["Identical Stats"] = "능력치 동일";
 L["Format Reward Title"] = "「%s」 칭호를 받게 됩니다.";

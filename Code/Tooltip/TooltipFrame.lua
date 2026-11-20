@@ -43,6 +43,8 @@ local function GetFonts()
     return {
         title = FontUtil:GetColoredFont("DUI335_Tooltip_Large", 12, DEFAULT_COLOR),
         body = FontUtil:GetColoredFont("DUI335_Tooltip_Medium", 10, DEFAULT_COLOR),
+        -- Not in FontUtil's FONT_HEIGHT, so it stays 9 whatever the font size setting is.
+        small = FontUtil:GetColoredFont("DUI335_Tooltip_Small", 9, DEFAULT_COLOR),
     }
 end
 
@@ -113,6 +115,14 @@ end
 function TooltipFrame:AddLine(text, r, g, b)
     local row = self:AcquireRow();
     row.left:SetFontObject(self.fonts.body);
+    row.left:SetText(text or "");
+    SetColor(row.left, DEFAULT_COLOR, r, g, b);
+end
+
+-- A line in the small tooltip font (labels such as "Currently Equipped").
+function TooltipFrame:AddSmallLine(text, r, g, b)
+    local row = self:AcquireRow();
+    row.left:SetFontObject(self.fonts.small);
     row.left:SetText(text or "");
     SetColor(row.left, DEFAULT_COLOR, r, g, b);
 end

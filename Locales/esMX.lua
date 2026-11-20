@@ -218,6 +218,7 @@ L["Format You Have"] = "- Tienes |cffffffff%d|r";
 L["Format In Bank"] = " (|cffffffff%d|r en el banco)";
 L["Format Replace Item"] = "Reemplazar %s";
 L["Equipped Item"] = "objeto equipado";
+L["Currently Equipped"] = "Actualmente equipado";
 L["Different Item Type"] = "Tipo de objeto distinto al equipado.";
 L["Identical Stats"] = "Estadísticas idénticas";
 L["Format Reward Title"] = "Se te concederá el título «%s».";

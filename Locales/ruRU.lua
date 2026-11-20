@@ -218,6 +218,7 @@ L["Format You Have"] = "- У вас есть |cffffffff%d|r";
 L["Format In Bank"] = " (|cffffffff%d|r в банке)";
 L["Format Replace Item"] = "Заменить %s";
 L["Equipped Item"] = "надетый предмет";
+L["Currently Equipped"] = "Надето сейчас";
 L["Different Item Type"] = "Тип предмета отличается от надетого.";
 L["Identical Stats"] = "Одинаковые характеристики";
 L["Format Reward Title"] = "Вам будет присвоено звание «%s».";

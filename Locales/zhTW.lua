@@ -218,6 +218,7 @@ L["Format You Have"] = "- 你擁有 |cffffffff%d|r";
 L["Format In Bank"] = "（銀行中有 |cffffffff%d|r）";
 L["Format Replace Item"] = "替換 %s";
 L["Equipped Item"] = "已裝備的物品";
+L["Currently Equipped"] = "目前裝備";
 L["Different Item Type"] = "與已裝備的物品類型不同。";
 L["Identical Stats"] = "屬性相同";
 L["Format Reward Title"] = "你將獲得「%s」頭銜。";

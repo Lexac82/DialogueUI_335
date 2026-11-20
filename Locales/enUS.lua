@@ -219,6 +219,7 @@ L["Format You Have"] = "- You have |cffffffff%d|r";
 L["Format In Bank"] = " (|cffffffff%d|r in bank)";
 L["Format Replace Item"] = "Replace %s";
 L["Equipped Item"] = "equipped item";
+L["Currently Equipped"] = "Currently Equipped";
 L["Different Item Type"] = "Different item type than the equipped one.";
 L["Identical Stats"] = "Identical Stats";
 L["Format Reward Title"] = "You will be granted the title \"%s\".";
