@@ -469,6 +469,10 @@ local function CreateParchmentBackground(parent)
     self.metrics = M;
 
     local frame = CreateFrame("Frame", nil, parent or UIParent);
+    local _, _, _, questieEnabled = GetAddOnInfo("Questie-335");
+    if questieEnabled then
+        frame:SetFrameStrata("HIGH");
+    end
     frame:SetWidth(M.width);
     frame:SetHeight(M.startH);
     frame:SetPoint("CENTER", parent or UIParent, "CENTER", 0, 0);
