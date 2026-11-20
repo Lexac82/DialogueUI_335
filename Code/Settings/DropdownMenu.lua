@@ -421,7 +421,7 @@ local function CreateMenu(parent)
     navBackground:SetTexCoord(0, 192 / 1024, 336 / 512, 384 / 512);
     ThemeUtil:BindTexture(navBackground, COMPONENT_FILE);
     local pageText = nav:CreateFontString(nil, "OVERLAY");
-    pageText:SetFontObject(FontUtil:GetColoredFont("DUI335_MenuPage", 10, { 0.87, 0.86, 0.75 }));
+    pageText:SetFontObject(FontUtil:GetColoredFont("DUI335_MenuPage", 10, { "DarkBrown", "DarkModeGrey90" }));
     pageText:SetPoint("CENTER", nav, "CENTER", 0, 0);
     f.pageText = pageText;
     f.leftArrow = CreateArrow(nav, 1, -32);
