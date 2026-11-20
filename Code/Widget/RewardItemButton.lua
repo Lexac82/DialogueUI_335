@@ -16,7 +16,7 @@ local min = math.min;
 
 local BUTTON_HEIGHT = 36;
 local BORDER_SIZE = 36;
-local ICON_SIZE = 28;                     -- retail: 32 with a 6 px inset on the 36 px border; tune in game
+local ICON_SIZE = 24;                     -- retail: 36 px border cell minus a 6 px inset on each side (UpdatePixel)
 local ICON_TEXCOORD = {0.0625, 0.9275, 0.0625, 0.9275};
 local NAME_LEFT = 40;
 local NAME_RIGHT = 8;
@@ -34,7 +34,7 @@ local BORDER_CHOOSE = "RewardChoice-ItemBorder.blp";
 local SHEEN_FILE = "RewardChoice-Sheen.blp";
 local COIN_FILE = "Coin-Gold.blp";
 local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
-local UPGRADE_SIZE = 32;
+local UPGRADE_SIZE = ICON_SIZE;           -- retail: 32; here the same as the item icon
 -- Retail IconAnimation_FlyUp: starts 0.5 s late, rises 12 px over 0.5 s (outSine), fades in at 4 per second.
 local UPGRADE_DELAY = 0.5;
 local UPGRADE_DURATION = 0.5;
@@ -42,6 +42,7 @@ local UPGRADE_RISE = 12;
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
 local OVERLAY_TRANSMOG_INDEX = 8;        -- retail's "cosmetic" cell: magenta corner, here for an appearance not collected yet
+local TRANSMOG_GROW = 4;                  -- px the transmog texture is larger than the border, same center
 
 local COLOR_NORMAL = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
 local COLOR_CHOOSE = {"Ivory", "DarkModeGold"};           -- DUIFont_ItemSelect
@@ -86,15 +87,13 @@ function RewardItemButton:UpdateNameColor()
 end
 
 -- Marker for an appearance the player has not collected (server transmog module, see TransmogStatus.lua).
--- Drawn next to the quality overlay, not instead of it, so the rarity stays visible. Not shown with the
--- unusable "!" (retail gives the alert priority), nor on required items.
+-- Drawn under the quality / unusable "!" overlay, not instead of it. Also shown on items the player's class
+-- cannot wear (the appearance can still be collected). Not shown on required items.
 function RewardItemButton:UpdateTransmogMarker()
     local entry = self.entry;
-    local show = entry and entry.kind == "item" and entry.itemType ~= "required" and entry.isUsable
-        and addon.TransmogStatus:IsUncollected(entry.itemID);
+    local show = entry and entry.kind == "item" and entry.itemType ~= "required"
+        and (entry.testTransmog or addon.TransmogStatus:IsUncollected(entry.itemID));     -- testTransmog: /dialogui test
     SetOverlay(self.transmogOverlay, show and OVERLAY_TRANSMOG_INDEX or nil);
-    -- Quality corner moves to the top left (mirrored) so both markers stay readable.
-    SetOverlay(self.overlay, self.overlayIndex, show and true or false);
 end
 
 -- Asks the server for the appearance state of equippable items, then shows what is known.
@@ -214,7 +213,7 @@ function RewardItemButton:SetUpgradeMarker(shown, animate)
         marker:SetFrameLevel(self.frame:GetFrameLevel() + 4);
         marker:SetWidth(UPGRADE_SIZE);
         marker:SetHeight(UPGRADE_SIZE);
-        marker:SetPoint("CENTER", self.icon, "BOTTOMLEFT", 1, 5);
+        marker:SetPoint("CENTER", self.icon, "BOTTOMLEFT", 2, 5);
         marker.texture = marker:CreateTexture(nil, "OVERLAY");
         marker.texture:SetWidth(UPGRADE_SIZE);
         marker.texture:SetHeight(UPGRADE_SIZE);
@@ -365,9 +364,12 @@ local function CreateRewardItemButton(parent, host)
     overlay:Hide();
     self.overlay = overlay;
 
-    local transmogOverlay = topFrame:CreateTexture(nil, "OVERLAY");
-    transmogOverlay:SetWidth(BORDER_SIZE);
-    transmogOverlay:SetHeight(BORDER_SIZE);
+    -- Transmog marker: the magenta cell, TRANSMOG_GROW px larger than the border, same center (a shift would
+    -- move its bottom and left edges off the border too). It is in the ARTWORK layer of the top frame, so the
+    -- quality / alert corner (OVERLAY) always draws over it.
+    local transmogOverlay = topFrame:CreateTexture(nil, "ARTWORK");
+    transmogOverlay:SetWidth(BORDER_SIZE + TRANSMOG_GROW);
+    transmogOverlay:SetHeight(BORDER_SIZE + TRANSMOG_GROW);
     transmogOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
     transmogOverlay:Hide();
     self.transmogOverlay = transmogOverlay;

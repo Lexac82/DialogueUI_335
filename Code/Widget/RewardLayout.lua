@@ -301,7 +301,9 @@ function RewardLayout:UpdateUpgradeMarkers()
         local show = false;
         if enabled and entry and entry.kind == "item" and entry.itemType ~= "required" and entry.isUsable and entry.link then
             local isUpgrade, isReady = addon.TooltipCompare:IsUpgrade(entry.link);
-            if isReady then
+            if entry.testUpgrade then
+                show = true;                -- /dialogui test forces the arrow
+            elseif isReady then
                 show = isUpgrade;
             else
                 missing = true;

@@ -2019,8 +2019,12 @@ SettingsUI:SelectTab(1, true);
 -- The chat frame stops reading SLASH_<NAME><n> at the first missing n, so the indexes must have no gaps.
 SLASH_DIALOGUEUI3351 = "/dialogueui";
 SLASH_DIALOGUEUI3352 = "/dialogui";
-SlashCmdList["DIALOGUEUI335"] = function()
-    SettingsUI:Toggle();
+SlashCmdList["DIALOGUEUI335"] = function(message)
+    if message and message:lower():match("^%s*test%s*$") and addon.StartTestPage then
+        addon.StartTestPage();          -- quest page with every reward icon combination (DevTool.lua)
+    else
+        SettingsUI:Toggle();
+    end
 end;
 
 -- DragonUI also uses /dui. If it is loaded, /dui is left to DragonUI.
