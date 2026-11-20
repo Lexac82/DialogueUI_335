@@ -154,16 +154,23 @@ addon.CallbackRegistry:Register("CustomBindingChanged", function()
     end
 end);
 
+-- Quest details page: rebuild the level / difficulty on the type pill (style setting, or the theme: the
+-- difficulty colours are used on Dark only).
+local function RefreshHeaderType()
+    local tag = MainFrame:IsShown() and lastPage and lastPage.tags and lastPage.tags[1];
+    if tag and tag.typeText then
+        tag.text = addon.GossipDataProvider:FormatHeaderType(tag.typeText, tag.title);
+        MainFrame:SetTags(lastPage.tags);
+    end
+end
+
 -- Settings > Quest Difficulty: level prefix and right-hand note of the quest rows are rebuilt, then the list is redrawn.
 addon.CallbackRegistry:Register("SettingChanged.QuestDifficultyStyle", function()
     if MainFrame:IsShown() and lastPage and LIST_EVENTS[lastEvent] then
         addon.GossipDataProvider:RefreshQuestText(lastPage);
         RedrawPage();
-    elseif MainFrame:IsShown() and lastPage and lastPage.tags and lastPage.tags[1] and lastPage.tags[1].typeText then
-        -- Quest details page: rebuild the level / difficulty on the type pill.
-        local tag = lastPage.tags[1];
-        tag.text =addon.GossipDataProvider:FormatHeaderType(tag.typeText, tag.title);
-        MainFrame:SetTags(lastPage.tags);
+    else
+        RefreshHeaderType();
     end
 end);
 
@@ -216,6 +223,7 @@ addon.CallbackRegistry:Register("ThemeChanged", function(themeID)
     if CopyTextButton then
         CopyTextButton:SetTheme(themeID);
     end
+    RefreshHeaderType();
 end);
 
 -- The window shows the text of the page it was opened on: a new page or the end of the conversation closes it.
