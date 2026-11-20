@@ -623,6 +623,7 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Replace Calculations"], description = L["Show Replace Calculations Desc"], dbKey = "TooltipShowCalculations"},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
             {type = "Subheader", name = L["Readables"], extraWidth = 20},
+            {type = "Checkbox", name = L["Hide UI"], description = L["Readables Hide UI Desc"], dbKey = "BookHideUI"},
             {type = "ArrowOption", name = L["Readables Position"], description = L["Readables Position Desc"], dbKey = "BookPositionMode",
                 choices = {
                     {dbValue = 1, valueText = L["Position Default"]},
@@ -642,7 +643,6 @@ local Schematic = {
                     {dbValue = 3, valueText = L["Size Large"]},
                 },
             },
-            {type = "Checkbox", name = L["Hide UI"], description = L["Readables Hide UI Desc"], dbKey = "BookHideUI"},
             {type = "Checkbox", name = L["BookUI Keep UI Open"], description = L["BookUI Keep UI Open Desc"], dbKey = "BookKeepUIOpen"},
             {type = "Checkbox", name = L["BookUI Show Location"], description = L["BookUI Show Location Desc"], dbKey = "BookShowLocation"},
             {type = "Checkbox", name = L["BookUI Show Item Description"], description = L["BookUI Show Item Description Desc"], dbKey = "BookUIItemDescription"},
