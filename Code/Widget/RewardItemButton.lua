@@ -30,7 +30,6 @@ local BACKGROUND_NORMAL = "ItemButtonBackground.blp";    -- 64x64, slice margin 
 local BACKGROUND_CHOOSE = "RewardChoice-Pending.blp";    -- 256x64, slice margin 16
 local BORDER_NORMAL = "ItemBorder.blp";
 local BORDER_CHOOSE = "RewardChoice-ItemBorder.blp";
-local OVERLAY_FILE = "ItemOverlays.blp";                 -- 8x8 grid of 64 px cells
 local SHEEN_FILE = "RewardChoice-Sheen.blp";
 local COIN_FILE = "Coin-Gold.blp";
 local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
@@ -41,7 +40,7 @@ local UPGRADE_DURATION = 0.5;
 local UPGRADE_RISE = 12;
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
-local OVERLAY_TRANSMOG_INDEX = 8;         -- retail's "cosmetic" cell: magenta corner, here for an appearance not collected yet
+local OVERLAY_TRANSMOG_INDEX = 8;        -- retail's "cosmetic" cell: magenta corner, here for an appearance not collected yet
 
 local COLOR_NORMAL = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
 local COLOR_CHOOSE = {"Ivory", "DarkModeGold"};           -- DUIFont_ItemSelect
@@ -60,16 +59,8 @@ local ICON_UNKNOWN = "Interface\\Icons\\INV_Misc_QuestionMark";
 local RewardItemButton = {};
 RewardItemButton.__index = RewardItemButton;
 
-local function SetOverlay(texture, index)
-    if not index then
-        texture:Hide();
-        return
-    end
-    -- 1-based cell index, row-major in an 8 column grid.
-    local column = (index - 1) % 8;
-    local row = (index - 1 - column) / 8;
-    texture:SetTexCoord(column / 8, (column + 1) / 8, row / 8, (row + 1) / 8);
-    texture:Show();
+local function SetOverlay(texture, index, mirror)
+    ThemeUtil:SetItemOverlay(texture, index, mirror);
 end
 
 function RewardItemButton:SetStyle(style)
@@ -101,6 +92,8 @@ function RewardItemButton:UpdateTransmogMarker()
     local show = entry and entry.kind == "item" and entry.itemType ~= "required" and entry.isUsable
         and addon.TransmogStatus:IsUncollected(entry.itemID);
     SetOverlay(self.transmogOverlay, show and OVERLAY_TRANSMOG_INDEX or nil);
+    -- Quality corner moves to the top left (mirrored) so both markers stay readable.
+    SetOverlay(self.overlay, self.overlayIndex, show and true or false);
 end
 
 -- Asks the server for the appearance state of equippable items, then shows what is known.
@@ -177,6 +170,7 @@ function RewardItemButton:SetEntry(entry)
     self.name:SetText(name);
     self:UpdateNameColor();
     self:SetCount(count);
+    self.overlayIndex = overlay;
     SetOverlay(self.overlay, overlay);
     self:RefreshTransmog();
     self:SetSellMarker(false);
@@ -364,7 +358,6 @@ local function CreateRewardItemButton(parent, host)
     self.topFrame = topFrame;
 
     local overlay = topFrame:CreateTexture(nil, "OVERLAY");
-    ThemeUtil:BindTexture(overlay, OVERLAY_FILE);
     overlay:SetWidth(BORDER_SIZE);
     overlay:SetHeight(BORDER_SIZE);
     overlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
@@ -372,7 +365,6 @@ local function CreateRewardItemButton(parent, host)
     self.overlay = overlay;
 
     local transmogOverlay = topFrame:CreateTexture(nil, "OVERLAY");
-    ThemeUtil:BindTexture(transmogOverlay, OVERLAY_FILE);
     transmogOverlay:SetWidth(BORDER_SIZE);
     transmogOverlay:SetHeight(BORDER_SIZE);
     transmogOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0);

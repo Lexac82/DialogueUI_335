@@ -208,6 +208,25 @@ function ThemeUtil:GetFixedTextureFile(fileName)
     return BROWN_PATH .. fileName
 end
 
+-- Quality / alert / transmog corner overlays: the Brown sheet is used in both themes (the Dark sheet is not wanted).
+-- index: 1-based cell of the 8 column grid of 64 px cells, nil hides the texture.
+-- mirror: flipped left to right (the corner moves from the top right to the top left).
+function ThemeUtil:SetItemOverlay(texture, index, mirror)
+    if not index then
+        texture:Hide();
+        return
+    end
+    local column = (index - 1) % 8;
+    local row = (index - 1 - column) / 8;
+    local left, right = column / 8, (column + 1) / 8;
+    if mirror then
+        left, right = right, left;
+    end
+    texture:SetTexture(BROWN_PATH .. "ItemOverlays.blp");
+    texture:SetTexCoord(left, right, row / 8, (row + 1) / 8);
+    texture:Show();
+end
+
 -- Key icons (retail Art/Keys), shared by all themes.
 function ThemeUtil:GetKeyTextureFile(fileName)
     return KEY_PATH .. fileName
