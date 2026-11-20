@@ -95,7 +95,7 @@ local function CreateHotkey(button)
     f.keyName:SetFontObject(FontUtil:GetColoredFont("DUI335_Hotkey", 10, FONT_COLOR_HOTKEY));
     f.keyName:SetJustifyH("CENTER");
     f.keyName:SetJustifyV("MIDDLE");
-    f.keyName:SetPoint("CENTER", f, "CENTER", 0, 0);
+    f.keyName:SetPoint("CENTER", f, "CENTER", -1, 0);
 
     f.icon = f:CreateTexture(nil, "OVERLAY");
     f.icon:SetWidth(HOTKEY_ICON_SIZE);
