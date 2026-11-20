@@ -512,7 +512,7 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
-            {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], dbKey = "ShowTransmogStatus"},
+            {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
             {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], dbKey = "UseTransmogPlus",
                 requiredParentValueAnd = {ShowTransmogStatus = true}},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},

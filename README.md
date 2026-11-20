@@ -64,6 +64,11 @@ With the [Pawn](https://www.curseforge.com/wow/addons/pawn) addon installed, rew
 
 ![Valuable reward popup](Preview/QuickSlotQuestReward.png)
 
+### Uncollected transmog appearances
+On servers with a transmog module (mod-transmog or mod-transmog-plus), reward items whose appearance you have not collected yet get a magenta corner mark and an "Appearance not collected" line in the tooltip. Turn it on with **Show Uncollected Appearances**; check **Using Mod Transmog Plus** if the server runs mod-transmog-plus.
+
+![Uncollected appearance](Preview/Transmog.png)
+
 ### Quest Item Display
 When a quest item is added to your bags, its description is shown and you can use it without opening your bags.
 
