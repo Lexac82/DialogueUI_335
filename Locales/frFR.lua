@@ -11,6 +11,7 @@ local L = addon.L;
 
 -- Boutons de pied de fenêtre
 L["Accept"] = ACCEPT or "Accepter";
+L["Restart Quest"] = "Recommencer";
 L["Continue"] = CONTINUE or "Continuer";
 L["Complete Quest"] = COMPLETE or "Terminer la quête";
 L["Incomplete"] = INCOMPLETE or "Inachevée";

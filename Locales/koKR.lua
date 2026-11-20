@@ -8,6 +8,7 @@ local L = addon.L;
 
 -- Footer buttons
 L["Accept"] = ACCEPT or "동의";
+L["Restart Quest"] = "다시 시작";
 L["Continue"] = CONTINUE or "계속";
 L["Complete Quest"] = COMPLETE or "퀘스트 완료";
 L["Incomplete"] = INCOMPLETE or "미완성";

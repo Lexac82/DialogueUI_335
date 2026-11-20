@@ -8,6 +8,7 @@ local L = addon.L;
 
 -- Footer buttons
 L["Accept"] = ACCEPT or "Aceptar";
+L["Restart Quest"] = "Reiniciar";
 L["Continue"] = CONTINUE or "Continar";
 L["Complete Quest"] = COMPLETE or "Completar misión";
 L["Incomplete"] = INCOMPLETE or "Incompleto";

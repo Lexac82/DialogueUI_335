@@ -11,6 +11,7 @@ local ClearOverrideBindings = ClearOverrideBindings;
 local GetMoney = GetMoney;
 local GetNumQuestChoices = GetNumQuestChoices;
 local AcceptQuest = AcceptQuest;
+local IsCurrentQuestFailed = IsCurrentQuestFailed;
 local DeclineQuest = DeclineQuest;
 local CompleteQuest = CompleteQuest;
 local GetQuestReward = GetQuestReward;
@@ -95,6 +96,10 @@ function Footer:GetAcceptConfig()
     local confirmKey = BindingUtil:GetActiveConfirmKey();       -- nil: no key, so no key badge on the button
 
     if event == "QUEST_DETAIL" then
+        -- A failed quest is offered again; AcceptQuest restarts it.
+        if IsCurrentQuestFailed() then
+            return {type = "restart", text = L["Restart Quest"], art = 1, key = confirmKey, onClick = OnClick_Accept}
+        end
         return {type = "accept", text = L["Accept"], art = 1, key = confirmKey, onClick = OnClick_Accept}
     elseif event == "QUEST_PROGRESS" then
         local text = L["Continue"];
