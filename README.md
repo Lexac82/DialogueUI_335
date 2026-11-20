@@ -8,7 +8,7 @@ A port of the retail **Dialogue UI** addon to **World of Warcraft: Wrath of the 
 - Press **F1** while a dialogue is open.
 - Click the **minimap button**.
 
-The settings have four tabs: **UI**, **Control** (including custom key bindings), **Gameplay** and **Minimap**.
+The settings have five tabs: **UI**, **Control** (including custom key bindings), **Gameplay**, **Minimap** and **Other Addons**.
 
 **Quest UI - Light Theme**
 
@@ -87,7 +87,8 @@ Books, notes and other readable objects open in their own window. Choose its siz
 ### Supported addons
 
 - **Auctionator**
-- **Journal: Gear (JournalGearBIS)**
+- **Retail Auction House** (mod-retail-ah): AH bot prices in the item tooltip. Choose Auctionator or Retail Auction House under **Other Addons**.
+- **Journal: Gear (JournalGearBIS)**: "On your gear list" line in the item tooltip
 
 ## Installation
 

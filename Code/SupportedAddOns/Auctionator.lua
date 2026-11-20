@@ -48,6 +48,9 @@ local function OnAddOnLoaded()
     local GetBonding = Atr_GetBonding;
 
     local function provider(tooltip, link, count)
+        if not addon.GetDBBool("ShowAuctionHouseTooltip") or not addon.GetDBBool("ShowAuctionatorTooltip") then
+            return
+        end
         local itemName = GetItemInfo(link);
         local itemID = tonumber(link:match("item:(%d+)"));
         if not itemName or not itemID then

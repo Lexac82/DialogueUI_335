@@ -20,6 +20,20 @@ L["UI"] = "界面";
 L["Control"] = "控制";
 L["Gameplay"] = "游戏功能";
 L["Minimap"] = "小地图";
+L["Other Addons"] = "其他插件";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "鼠标提示";
+L["Auction House"] = "拍卖行";
+L["Auction House Desc"] = "在物品的鼠标提示中加入来自另一个已安装插件的拍卖行价格。请在下方选择使用哪一个。";
+L["Auction House Auctionator Desc"] = "Auctionator：显示物品的拍卖价格、中位价格和分解价值，与 Auctionator 自己的鼠标提示一致。显示的行遵循 Auctionator 自己的鼠标提示选项。";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah)：显示服务器拍卖行机器人买家为该物品支付的价格（堆叠物品显示整堆总价），以及一次分解所得材料的平均价值，两者中较高的显示为绿色。\n\n已绑定的物品不显示任何内容，附魔技能不足时分解一行为灰色。服务器必须运行 mod-retail-ah 模块。";
+L["Journal Gear Desc"] = "在对你的专精有提升的物品的鼠标提示中加入“在你的装备列表中”一行，来自 Journal: Gear (JournalGearBIS) 插件。";
+L["Addon Not Installed"] = "|cffff8040%s 未安装或未加载，因此此支持不会生效。|r 请安装后重新加载界面 (/reload)。";
+L["AH Bot Buys"] = "拍卖行机器人收购";
+L["AH Bot Disenchant"] = "分解（拍卖行机器人）";
+L["AH Bot Disenchant Skill"] = "分解 |cff808080(附魔 %d)|r";
+L["AH Bot BiS Bonus"] = "BiS 加成";
 
 -- Settings: Compatibility
 L["Compatibility"] = "兼容性";
@@ -133,6 +147,7 @@ L["Show Transmog Status Desc"] = "标记你尚未收集其幻化外观的奖励�
 L["Use Transmog Plus"] = "使用 Mod Transmog Plus";
 L["Use Transmog Plus Desc"] = "如果服务器运行的是 mod-transmog-plus 而不是原版 mod-transmog，请勾选此项。服务器将针对每件物品作答，只要有任何相同模型的物品已收集，就视为该外观已收集。\n\n使用原版 mod-transmog 时请不要勾选。";
 L["Transmog Not Collected"] = "外观未收集";
+L["Transmog Module Missing"] = "|cffff8040未检测到服务器的 %s 模块，因此此设置已禁用。|r";
 L["Click To Copy To Clipboard"] = "点击复制到剪贴板";
 L["Show Upgrade Arrow"] = "显示升级箭头（需要 Pawn）";
 L["Show Upgrade Arrow Desc"] = "根据 Pawn 插件，如果奖励物品对你的角色是升级，则在其上显示绿色箭头 %s：该物品在你至少一个 Pawn 评分方案中的得分高于该栏位已装备的物品。\n\n与你所装备的护甲类型不同的护甲（例如用布甲代替皮甲）永远不会被标记。";

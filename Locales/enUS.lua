@@ -21,6 +21,20 @@ L["UI"] = "UI";
 L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
 L["Minimap"] = "Minimap";
+L["Other Addons"] = "Other Addons";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "Tooltip";
+L["Auction House"] = "Auction House";
+L["Auction House Desc"] = "Add auction house prices to the item tooltip, from another addon you have installed. Choose which one below.";
+L["Auction House Auctionator Desc"] = "Auctionator: the auction price, the median price and the disenchant value of the item, as Auctionator shows them in its own tooltips. The lines follow Auctionator's own tooltip options.";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah): what the server's AH bot buyer pays for the item (the stack total for a stack), and the average value of the materials one disenchant gives. The better of the two is green.\n\nNothing is shown for an item that is soulbound, and the disenchant line is grey when your Enchanting is too low. The server must run the mod-retail-ah module.";
+L["Journal Gear Desc"] = "Add an \"On your gear list\" line to the tooltip of items that are an upgrade for your spec, from the Journal: Gear addon (JournalGearBIS).";
+L["Addon Not Installed"] = "|cffff8040%s is not installed or not loaded, so this support will not work.|r Install it and reload the UI (/reload).";
+L["AH Bot Buys"] = "AH bot buys";
+L["AH Bot Disenchant"] = "Disenchant (AH bot)";
+L["AH Bot Disenchant Skill"] = "Disenchant |cff808080(Enchanting %d)|r";
+L["AH Bot BiS Bonus"] = "BiS bonus";
 
 -- Settings: Compatibility
 L["Compatibility"] = "Compatibility";
@@ -134,6 +148,7 @@ L["Show Transmog Status Desc"] = "Mark reward items whose transmog appearance yo
 L["Use Transmog Plus"] = "Using Mod Transmog Plus";
 L["Use Transmog Plus Desc"] = "Check this if the server runs mod-transmog-plus instead of the original mod-transmog. The server then answers for each item, and counts an appearance as collected when any item with the same model is.\n\nLeave it unchecked for the original mod-transmog.";
 L["Transmog Not Collected"] = "Appearance not collected";
+L["Transmog Module Missing"] = "|cffff8040The server's %s module was not detected, so this setting is disabled.|r";
 L["Click To Copy To Clipboard"] = "Click to copy to clipboard";
 L["Show Upgrade Arrow"] = "Show Upgrade Arrow (Pawn Required)";
 L["Show Upgrade Arrow Desc"] = "Show a green arrow %s on a reward item if it is an upgrade for your character, according to the Pawn addon: the item scores higher than the one you have equipped in that slot in at least one of your Pawn scales.\n\nArmor of a different type than the one you have equipped (cloth over leather, for example) is never marked.";

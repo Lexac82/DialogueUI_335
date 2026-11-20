@@ -45,6 +45,7 @@ local TAB_ENTRIES = {
     { name = L["Control"] },
     { name = L["Gameplay"] },
     { name = L["Minimap"] },
+    { name = L["Other Addons"] },
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
@@ -54,6 +55,8 @@ local DECOR_INSET = 4;                  -- distance from the frame's bottom righ
 local DECOR_MASK_OFFSET = 24;           -- mask edge below the description text
 local DECOR_MASK_ALPHA = 0.875;         -- alpha of the mask's opaque part (0xDF)
 local DECOR_FADE_ROWS = 8 / 128;        -- fade height as a part of the picture (8 of the mask's 128 rows)
+
+local OTHER_ADDONS_TAB = 5;                   -- index in TAB_ENTRIES
 
 local TOGGLE_NAME ="DialogueUI335SettingsToggle";      -- global names so key bindings can click them
 local CLOSE_NAME = "DialogueUI335SettingsClose";
@@ -403,6 +406,53 @@ local function UpgradeArrow_DisabledClick()
     addon.Clipboard:ShowContent(PAWN_URL, nil, true, 360, 40);
 end
 
+-- Auction House tooltip addons (Other Addons tab). The description names what is missing when the addon is not
+-- running, as the Transmog options do for their server module.
+local function AuctionHouseAddOn_Tooltip(addonName, displayName, descKey)
+    return function()
+        local text = L[descKey];
+        if not addon.IsSupportedAddOnActive(addonName) then
+            text = text .. "\n\n" .. L["Addon Not Installed"]:format(displayName);
+        end
+        return text
+    end
+end
+local Auctionator_Tooltip = AuctionHouseAddOn_Tooltip("Auctionator", "Auctionator", "Auction House Auctionator Desc");
+local RetailAH_Tooltip = AuctionHouseAddOn_Tooltip("RetailAH", "Retail Auction House", "Auction House RetailAH Desc");
+-- Greyed out and unchecked while the addon is not running (the saved choice is kept for when it is).
+-- Journal: Gear is not released yet, so its row only exists for those who have it.
+local function JournalGear_IsAvailable()
+    return addon.IsSupportedAddOnActive("JournalGearBIS")
+end
+local function Auctionator_IsDisabled()
+    return not addon.IsSupportedAddOnActive("Auctionator")
+end
+local function RetailAH_IsDisabled()
+    return not addon.IsSupportedAddOnActive("RetailAH")
+end
+
+-- Transmog options: greyed out while the server's module is known not to be there (see TransmogStatus.lua).
+local function TransmogStatus_IsDisabled()
+    return not addon.TransmogStatus:IsModuleAvailable()
+end
+local function TransmogPlus_IsDisabled()
+    return not addon.TransmogStatus:IsPlusAvailable()
+end
+local function TransmogStatus_Tooltip()
+    local text = L["Show Transmog Status Desc"];
+    if TransmogStatus_IsDisabled() then
+        text = text .. "\n\n" .. L["Transmog Module Missing"]:format("mod-transmog / mod-transmog-plus");
+    end
+    return text
+end
+local function TransmogPlus_Tooltip()
+    local text = L["Use Transmog Plus Desc"];
+    if TransmogPlus_IsDisabled() then
+        text = text .. "\n\n" .. L["Transmog Module Missing"]:format("mod-transmog-plus");
+    end
+    return text
+end
+
 -- Control tab (retail Settings_Definitions). Retail's Input Device has Keyboard & Mouse, Xbox, PlayStation and Switch;
 -- 3.3.5a has no gamepad, so the only choice is Keyboard & Mouse (the arrows are hidden for a single choice).
 -- Use Custom Bindings shows the rows of the actions under it (retail: branch mark = depends on the option above).
@@ -512,9 +562,6 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
-            {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
-            {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], dbKey = "UseTransmogPlus",
-                requiredParentValueAnd = {ShowTransmogStatus = true}},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
             {type = "Subheader", name = L["Readables"], extraWidth = 20},
             {type = "ArrowOption", name = L["Frame Size"], description = L["BookUI Frame Size Desc"], dbKey = "BookUISize",
@@ -565,6 +612,21 @@ local Schematic = {
     {   -- Minimap
         options = {
             {type = "Checkbox", name = L["Show Minimap Button"], description = L["Show Minimap Button Desc"], dbKey = "ShowMinimapButton"},
+        },
+    },
+    {   -- Other Addons
+        options = {
+            {type = "Subheader", name = L["Tooltip"], extraWidth = 15},
+            {type = "Checkbox", name = L["Auction House"], description = L["Auction House Desc"], dbKey = "ShowAuctionHouseTooltip"},
+            {type = "Checkbox", name = "Auctionator", description = L["Auction House Auctionator Desc"], tooltip = Auctionator_Tooltip,
+                dbKey = "ShowAuctionatorTooltip", isDisabledFunc = Auctionator_IsDisabled, requiredParentValueAnd = {ShowAuctionHouseTooltip = true}},
+            {type = "Checkbox", name = "Retail Auction House", description = L["Auction House RetailAH Desc"], tooltip = RetailAH_Tooltip,
+                dbKey = "ShowRetailAHTooltip", isDisabledFunc = RetailAH_IsDisabled, requiredParentValueAnd = {ShowAuctionHouseTooltip = true}},
+            {type = "Checkbox", name = "Journal: Gear", description = L["Journal Gear Desc"],
+                validationFunc = JournalGear_IsAvailable, dbKey = "ShowJournalGearTooltip"},
+            {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip, isDisabledFunc = TransmogStatus_IsDisabled, dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
+            {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], tooltip = TransmogPlus_Tooltip, isDisabledFunc = TransmogPlus_IsDisabled, dbKey = "UseTransmogPlus",
+                requiredParentValueAnd = {ShowTransmogStatus = true}},
         },
     },
 };
@@ -1747,6 +1809,19 @@ end
 CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
+
+-- The Other Addons tab asks the server which transmog module it has (the answer greys out the options of the missing one).
+CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
+    if tabID == OTHER_ADDONS_TAB then
+        addon.TransmogStatus:ProbePlus();
+        addon.TransmogStatus:ProbeOriginal();
+    end
+end);
+CallbackRegistry:Register("TransmogModuleChanged", function()
+    if frame and frame:IsShown() and frame.tabID == OTHER_ADDONS_TAB then
+        SettingsUI:LayoutRows(OTHER_ADDONS_TAB);
+    end
+end);
 
 -- The Valuable Reward Popup was dragged (or reset): same for its Reset row.
 CallbackRegistry:Register("SettingChanged.QuickSlotPosition", function()

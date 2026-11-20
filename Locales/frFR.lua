@@ -23,6 +23,20 @@ L["UI"] = "Interface";
 L["Control"] = "Commandes";
 L["Gameplay"] = "Jeu";
 L["Minimap"] = "Mini-carte";
+L["Other Addons"] = "Autres addons";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "Infobulle";
+L["Auction House"] = "Hôtel des ventes";
+L["Auction House Desc"] = "Ajoute à l'infobulle des objets les prix de l'hôtel des ventes fournis par un autre addon installé. Choisissez lequel ci-dessous.";
+L["Auction House Auctionator Desc"] = "Auctionator : le prix de vente, le prix médian et la valeur de désenchantement de l'objet, tels qu'Auctionator les affiche dans ses propres infobulles. Les lignes suivent les options d'infobulle d'Auctionator.";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah) : ce que l'acheteur bot de l'HV du serveur paie pour l'objet (le total de la pile pour une pile) et la valeur moyenne des matériaux d'un désenchantement. Le meilleur des deux est en vert.\n\nRien n'est affiché pour un objet lié, et la ligne de désenchantement est grise si votre niveau d'Enchantement est trop bas. Le serveur doit exécuter le module mod-retail-ah.";
+L["Journal Gear Desc"] = "Ajoute la ligne « Sur votre liste d'équipement » à l'infobulle des objets qui constituent une amélioration pour votre spécialisation, via l'addon Journal: Gear (JournalGearBIS).";
+L["Addon Not Installed"] = "|cffff8040%s n'est pas installé ou n'est pas chargé, cette prise en charge ne fonctionnera donc pas.|r Installez-le et rechargez l'interface (/reload).";
+L["AH Bot Buys"] = "Le bot de l'HV achète";
+L["AH Bot Disenchant"] = "Désenchanter (bot de l'HV)";
+L["AH Bot Disenchant Skill"] = "Désenchanter |cff808080(Enchantement %d)|r";
+L["AH Bot BiS Bonus"] = "Bonus BiS";
 
 -- Paramètres : compatibilité
 L["Compatibility"] = "Compatibilité";
@@ -136,6 +150,7 @@ L["Show Transmog Status Desc"] = "Marque les objets de récompense dont l'appare
 L["Use Transmog Plus"] = "Utilisation de Mod Transmog Plus";
 L["Use Transmog Plus Desc"] = "Cochez cette option si le serveur utilise mod-transmog-plus au lieu du mod-transmog d'origine. Le serveur répond alors pour chaque objet et considère une apparence comme collectée dès qu'un objet ayant le même modèle l'est.\n\nLaissez-la décochée pour le mod-transmog d'origine.";
 L["Transmog Not Collected"] = "Apparence non collectée";
+L["Transmog Module Missing"] = "|cffff8040Le module serveur %s n'a pas été détecté, ce paramètre est donc désactivé.|r";
 L["Click To Copy To Clipboard"] = "Cliquer pour copier dans le presse-papiers";
 L["Show Upgrade Arrow"] = "Afficher la flèche d'amélioration (Pawn requis)";
 L["Show Upgrade Arrow Desc"] = "Affiche une flèche verte %s sur un objet de récompense s'il constitue une amélioration pour votre personnage selon l'addon Pawn : l'objet obtient un meilleur score que celui que vous portez dans cet emplacement avec au moins l'une de vos échelles Pawn.\n\nLes armures d'un type différent de celui que vous portez (du tissu à la place du cuir, par exemple) ne sont jamais signalées.";

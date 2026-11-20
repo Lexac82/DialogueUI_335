@@ -16,6 +16,13 @@ local _, addon = ...;
 --        "CollectionUpdated:<itemId>"          a new appearance was learned: every cached result may be stale
 --
 -- On a server without the matching module nobody answers, so nothing is shown.
+--
+-- Is the module there? (the Settings grey out the options of a module that is not)
+--   mod-transmog-plus: asked silently with a status request for an item that is never eligible; any "CollectionStatus"
+--   answer means it is installed (plusDetected).
+--   original mod-transmog: only ".transmog sync" tells. A server without it answers with an error line, so the probe
+--   is run only when the player opens the Other Addons tab, and the answer is hidden from the chat (see SystemFilter).
+--   It is installed once a sync finishes; not installed once the sync gave up.
 local CallbackRegistry = addon.CallbackRegistry;
 local GetDBBool = addon.GetDBBool;
 
@@ -30,9 +37,11 @@ local match = string.match;
 local find = string.find;
 
 local PREFIX = "transmog";
+local PROBE_ITEM = 6948;                    -- Hearthstone: the plus module answers "2" (not eligible) at once
 local STATE_BY_NUMBER = {[0] = "uncollected", [1] = "collected", [2] = "ineligible"};
 
 local SYNC_COMMAND = ".transmog sync";
+local SYNC_BEGIN_TIMEOUT = 3;               -- after the first line: the real module sends the rest at once
 local SYNC_TIMEOUT = 10;                   -- seconds without an answer (or without the next line) before giving up
 local RESYNC_DELAY = 2;                    -- after equipping or a "learned" message, so the server has stored it
 
@@ -58,6 +67,14 @@ addon.TransmogStatus = TransmogStatus;
 
 local statusByItem = {};
 local pendingByItem = {};
+local plusDetected = false;
+
+local function SetPlusDetected()
+    if not plusDetected then
+        plusDetected = true;
+        CallbackRegistry:Trigger("TransmogModuleChanged");
+    end
+end
 
 local function ClearPlusCache()
     statusByItem = {};
@@ -76,6 +93,7 @@ end
 local function OnPlusMessage(message)
     local itemID, number = match(message, "^CollectionStatus:(%d+):(%d+)$");
     if itemID then
+        SetPlusDetected();
         itemID = tonumber(itemID);
         local state = STATE_BY_NUMBER[tonumber(number)];
         if state then
@@ -88,6 +106,7 @@ local function OnPlusMessage(message)
 
     itemID = match(message, "^CollectionUpdated:(%d+)$");
     if itemID then
+        SetPlusDetected();
         -- One new look counts for every item that shares its model, so forget all results.
         ClearPlusCache();
         statusByItem[tonumber(itemID)] = "collected";
@@ -105,6 +124,8 @@ local syncSet = nil;                       -- item IDs of the last finished sync
 local syncNew;                             -- the set being collected
 local syncSawBegin;                        -- the module's "Performing ... sync" line has come
 local syncDeadline = 0;
+local syncStartedAt = 0;
+local syncFirstAt;                         -- time of the first line of the answer
 local syncFinishedAt = 0;
 local syncGaveUp = false;                  -- no answer to .transmog sync: do not ask again this session
 local resyncAt;                            -- time of a planned sync (equipment changed, appearance learned)
@@ -125,6 +146,7 @@ local function Tick()
             CallbackRegistry:Trigger("TransmogStatusChanged");
         else
             syncGaveUp = true;              -- server without the module (or the command is off)
+            CallbackRegistry:Trigger("TransmogModuleChanged");
         end
     end
     if resyncAt and syncState == "idle" and now >= resyncAt then
@@ -147,7 +169,9 @@ function TransmogStatus:StartSync()
     syncState = "waiting";
     syncNew = {};
     syncSawBegin = false;
-    syncDeadline = GetTime() + SYNC_TIMEOUT;
+    syncFirstAt = nil;
+    syncStartedAt = GetTime();
+    syncDeadline = syncStartedAt + SYNC_TIMEOUT;
     ArmTimer();
     SendChatMessage(SYNC_COMMAND, "SAY");
 end
@@ -157,6 +181,7 @@ local function FinishSync()
     syncState = "idle";
     syncFinishedAt = GetTime();
     CallbackRegistry:Trigger("TransmogStatusChanged");
+    CallbackRegistry:Trigger("TransmogModuleChanged");
 end
 
 local function PlanResync()
@@ -186,8 +211,9 @@ local function OnSystemMessage(message)
         syncDeadline = GetTime() + SYNC_TIMEOUT;
     elseif syncState == "waiting" and not syncSawBegin then
         syncSawBegin = true;
+        syncFirstAt = GetTime();
         syncTexts[message] = true;
-        syncDeadline = GetTime() + SYNC_TIMEOUT;
+        syncDeadline = syncFirstAt + SYNC_BEGIN_TIMEOUT;
     else
         syncTexts[message] = true;
         FinishSync();
@@ -201,7 +227,16 @@ local function SystemFilter(_, _, message)
         if match(message, "^TRANSMOG_SYNC:%d+$") then
             return true
         end
-        if syncTexts[message] and (syncState ~= "idle" or GetTime() - syncFinishedAt < 0.5) then
+        -- The first line of the answer is hidden even before its text is known: on a server without the module it is
+        -- an error ("no such command"). Both checks together do not depend on whether the event or the filter runs first.
+        local now = GetTime();
+        if syncState == "waiting" and not syncSawBegin and now - syncStartedAt < 1.5 then
+            return true
+        end
+        if syncFirstAt and now - syncFirstAt < 0.5 then
+            return true
+        end
+        if syncTexts[message] and (syncState ~= "idle" or now - syncFinishedAt < 0.5) then
             return true
         end
     end
@@ -226,6 +261,33 @@ end
 ---------------------------------------------------------------------------
 -- Public interface
 ---------------------------------------------------------------------------
+
+-- mod-transmog-plus answered.
+function TransmogStatus:IsPlusAvailable()
+    return plusDetected
+end
+
+-- Some module can answer: plus answered, the original answered a sync, or it was not asked yet / is being asked.
+-- False once it is known that neither is there.
+function TransmogStatus:IsModuleAvailable()
+    return plusDetected or syncSet ~= nil or not syncGaveUp
+end
+
+-- Silent: an addon message. Safe to repeat until the answer comes.
+function TransmogStatus:ProbePlus()
+    if not plusDetected then
+        SendAddonMessage(PREFIX, "GetCollectionStatus:" .. PROBE_ITEM, "WHISPER", UnitName("player"));
+    end
+end
+
+-- Not silent on the server's side (a chat command), so only when asked for: once per session, and not when plus is
+-- there (it has no .transmog sync).
+function TransmogStatus:ProbeOriginal()
+    if plusDetected or syncSet or syncGaveUp then
+        return
+    end
+    self:StartSync();
+end
 
 function TransmogStatus:IsEnabled()
     return GetDBBool("ShowTransmogStatus")
@@ -293,6 +355,7 @@ frame:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4)
     else
         -- The sync set survives a loading screen; plus answers are asked again.
         ClearPlusCache();
+        TransmogStatus:ProbePlus();
     end
 end);
 

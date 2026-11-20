@@ -7,9 +7,15 @@ local _, addon = ...;
 local IsAddOnLoaded = IsAddOnLoaded;
 
 local List = {};
+local Active = {};              -- addonName -> true once its onLoaded ran
 
 function addon.AddSupportedAddOn(addonName, onLoaded, requiredGlobals)
     List[#List + 1] = {addonName, onLoaded, requiredGlobals};
+end
+
+-- True when the addon is loaded and its support is running (used by the Settings to warn about a missing addon).
+function addon.IsSupportedAddOnActive(addonName)
+    return Active[addonName] == true
 end
 
 local function CheckSupportedAddOns()
@@ -26,6 +32,7 @@ local function CheckSupportedAddOns()
                 end
             end
             if ready then
+                Active[addonName] = true;
                 onLoaded();
             end
         end

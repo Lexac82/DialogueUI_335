@@ -20,6 +20,20 @@ L["UI"] = "Interfaz";
 L["Control"] = "Controles";
 L["Gameplay"] = "Jugabilidad";
 L["Minimap"] = "Minimapa";
+L["Other Addons"] = "Otros addons";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "Descripción emergente";
+L["Auction House"] = "Casa de subastas";
+L["Auction House Desc"] = "Añade a la descripción emergente del objeto los precios de la casa de subastas de otro addon instalado. Elige cuál abajo.";
+L["Auction House Auctionator Desc"] = "Auctionator: el precio de subasta, el precio mediano y el valor de desencantado del objeto, tal como Auctionator los muestra en sus propias descripciones. Las líneas siguen las opciones de descripción de Auctionator.";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah): lo que paga por el objeto el comprador bot de la casa de subastas del servidor (el total de la pila si es una pila) y el valor medio de los materiales de un desencantado. Lo mejor de los dos se muestra en verde.\n\nNo se muestra nada para un objeto ligado, y la línea de desencantado es gris si tu Encantamiento es demasiado bajo. El servidor debe ejecutar el módulo mod-retail-ah.";
+L["Journal Gear Desc"] = "Añade la línea «En tu lista de equipo» a la descripción de los objetos que son una mejora para tu especialización, del addon Journal: Gear (JournalGearBIS).";
+L["Addon Not Installed"] = "|cffff8040%s no está instalado o no está cargado, por lo que esta compatibilidad no funcionará.|r Instálalo y recarga la interfaz (/reload).";
+L["AH Bot Buys"] = "El bot de la CS compra";
+L["AH Bot Disenchant"] = "Desencantar (bot de la CS)";
+L["AH Bot Disenchant Skill"] = "Desencantar |cff808080(Encantamiento %d)|r";
+L["AH Bot BiS Bonus"] = "Bonificación BiS";
 
 -- Settings: Compatibility
 L["Compatibility"] = "Compatibilidad";
@@ -133,6 +147,7 @@ L["Show Transmog Status Desc"] = "Marca los objetos de recompensa cuya aparienci
 L["Use Transmog Plus"] = "Usando Mod Transmog Plus";
 L["Use Transmog Plus Desc"] = "Marca esta casilla si el servidor usa mod-transmog-plus en lugar del mod-transmog original. El servidor responde entonces por cada objeto y cuenta una apariencia como coleccionada cuando lo está cualquier objeto con el mismo modelo.\n\nDéjala sin marcar para el mod-transmog original.";
 L["Transmog Not Collected"] = "Apariencia sin coleccionar";
+L["Transmog Module Missing"] = "|cffff8040No se detectó el módulo %s del servidor, por lo que esta opción está desactivada.|r";
 L["Click To Copy To Clipboard"] = "Haz clic para copiar al portapapeles";
 L["Show Upgrade Arrow"] = "Mostrar flecha de mejora (requiere Pawn)";
 L["Show Upgrade Arrow Desc"] = "Muestra una flecha verde %s en un objeto de recompensa si es una mejora para tu personaje según el addon Pawn: el objeto puntúa más que el que llevas equipado en esa ranura en al menos una de tus escalas de Pawn.\n\nLa armadura de un tipo distinto al que llevas equipado (tela en lugar de cuero, por ejemplo) nunca se marca.";

@@ -20,6 +20,20 @@ L["UI"] = "UI";
 L["Control"] = "입력설정";
 L["Gameplay"] = "게임플레이";
 L["Minimap"] = "미니맵";
+L["Other Addons"] = "기타 애드온";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "툴팁";
+L["Auction House"] = "경매장";
+L["Auction House Desc"] = "설치된 다른 애드온의 경매장 가격을 아이템 툴팁에 추가합니다. 아래에서 사용할 애드온을 선택하세요.";
+L["Auction House Auctionator Desc"] = "Auctionator: Auctionator가 자체 툴팁에 보여 주는 대로 아이템의 경매 가격, 중간 가격, 마력 추출 가치를 표시합니다. 표시 줄은 Auctionator의 툴팁 설정을 따릅니다.";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah): 서버의 경매장 봇 구매자가 아이템에 지불하는 금액(묶음이면 묶음 전체)과 한 번의 마력 추출로 얻는 재료의 평균 가치를 표시합니다. 둘 중 더 나은 쪽은 녹색입니다.\n\n귀속된 아이템에는 아무것도 표시되지 않으며, 마법부여 기술이 부족하면 마력 추출 줄이 회색으로 표시됩니다. 서버에서 mod-retail-ah 모듈이 실행 중이어야 합니다.";
+L["Journal Gear Desc"] = "내 전문화에 더 좋은 아이템의 툴팁에 \"장비 목록에 있음\" 줄을 추가합니다. Journal: Gear (JournalGearBIS) 애드온을 사용합니다.";
+L["Addon Not Installed"] = "|cffff8040%s이(가) 설치되지 않았거나 로드되지 않아 이 지원은 작동하지 않습니다.|r 설치한 뒤 인터페이스를 다시 불러오세요 (/reload).";
+L["AH Bot Buys"] = "경매장 봇 구매가";
+L["AH Bot Disenchant"] = "마력 추출 (경매장 봇)";
+L["AH Bot Disenchant Skill"] = "마력 추출 |cff808080(마법부여 %d)|r";
+L["AH Bot BiS Bonus"] = "BiS 보너스";
 
 -- Settings: Compatibility
 L["Compatibility"] = "호환성";
@@ -133,6 +147,7 @@ L["Show Transmog Status Desc"] = "아직 수집하지 않은 형상변환 외형
 L["Use Transmog Plus"] = "Mod Transmog Plus 사용 중";
 L["Use Transmog Plus Desc"] = "서버가 원본 mod-transmog 대신 mod-transmog-plus를 사용한다면 선택하세요. 그러면 서버가 아이템마다 응답하며, 같은 모델의 아이템 중 하나라도 수집했다면 외형을 수집한 것으로 처리합니다.\n\n원본 mod-transmog라면 선택하지 마세요.";
 L["Transmog Not Collected"] = "외형 미수집";
+L["Transmog Module Missing"] = "|cffff8040서버의 %s 모듈이 감지되지 않아 이 설정은 비활성화되었습니다.|r";
 L["Click To Copy To Clipboard"] = "클릭하여 클립보드에 복사";
 L["Show Upgrade Arrow"] = "업그레이드 화살표 표시 (Pawn 필요)";
 L["Show Upgrade Arrow Desc"] = "Pawn 애드온 기준으로 캐릭터에게 업그레이드인 보상 아이템에 녹색 화살표 %s를 표시합니다. 아이템이 해당 칸에 장착한 아이템보다 Pawn 점수 체계 중 하나 이상에서 더 높은 점수를 받는 경우입니다.\n\n장착 중인 것과 다른 종류의 방어구(예: 가죽 대신 천)는 표시되지 않습니다.";

@@ -460,6 +460,13 @@ function RewardTooltip:RestoreGameTooltip()
 end
 
 -- The server answers after the tooltip opened: draw it again with the new line.
+-- Same for the AH bot prices (Code\SupportedAddOns\RetailAH.lua).
+addon.CallbackRegistry:Register("AuctionHouseTooltipChanged", function()
+    if shownEntry and tooltip and tooltip:IsShown() then
+        Render(tooltip, shownEntry);
+    end
+end);
+
 addon.CallbackRegistry:Register("TransmogStatusChanged", function(itemID)
     if shownEntry and tooltip and tooltip:IsShown() and (not itemID or shownEntry.itemID == itemID) then
         Render(tooltip, shownEntry);

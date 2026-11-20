@@ -20,6 +20,20 @@ L["UI"] = "Benutzerinterface";
 L["Control"] = "Steuerung";
 L["Gameplay"] = "Gameplay";
 L["Minimap"] = "Minikarte";
+L["Other Addons"] = "Andere Addons";
+
+-- Settings: Other Addons tab
+L["Tooltip"] = "Tooltip";
+L["Auction House"] = "Auktionshaus";
+L["Auction House Desc"] = "Fügt dem Gegenstands-Tooltip Auktionshauspreise eines anderen installierten Addons hinzu. Wähle unten, welches.";
+L["Auction House Auctionator Desc"] = "Auctionator: Auktionspreis, Medianpreis und Entzauberungswert des Gegenstands, wie Auctionator sie in seinen eigenen Tooltips zeigt. Die Zeilen folgen den Tooltip-Optionen von Auctionator.";
+L["Auction House RetailAH Desc"] = "Retail Auction House (mod-retail-ah): Was der AH-Bot-Käufer des Servers für den Gegenstand zahlt (bei einem Stapel die Summe des Stapels) und der durchschnittliche Wert der Materialien einer Entzauberung. Das bessere von beiden ist grün.\n\nFür seelengebundene Gegenstände wird nichts angezeigt, und die Entzauberungszeile ist grau, wenn deine Verzauberkunst zu niedrig ist. Der Server muss das Modul mod-retail-ah ausführen.";
+L["Journal Gear Desc"] = "Fügt dem Tooltip von Gegenständen, die für deine Spezialisierung eine Verbesserung sind, die Zeile „Auf deiner Ausrüstungsliste“ hinzu, vom Addon Journal: Gear (JournalGearBIS).";
+L["Addon Not Installed"] = "|cffff8040%s ist nicht installiert oder nicht geladen, daher funktioniert diese Unterstützung nicht.|r Installiere es und lade die Oberfläche neu (/reload).";
+L["AH Bot Buys"] = "AH-Bot kauft";
+L["AH Bot Disenchant"] = "Entzaubern (AH-Bot)";
+L["AH Bot Disenchant Skill"] = "Entzaubern |cff808080(Verzauberkunst %d)|r";
+L["AH Bot BiS Bonus"] = "BiS-Bonus";
 
 -- Settings: Compatibility
 L["Compatibility"] = "Kompatibilität";
@@ -133,6 +147,7 @@ L["Show Transmog Status Desc"] = "Markiert Belohnungsgegenstände, deren Transmo
 L["Use Transmog Plus"] = "Mod Transmog Plus verwenden";
 L["Use Transmog Plus Desc"] = "Aktiviere dies, wenn der Server mod-transmog-plus statt des originalen mod-transmog verwendet. Der Server antwortet dann für jeden Gegenstand und wertet ein Erscheinungsbild als gesammelt, wenn ein beliebiger Gegenstand mit demselben Modell gesammelt wurde.\n\nFür das originale mod-transmog deaktiviert lassen.";
 L["Transmog Not Collected"] = "Erscheinungsbild nicht gesammelt";
+L["Transmog Module Missing"] = "|cffff8040Das Servermodul %s wurde nicht erkannt, daher ist diese Einstellung deaktiviert.|r";
 L["Click To Copy To Clipboard"] = "Klicken, um in die Zwischenablage zu kopieren";
 L["Show Upgrade Arrow"] = "Verbesserungspfeil anzeigen (Pawn erforderlich)";
 L["Show Upgrade Arrow Desc"] = "Zeigt einen grünen Pfeil %s bei einem Belohnungsgegenstand, wenn er laut dem Addon Pawn eine Verbesserung für deinen Charakter ist: Der Gegenstand erreicht in mindestens einer deiner Pawn-Skalen einen höheren Wert als der, den du in diesem Platz trägst.\n\nRüstung eines anderen Typs als der getragenen (zum Beispiel Stoff statt Leder) wird nie markiert.";

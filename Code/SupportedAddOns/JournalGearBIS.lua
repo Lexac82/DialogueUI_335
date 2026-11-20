@@ -70,6 +70,9 @@ local function OnAddOnLoaded()
     end
 
     local function provider(tooltip, link)
+        if not addon.GetDBBool("ShowJournalGearTooltip") then
+            return
+        end
         local id = tonumber(link:match("item:(%d+)"));
         if not id then
             return
