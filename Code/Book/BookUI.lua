@@ -325,9 +325,22 @@ local function ApplyAnchor(offsetY)
     frame:SetPoint(anchor.point, UIParent, anchor.relPoint, anchor.x, anchor.y + (offsetY or 0));
 end
 
-local function RestorePosition()
+-- BookPositionMode: 1 Default (left edge), 2 Custom (the dragged BookPosition).
+local POSITION_CUSTOM = 2;
+
+local function GetCustomPosition()
+    if GetDBValue("BookPositionMode") ~= POSITION_CUSTOM then
+        return
+    end
     local pos = GetDBValue("BookPosition");
     if pos and pos.point and pos.x and pos.y then
+        return pos
+    end
+end
+
+local function RestorePosition()
+    local pos = GetCustomPosition();
+    if pos then
         anchor.point, anchor.relPoint, anchor.x, anchor.y = pos.point, pos.relativePoint or pos.point, pos.x, pos.y;
     else
         anchor.point, anchor.relPoint, anchor.x, anchor.y = "LEFT", "LEFT", EDGE_DISTANCE, 0;
@@ -335,15 +348,30 @@ local function RestorePosition()
     ApplyAnchor(0);
 end
 
+-- The book can only be dragged in Custom while the Settings window is open on its UI tab.
+local function CanMove()
+    local settings = addon.SettingsUI;
+    return GetDBValue("BookPositionMode") == POSITION_CUSTOM and settings and settings:IsOnUITab()
+end
+
 -- Left-drag moves the whole book. The scroll frame forwards the drag.
 local function MakeMovable(...)
     frame:SetMovable(true);
     frame:SetClampedToScreen(true);
     frame:SetUserPlaced(false);     -- we save the position ourselves
+    local moving = false;
     local function OnDragStart()
+        if not CanMove() then
+            return
+        end
+        moving = true;
         frame:StartMoving();
     end
     local function OnDragStop()
+        if not moving then
+            return
+        end
+        moving = false;
         frame:StopMovingOrSizing();
         local point, _, relativePoint, x, y = frame:GetPoint(1);
         if point then
@@ -1292,6 +1320,7 @@ function Book:ShowUI()
         self.vignette:Hide();
     end
     if not frame:IsShown() then
+        RestorePosition();      -- the mode or the saved spot may have changed since the last book
         animElapsed = 0;
         frame:SetAlpha(0);
         ApplyAnchor(-ANIM_OFFSET);
@@ -1326,9 +1355,17 @@ end
 
 function Book:OnShow()
     self:UpdateKeys();
+    addon.CallbackRegistry:Trigger("BookShown");        -- HideUI.lua
 end
 
 function Book:OnHide()
+    if self.isEditMode then
+        self.isEditMode = nil;
+        addon.SettingsUI:RefreshToggles();      -- the Move row is no longer on
+        addon.API.After(0.05, function()
+            addon.SettingsUI:UpdateKeys();      -- Esc goes back to the Settings window
+        end);
+    end
     self:SavePosition();
     frame:SetScript("OnUpdate", nil);
     frame:SetAlpha(1);
@@ -1340,6 +1377,7 @@ function Book:OnHide()
     pagePool:ReleaseAll();
     self.source:Hide();
     self.scrollFrame:ResetScroll();
+    addon.CallbackRegistry:Trigger("BookHidden");       -- HideUI.lua
 end
 
 -- Remembers where the player stopped reading.
@@ -1354,6 +1392,7 @@ end
 -- A readable was opened. material: ItemTextGetMaterial(). itemInfo: BookItem:Resolve() result or nil.
 function Book:BeginReading(material, title, itemInfo)
     self:Init();
+    self.isEditMode = nil;      -- a real readable replaces the Move sample
     self.kitID = MaterialKit[material or "Parchment"] or 1;
     Cache:Reset(title, itemInfo);
 end
@@ -1368,3 +1407,58 @@ function Book:FinishReading(maxPage)
     self:Build();
     self:ShowUI();
 end
+
+
+-- Move / Reset Position (Settings > Readables > Position > Custom) ------------------------------------------
+
+function Book:IsEditMode()
+    return self.isEditMode and self:IsShown() and true or false
+end
+
+-- Shows a small sample book, so the frame can be dragged without a readable. It closes with Esc, the close button,
+-- when the Settings window closes, leaves the UI tab, or the position is no longer Custom.
+function Book:ToggleEditMode()
+    if self:IsEditMode() then
+        self:Hide();
+        return
+    end
+    if self:IsShown() then
+        return      -- a readable is open: it can be dragged as it is
+    end
+
+    self:BeginReading("Parchment", addon.L["Edit Mode Title"], nil);
+    self:AddPage(1, addon.L["Edit Mode Body"]);
+    self.isEditMode = true;     -- after BeginReading, which clears it
+    self:FinishReading(1);
+end
+
+function Book:IsUsingCustomPosition()
+    return GetCustomPosition() ~= nil
+end
+
+function Book:ResetPosition()
+    SetDBValue("BookPosition", nil);
+    if frame then
+        RestorePosition();
+    end
+end
+
+local function LeaveEditMode()
+    if Book:IsEditMode() then
+        Book:Hide();
+    end
+end
+addon.CallbackRegistry:Register("SettingsUI.Hide", LeaveEditMode);
+addon.CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
+    if tabID ~= 1 then
+        LeaveEditMode();
+    end
+end);
+addon.CallbackRegistry:Register("SettingChanged.BookPositionMode", function(value)
+    if value ~= POSITION_CUSTOM then
+        LeaveEditMode();
+    end
+    if frame and Book:IsShown() then
+        RestorePosition();
+    end
+end);

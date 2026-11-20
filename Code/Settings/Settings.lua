@@ -291,6 +291,25 @@ local function OrientationPosition_Validation()
     return addon.DialogueUI:IsUsingCustomPosition()
 end
 
+-- Readables: same Move / Reset rows, shown for BookPositionMode Custom.
+local BOOK_POSITION_CUSTOM = 2;
+
+local function Book_Move_OnClick()
+    addon.Book:ToggleEditMode();
+end
+
+local function Book_Reset_OnClick()
+    addon.Book:ResetPosition();
+end
+
+local function Book_Move_IsToggled()
+    return addon.Book:IsEditMode()
+end
+
+local function BookPosition_Validation()
+    return addon.Book:IsUsingCustomPosition()
+end
+
 -- Quest Item Display: Move shows a sample popup to drag, Reset puts it back at the default place.
 local function QuestItemDisplay_Move_OnClick()
     addon.QuestItemDisplay:ToggleEditMode();
@@ -579,12 +598,12 @@ local Schematic = {
             {type = "Custom", name = L["Reset Position"], description = L["Reset Position Desc"], icon = "Settings-Reset.blp",
                 onClickFunc = Orientation_Reset_OnClick, validationFunc = OrientationPosition_Validation,
                 requiredParentValueAnd = {FrameOrientation = ORIENTATION_CUSTOM}},
-            {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
             {type = "Checkbox", name = L["Show Copy Text Button"], description = L["Show Copy Text Button Desc"], dbKey = "ShowCopyTextButton", preview = "CopyTextButton", ratio = 1},
             {type = "Checkbox", name = L["Show NPC Name On Page"], description = L["Show NPC Name On Page Desc"], dbKey = "ShowNPCNameOnPage"},
             {type = "Checkbox", name = L["Show Quest Type"], description = L["Show Quest Type Desc"], dbKey = "ShowQuestType", preview = "QuestType", ratio = 409 / 124},     -- picture is 409 x 124 stretched to 512 x 128
             {type = "Checkbox", name = L["Instant Quest Text"], description = L["Instant Quest Text Desc"], cvarFunc = function() return addon.INSTANT_TEXT_CVAR end},
             {type = "Subheader", name = L["Quest"]},
+            {type = "Checkbox", name = L["Hide UI"], description = L["Hide UI Desc"], dbKey = "HideUI"},
             {type = "ArrowOption", name = L["Quest Difficulty Option"], description = L["Quest Difficulty Option Desc"], tooltip = QuestDifficultyStyle_Tooltip, dbKey = "QuestDifficultyStyle", preview = "QuestDifficultyStyle", ratio = 2,
                 choices = {
                     {dbValue = 0, valueText = L["QuestDifficultyStyle Off"]},
@@ -604,6 +623,17 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Replace Calculations"], description = L["Show Replace Calculations Desc"], dbKey = "TooltipShowCalculations"},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
             {type = "Subheader", name = L["Readables"], extraWidth = 20},
+            {type = "ArrowOption", name = L["Readables Position"], description = L["Readables Position Desc"], dbKey = "BookPositionMode",
+                choices = {
+                    {dbValue = 1, valueText = L["Position Default"]},
+                    {dbValue = 2, valueText = L["Orientation Custom"]},
+                },
+            },
+            {type = "Custom", name = L["Move Position"], description = L["Readables Move Position Desc"], icon = "Settings-Move.blp",
+                onClickFunc = Book_Move_OnClick, isToggledFunc = Book_Move_IsToggled, requiredParentValueAnd = {BookPositionMode = BOOK_POSITION_CUSTOM}},
+            {type = "Custom", name = L["Reset Position"], description = L["Readables Reset Position Desc"], icon = "Settings-Reset.blp",
+                onClickFunc = Book_Reset_OnClick, validationFunc = BookPosition_Validation,
+                requiredParentValueAnd = {BookPositionMode = BOOK_POSITION_CUSTOM}},
             {type = "ArrowOption", name = L["Frame Size"], description = L["BookUI Frame Size Desc"], dbKey = "BookUISize",
                 choices = {
                     {dbValue = 0, valueText = L["Size Extra Small"]},
@@ -612,6 +642,7 @@ local Schematic = {
                     {dbValue = 3, valueText = L["Size Large"]},
                 },
             },
+            {type = "Checkbox", name = L["Hide UI"], description = L["Readables Hide UI Desc"], dbKey = "BookHideUI"},
             {type = "Checkbox", name = L["BookUI Keep UI Open"], description = L["BookUI Keep UI Open Desc"], dbKey = "BookKeepUIOpen"},
             {type = "Checkbox", name = L["BookUI Show Location"], description = L["BookUI Show Location Desc"], dbKey = "BookShowLocation"},
             {type = "Checkbox", name = L["BookUI Show Item Description"], description = L["BookUI Show Item Description Desc"], dbKey = "BookUIItemDescription"},

@@ -70,8 +70,10 @@ local DefaultValues = {
 
     --Book Settings
     BookUIEnabled = true,
+        BookPositionMode = 1,                   --1 Default (left edge), 2 Custom (not in retail: drag the frame, BookPosition)
         BookUISize = 1,                         --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
         BookFontSize = 12,                      --Not in retail (it follows FontSizeBase)
+        BookHideUI = false,                     --Fade out the game UI while a readable is open (not in retail, see HideUI.lua)
         BookKeepUIOpen = false,
         BookShowLocation = true,                --Retail: false
         BookUIItemDescription = true,           --Retail: false

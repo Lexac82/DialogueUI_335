@@ -14,6 +14,7 @@ local FADE_IN_SPEED = 4;        -- (retail: 0.25 s)
 local UPDATE_INTERVAL = 1/30;
 
 local HIDE_UI = false;
+local HIDE_UI_BOOK = false;         -- the Readables setting
 
 -- Under UIRoot: a frame created without a parent goes under UIParent and would stop running OnUpdate once it is hidden.
 local FadeHelper = CreateFrame("Frame", nil, addon.UIRoot);
@@ -107,8 +108,9 @@ function FadeHelper:FadeOut_OnUpdate(elapsed)
     end
 end
 
-function FadeHelper:FadeOutUI()
-    if not HIDE_UI then return end;
+-- forced: the caller has already checked its own setting (Readables).
+function FadeHelper:FadeOutUI(forced)
+    if not (HIDE_UI or forced) then return end;
 
     if self.fadeDelta == -1 or (not UIParent:IsShown()) then
         return
@@ -162,6 +164,9 @@ local function Dialogue_OnShow()
 end
 
 local function Dialogue_OnHide()
+    if HIDE_UI_BOOK and addon.Book:IsShown() and not addon.Book:IsEditMode() then
+        return      -- a readable is still open and keeps the UI hidden
+    end
     FadeHelper:FadeInUI();
 end
 
@@ -176,6 +181,37 @@ CallbackRegistry:Register("SettingChanged.HideUI", function(dbValue, userInput)
     end
     if addon.DialogueUI.frame:IsShown() and not addon.DialogueUI:IsEditMode() then
         if HIDE_UI then
+            FadeHelper:HideUIParentInstantly();
+        else
+            FadeHelper:ShowUIParentInstantly();
+        end
+    end
+end);
+
+
+-- Readables: the same fade, with its own setting (BookHideUI). The Move Position sample keeps the game UI.
+local function Book_OnShow()
+    if HIDE_UI_BOOK and not addon.Book:IsEditMode() then
+        FadeHelper:FadeOutUI(true);
+    end
+end
+
+local function Book_OnHide()
+    if HIDE_UI_BOOK and not addon.DialogueUI.frame:IsShown() then
+        FadeHelper:FadeInUI();      -- a dialogue that is still open keeps the UI hidden
+    end
+end
+
+CallbackRegistry:Register("BookShown", Book_OnShow);
+CallbackRegistry:Register("BookHidden", Book_OnHide);
+
+CallbackRegistry:Register("SettingChanged.BookHideUI", function(dbValue, userInput)
+    HIDE_UI_BOOK = dbValue == true;
+    if not userInput then
+        return
+    end
+    if addon.Book:IsShown() and not addon.Book:IsEditMode() and not addon.DialogueUI.frame:IsShown() then
+        if HIDE_UI_BOOK then
             FadeHelper:HideUIParentInstantly();
         else
             FadeHelper:ShowUIParentInstantly();
