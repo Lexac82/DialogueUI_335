@@ -22,6 +22,9 @@ local min = math.min;
 local RewardTooltip = {};
 addon.RewardTooltip = RewardTooltip;
 
+-- FrameXML comparison tooltips (not in wow-docs; ShoppingTooltip1/2/3 as used by GameTooltip_ShowCompareItem).
+local SHOPPING_TOOLTIPS = {"ShoppingTooltip1", "ShoppingTooltip2", "ShoppingTooltip3"};
+
 local RETRY_INTERVAL = 0.3;
 local RETRY_MAX = 10;
 local GOLD = {1, 0.82, 0};
@@ -47,6 +50,8 @@ end
 
 local tooltip;
 local shownEntry;                          -- entry of our tooltip while it is open, for a late transmog answer
+local compareFrame;                        -- listens for the compare key while the default tooltip shows an item
+local compareEntry;                        -- item entry the default tooltip is showing, nil otherwise
 local function GetTooltip()
     if not tooltip then
         tooltip = addon.CreateTooltipFrame();
@@ -384,6 +389,10 @@ function RewardTooltip:Hide()
     if self.gameTooltipTaken then
         GameTooltip:Hide();
     end
+    compareEntry = nil;
+    if compareFrame then
+        compareFrame:UnregisterEvent("MODIFIER_STATE_CHANGED");
+    end
 end
 
 -- Retail (RewardTooltipCode.lua TakeOutGameTooltip / RestoreGameTooltip): while our tooltip is not used, the
@@ -402,6 +411,14 @@ function RewardTooltip:TakeOutGameTooltip()
     end
     GameTooltip:Hide();
     GameTooltip:SetParent(self.topFrame);
+    -- The comparison tooltips are UIParent children too, so they would stay invisible with UIParent hidden.
+    for i = 1, #SHOPPING_TOOLTIPS do
+        local shopping = _G[SHOPPING_TOOLTIPS[i]];
+        if shopping then
+            shopping:Hide();
+            shopping:SetParent(self.topFrame);
+        end
+    end
 end
 
 function RewardTooltip:RestoreGameTooltip()
@@ -412,6 +429,14 @@ function RewardTooltip:RestoreGameTooltip()
     GameTooltip:Hide();
     GameTooltip:SetParent(UIParent);
     GameTooltip:SetFrameStrata("TOOLTIP");
+    for i = 1, #SHOPPING_TOOLTIPS do
+        local shopping = _G[SHOPPING_TOOLTIPS[i]];
+        if shopping then
+            shopping:Hide();
+            shopping:SetParent(UIParent);
+            shopping:SetFrameStrata("TOOLTIP");
+        end
+    end
 end
 
 -- The server answers after the tooltip opened: draw it again with the new line.
@@ -427,18 +452,58 @@ addon.CallbackRegistry:Register("SettingChanged.UseBlizzardTooltip", function(db
     end
 end);
 
+-- Item comparison for the default GameTooltip. The client does not show the comparison tooltips on its own:
+-- the stock UI's item buttons call GameTooltip_ShowCompareItem while the compare key is held, so we do too.
+-- GameTooltip_ShowCompareItem and ShoppingTooltip1/2 are FrameXML, not in wow-docs (listed by the
+-- APIDocumentation addon: GameTooltip_ShowCompareItem(tooltip, shift)).
+local function UpdateBlizzardCompare()
+    if not compareEntry or not GameTooltip:IsShown() then
+        return
+    end
+    if IsModifiedClick("COMPAREITEMS") then
+        if GameTooltip_ShowCompareItem then
+            -- Second argument is the "shift" flag the stock function hands on to SetHyperlinkCompareItem.
+            GameTooltip_ShowCompareItem(GameTooltip, 1);
+        end
+    else
+        for i = 1, #SHOPPING_TOOLTIPS do
+            local shopping = _G[SHOPPING_TOOLTIPS[i]];
+            if shopping then
+                shopping:Hide();
+            end
+        end
+    end
+end
+
 -- The default GameTooltip at the same anchor as our tooltip.
 function RewardTooltip:ShowBlizzard(owner, anchor, entry)
     self:TakeOutGameTooltip();
     GameTooltip:SetOwner(owner, "ANCHOR_NONE");
     GameTooltip:ClearAllPoints();
     GameTooltip:SetPoint("BOTTOMLEFT", anchor or owner, "TOPRIGHT", 0, 2);
+    compareEntry = nil;
     if entry.kind == "item" then
         GameTooltip:SetQuestItem(entry.itemType, entry.index);
+        compareEntry = entry;
     elseif entry.kind == "spell" then
         GameTooltip:SetQuestRewardSpell();
     else
         return
     end
     GameTooltip:Show();
+
+    if compareEntry then
+        if not compareFrame then
+            compareFrame = CreateFrame("Frame");
+            compareFrame:SetScript("OnEvent", UpdateBlizzardCompare);
+            -- One retry on the next frame: right after Show the tooltip has no screen position yet, and the
+            -- stock function needs it to place the comparison tooltips.
+            compareFrame:SetScript("OnUpdate", function(frame)
+                frame:Hide();
+                UpdateBlizzardCompare();
+            end);
+        end
+        compareFrame:RegisterEvent("MODIFIER_STATE_CHANGED");
+        compareFrame:Show();                    -- Shift may already be held: checked on the next frame
+    end
 end
