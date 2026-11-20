@@ -95,6 +95,74 @@ local function FormatQuestTitle(row)
     return format("|cff%s%d|r  %s", hex, level, row.title)
 end
 
+-- Quest detail pages have no level API. The level comes from the quest log (quest already taken) or from the
+-- list the player picked the quest from (remembered by title). A single-quest NPC or an item-started quest
+-- opens the details directly: no level is known there until the quest is in the log.
+local levelByTitle = {};
+
+local function RememberLevels(quests)
+    for _, row in ipairs(quests) do
+        if row.title and row.level and row.level > 0 then
+            levelByTitle[row.title] = row.level;
+        end
+    end
+end
+
+-- Questie-335 (optional, used only when it is loaded): its database knows the level of quests not taken yet.
+-- The quest id is found from the title and the quest giver (QuestieDB.GetQuestIDFromName), the level comes from
+-- QuestieLib.GetEffectiveQuestLevel. These are Questie's own functions, not WoW APIs: everything is protected.
+local function FindQuestieLevel(title)
+    if not (QuestieLoader and QuestieCompat and IsAddOnLoaded("Questie-335")) then
+        return nil
+    end
+    local ok, level = pcall(function()
+        local QuestieDB = QuestieLoader:ImportModule("QuestieDB");
+        local QuestieLib = QuestieLoader:ImportModule("QuestieLib");
+        local guid = QuestieCompat.UnitGUID("npc") or QuestieCompat.UnitGUID("questnpc");
+        local questId = QuestieDB.GetQuestIDFromName(title, guid, true);
+        if questId and questId > 0 then
+            return (QuestieLib.GetEffectiveQuestLevel(questId))
+        end
+    end);
+    if ok and type(level) == "number" and level > 0 then
+        return level
+    end
+end
+
+local function FindQuestLevel(title)
+    if not title or title == "" then
+        return nil
+    end
+    for i = 1, GetNumQuestLogEntries() do
+        local name, level, _, _, isHeader = GetQuestLogTitle(i);
+        if name == title and not isHeader and level and level > 0 then
+            return level
+        end
+    end
+    return levelByTitle[title] or FindQuestieLevel(title)
+end
+
+-- Header pill text of the quest details page (Settings > Quest Difficulty), coloured like the quest list:
+-- Level "36 Quest", Name "Quest - Very Hard", Both "36 Quest - Very Hard". Off, or no known level: the type alone.
+function GossipDataProvider:FormatHeaderType(typeText, title)
+    local style = GetDifficultyStyle();
+    local level = style ~= 0 and FindQuestLevel(title) or nil;
+    if not level then
+        return typeText
+    end
+    local diff = level - (UnitLevel("player") or level);
+    local hex = GetLevelColor(diff);
+    local text = typeText;
+    if (style % 2) == 1 then
+        text = format("|cff%s%d|r %s", hex, level, text);
+    end
+    local label = style >= 2 and GetDifficultyLabel({level = level}) or nil;     -- nil for Normal, as in the list
+    if label then
+        text = format("%s - |cff%s%s|r", text, hex, label);
+    end
+    return text
+end
+
 -- Quest icons (converted BLPs in Textures/Icons). Frequency values as wow-docs: 1 normal, 2 daily, 3 weekly.
 local ICON_AVAILABLE = ICON_PATH .. "AvailableQuest.blp";
 local ICON_DAILY = ICON_PATH .. "DailyQuest.blp";
@@ -332,6 +400,7 @@ local function ReadGossipQuests(quests)
             select = SelectGossipActiveQuest,
         };
     end
+    RememberLevels(quests);
 end
 
 -- QUEST_GREETING lists: separate getters per field.
@@ -362,6 +431,7 @@ local function ReadGreetingQuests(quests)
             select = SelectActiveQuest,
         };
     end
+    RememberLevels(quests);
 end
 
 -- Red option text (retail: <Skip Chapter> style options) is made legible on parchment and gets the red icon.

@@ -193,6 +193,10 @@ local function ReadTags(page, stateIcon)
     else
         tags[#tags + 1] = {kind = "type", text = L["Quest"], icon = stateIcon or ICON_AVAILABLE};
     end
+    -- Level / difficulty on the type pill; typeText is kept to rebuild it when the setting changes.
+    tags[1].typeText = tags[1].text;
+    tags[1].text = addon.GossipDataProvider:FormatHeaderType(tags[1].typeText, page.title);
+    tags[1].title = page.title;
 
     local label = logTag and QUEST_TAG_LABEL[logTag];
     if not label and QuestFlagsPVP and QuestFlagsPVP() then

@@ -159,6 +159,11 @@ addon.CallbackRegistry:Register("SettingChanged.QuestDifficultyStyle", function(
     if MainFrame:IsShown() and lastPage and LIST_EVENTS[lastEvent] then
         addon.GossipDataProvider:RefreshQuestText(lastPage);
         RedrawPage();
+    elseif MainFrame:IsShown() and lastPage and lastPage.tags and lastPage.tags[1] and lastPage.tags[1].typeText then
+        -- Quest details page: rebuild the level / difficulty on the type pill.
+        local tag = lastPage.tags[1];
+        tag.text = addon.GossipDataProvider:FormatHeaderType(tag.typeText, tag.title);
+        MainFrame:SetTags(lastPage.tags);
     end
 end);
 

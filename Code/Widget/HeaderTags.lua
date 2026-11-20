@@ -5,7 +5,7 @@ local _, addon = ...;
 local FontUtil = addon.FontUtil;
 
 local ICON_SIZE = 14;
-local ICON_TEXT_GAP = 2;
+local ICON_TEXT_GAP = 0;
 local SPACING = 8;
 local FONT_HEIGHT = 11;
 local TEXT_COLOR = {"MutedBrown", "DarkModeGrey70"};      -- muted brown on the parchment, grey on Dark (retail DUIFont_QuestType_Right)
