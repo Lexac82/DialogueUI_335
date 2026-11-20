@@ -32,8 +32,8 @@ local HOTKEY_SIZE = { 32, 32 };
 local HOTKEY_MARGIN = 8;
 local HOTKEY_HEIGHT = 20;
 
-local MODEL_WIDTH = 48;                     -- static item icon preview (TooltipModel.lua)
-local MODEL_HEIGHT = 48;
+local MODEL_WIDTH = 38;                     -- static item icon preview (TooltipModel.lua)
+local MODEL_HEIGHT = 38;
 local MODEL_OVERHANG = -PADDING;              -- y offset from the top edge: inside the padding
 
 local TooltipFrame = {};

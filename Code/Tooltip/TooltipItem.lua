@@ -18,6 +18,7 @@ local GetCoinTextureString = GetCoinTextureString;
 local UnitXPMax = UnitXPMax;
 local floor = math.floor;
 local min = math.min;
+local format = string.format;
 
 local RewardTooltip = {};
 addon.RewardTooltip = RewardTooltip;
@@ -82,7 +83,7 @@ end
 local function RenderScannedLines(tip, lines, entry, link)
     local itemLevel = link and select(4, GetItemInfo(link));
     local deltaText = "";
-    if link and TooltipCompare:IsEquippable(link) then
+    if link and not entry.noCompare and TooltipCompare:IsEquippable(link) then
         deltaText = TooltipCompare:FormatItemLevelDelta(TooltipCompare:GetItemLevelDelta(link));
     end
 
@@ -123,25 +124,144 @@ local function RenderScannedLines(tip, lines, entry, link)
     end
 end
 
+-- One "Replace X" block. `equipped` is the item compared with (nil: the one GetReplacedItem picks).
+local function AddReplaceBlock(tip, link, equipped)
+    local equippedName, _, equippedQuality = GetItemInfo(equipped);
+    local nameText = equippedName or L["Equipped Item"];
+    if equippedName and equippedQuality then
+        -- The name takes the item's rarity colour (same brightened colours as the tooltip title).
+        local r, g, b = GetQualityColor(equippedQuality);
+        nameText = format("|cff%02x%02x%02x%s|r", floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5), equippedName);
+    end
+    tip:AddLine(L["Format Replace Item"]:format(nameText), GOLD[1], GOLD[2], GOLD[3]);
+
+    if TooltipCompare:IsDifferentType(link, equipped) then
+        tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
+    end
+
+    local statLines, identical = TooltipCompare:GetStatLines(link, equipped);
+    if identical then
+        tip:AddLine(L["Identical Stats"], GOLD[1], GOLD[2], GOLD[3]);
+    end
+    for i = 1, #statLines do
+        tip:AddLine(statLines[i], 1, 1, 1);
+    end
+end
+
 local function AddComparison(tip, link)
     local equipped = TooltipCompare:GetReplacedItem(link);
     if not equipped then
         return
     end
     tip:AddBlankLine();
-    local equippedName = GetItemInfo(equipped);
-    tip:AddLine(L["Format Replace Item"]:format(equippedName or L["Equipped Item"]), GOLD[1], GOLD[2], GOLD[3]);
+    AddReplaceBlock(tip, link, equipped);
+end
 
-    if TooltipCompare:IsDifferentType(link) then
+-- Side tooltip for items with two equipped candidates (rings, trinkets, one-hand weapons): one Replace block per
+-- equipped item, so the main tooltip stays small. It sits beside the main tooltip, on the side with room.
+--
+-- With "Use Separate Tooltip for Comparison" every equipped item gets a tooltip of its own instead (one or two),
+-- drawn like the reward's tooltip, with the stat differences at the bottom.
+local SIDE_GAP = 2;
+local MAX_SIDE_TIPS = 2;
+local sideTips = {};                       -- pool of tooltip frames, filled when needed
+local sideRequest;                         -- {link, list, separate} set while the main tooltip is rendered
+
+local function HideSideTooltip()
+    sideRequest = nil;
+    for i = 1, #sideTips do
+        sideTips[i]:Hide();
+    end
+end
+
+local function GetSideTip(index)
+    if not sideTips[index] then
+        sideTips[index] = addon.CreateTooltipFrame();
+    end
+    return sideTips[index]
+end
+
+-- The equipped item as its own tooltip: its normal tooltip text, then the differences for replacing it.
+local function RenderEquippedTooltip(tip, newLink, equippedLink)
+    local quality = select(3, GetItemInfo(equippedLink));
+    local lines = TooltipScan:ScanHyperlink(equippedLink);
+    RenderScannedLines(tip, lines, {quality = quality, noCompare = true}, equippedLink);
+
+    tip:AddBlankLine();
+    if TooltipCompare:IsDifferentType(newLink, equippedLink) then
         tip:AddLine(L["Different Item Type"], RED[1], RED[2], RED[3]);
     end
-
-    local statLines, identical = TooltipCompare:GetStatLines(link);
+    local statLines, identical = TooltipCompare:GetStatLines(newLink, equippedLink);
     if identical then
         tip:AddLine(L["Identical Stats"], GOLD[1], GOLD[2], GOLD[3]);
     end
     for i = 1, #statLines do
         tip:AddLine(statLines[i], 1, 1, 1);
+    end
+
+    -- The large icon in the corner, like the reward's own tooltip.
+    if TooltipModel:CanPreview(equippedLink) then
+        tip:SetPreviewItem(equippedLink);
+    end
+end
+
+local function UpdateSideTooltip(main)
+    local request = sideRequest;
+    sideRequest = nil;
+    HideSideTooltip();
+    if not request then
+        return
+    end
+
+    -- Fill the tooltips: one with every Replace block, or one per equipped item.
+    local tips = {};
+    if request.separate then
+        for i = 1, min(#request.list, MAX_SIDE_TIPS) do
+            local tip = GetSideTip(i);
+            tip:Clear();
+            RenderEquippedTooltip(tip, request.link, request.list[i]);
+            tips[#tips + 1] = tip;
+        end
+    else
+        local tip = GetSideTip(1);
+        tip:Clear();
+        for i = 1, #request.list do
+            if i > 1 then
+                tip:AddBlankLine();
+            end
+            AddReplaceBlock(tip, request.link, request.list[i]);
+        end
+        tips[1] = tip;
+    end
+
+    local total = 0;
+    for i = 1, #tips do
+        tips[i]:Layout();
+        total = total + tips[i].frame:GetWidth() + SIDE_GAP;
+    end
+
+    -- Right of the main tooltip when they all fit on screen, left when only that side has room.
+    local mainFrame = main.frame;
+    local mainLeft, mainRight = mainFrame:GetLeft(), mainFrame:GetRight();
+    local screenLeft, screenRight = UIParent:GetLeft() or 0, UIParent:GetRight();
+    local onRight = true;
+    if mainLeft and mainRight and screenRight then
+        local roomRight = screenRight - mainRight;
+        local roomLeft = mainLeft - screenLeft;
+        onRight = roomRight >= total or roomRight >= roomLeft;
+    end
+
+    local previous = mainFrame;
+    for i = 1, #tips do
+        local frame = tips[i].frame;
+        frame:ClearAllPoints();
+        if onRight then
+            frame:SetPoint("TOPLEFT", previous, "TOPRIGHT", SIDE_GAP, 0);
+        else
+            frame:SetPoint("TOPRIGHT", previous, "TOPLEFT", -SIDE_GAP, 0);
+        end
+        previous = frame;
+        tips[i]:Show();
     end
 end
 
@@ -199,7 +319,20 @@ local function AddItemExtras(tip, entry, link)
     if link and TooltipCompare:IsEquippable(link) then
         local showComparison = GetDBBool("TooltipShowItemComparison");
         if showComparison then
-            AddComparison(tip, link);
+            local list = TooltipCompare:GetReplacedItems(link);
+            if GetDBBool("TooltipSeparateCompare") and not GetDBBool("UseBlizzardTooltip") then
+                if not list then
+                    local single = TooltipCompare:GetReplacedItem(link);
+                    list = single and {single};
+                end
+                if list then
+                    sideRequest = {link = link, list = list, separate = true};
+                end
+            elseif list then
+                sideRequest = {link = link, list = list};
+            else
+                AddComparison(tip, link);
+            end
         end
         tip:AddHotkey(_G.SHIFT_KEY_TEXT or "Shift", showComparison and L["Hide Comparison"] or L["Show Comparison"]);
     end
@@ -212,6 +345,7 @@ end
 -- Fills the tooltip for one entry. Returns true while the client is still loading the item.
 local function Render(tip, entry)
     tip:Clear();
+    sideRequest = nil;
     local retrieving = false;
 
     if entry.kind == "item" then
@@ -272,6 +406,7 @@ local function Render(tip, entry)
     end
 
     tip:Layout();
+    UpdateSideTooltip(tip);
     return retrieving
 end
 
@@ -361,6 +496,7 @@ end
 
 -- owner: the hovered button. anchor: frame the tooltip sits on (the icon). entry: reward entry from QuestData.
 function RewardTooltip:Show(owner, anchor, entry)
+    HideSideTooltip();
     if GetDBBool("UseBlizzardTooltip") then
         self:ShowBlizzard(owner, anchor, entry);
         return
@@ -406,6 +542,7 @@ function RewardTooltip:Hide()
     if tooltip then
         tooltip:Hide();
     end
+    HideSideTooltip();
     if self.gameTooltipTaken then
         GameTooltip:Hide();
     end

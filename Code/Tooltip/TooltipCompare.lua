@@ -79,6 +79,36 @@ function TooltipCompare:GetReplacedItem(link)
     return bestLink, bestLevel
 end
 
+-- Every equipped item `link` could replace, in slot order. Only when there are two of them (ring, trinket, one-hand
+-- weapon with a weapon in the off hand): the caller shows both in a side tooltip. Otherwise nil.
+-- A shield or off-hand holdable is not something a one-hand weapon replaces, so it does not count as a second item.
+function TooltipCompare:GetReplacedItems(link)
+    local slots, equipSlot = GetEquipSlots(link);
+    -- A two-hander takes both hands: main hand and off hand are what it replaces.
+    if equipSlot == "INVTYPE_2HWEAPON" then
+        slots = {16, 17};
+    end
+    if not slots or #slots < 2 then
+        return nil
+    end
+
+    local list = {};
+    for i = 1, #slots do
+        local equipped = GetInventoryItemLink("player", slots[i]);
+        if equipped then
+            local equippedSlot = select(9, GetItemInfo(equipped));
+            local isWeaponPair = (equipSlot == "INVTYPE_WEAPON" and i == 2);
+            if not isWeaponPair or equippedSlot == "INVTYPE_WEAPON" or equippedSlot == "INVTYPE_WEAPONOFFHAND" then
+                list[#list + 1] = equipped;
+            end
+        end
+    end
+    if #list < 2 then
+        return nil
+    end
+    return list
+end
+
 -- The upgrade arrow needs the Pawn addon (item level alone is not a good measure). Pawn is looked up when asked,
 -- not at load, so the load order does not matter. Pawn's globals: PawnGetItemData(link) and
 -- PawnGetItemDataForInventorySlot(slot, unenchanted) return an item whose `Values` is a list of
@@ -194,8 +224,9 @@ end
 
 -- Lines for the stat comparison: {text} entries, "+N Stat" green or "-N Stat" red.
 -- Returns a list of strings and a flag for "identical".
-function TooltipCompare:GetStatLines(link)
-    local equipped = self:GetReplacedItem(link);
+-- `equipped` picks the item to compare with; by default the one GetReplacedItem returns.
+function TooltipCompare:GetStatLines(link, equipped)
+    equipped = equipped or self:GetReplacedItem(link);
     if not equipped then
         return {}, false
     end
@@ -226,8 +257,8 @@ function TooltipCompare:GetStatLines(link)
 end
 
 -- True when the item is a different type from the one it would replace (e.g. cloth vs plate).
-function TooltipCompare:IsDifferentType(link)
-    local equipped = self:GetReplacedItem(link);
+function TooltipCompare:IsDifferentType(link, equipped)
+    equipped = equipped or self:GetReplacedItem(link);
     if not equipped then
         return false
     end

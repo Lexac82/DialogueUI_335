@@ -431,6 +431,18 @@ local function RetailAH_IsDisabled()
     return not addon.IsSupportedAddOnActive("RetailAH")
 end
 
+-- The separate comparison tooltip is ours: greyed out (and unchecked) while the Blizzard tooltip is in use.
+local function SeparateCompare_IsDisabled()
+    return addon.GetDBBool("UseBlizzardTooltip")
+end
+local function SeparateCompare_Tooltip()
+    local text = L["Use Separate Tooltip for Comparison Desc"];
+    if SeparateCompare_IsDisabled() then
+        text = text .. "\n\n" .. L["Use Separate Tooltip Blizzard Active"]:format(L["Use Blizzard Tooltip"]);
+    end
+    return text
+end
+
 -- Transmog options: greyed out while the server's module is known not to be there (see TransmogStatus.lua).
 local function TransmogStatus_IsDisabled()
     return not addon.TransmogStatus:IsModuleAvailable()
@@ -562,6 +574,8 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Upgrade Arrow"], description = L["Show Upgrade Arrow Desc"], tooltip = UpgradeArrow_Tooltip, dbKey = "ShowUpgradeArrow", isDisabledFunc = UpgradeArrow_IsDisabled, onDisabledClick = UpgradeArrow_DisabledClick, copyLink = PAWN_URL},
             {type = "Checkbox", name = L["Mark Highest Sell Price"], description = L["Mark Highest Sell Price Desc"], dbKey = "MarkHighestSellPrice", preview = "MarkHighestSellPrice", ratio = 1},
+            {type = "Checkbox", name = L["Use Separate Tooltip for Comparison"], description = L["Use Separate Tooltip for Comparison Desc"], tooltip = SeparateCompare_Tooltip, dbKey = "TooltipSeparateCompare",
+                isDisabledFunc = SeparateCompare_IsDisabled, keepValueWhenDisabled = true},
             {type = "Checkbox", name = L["Use Blizzard Tooltip"], description = L["Use Blizzard Tooltip Desc"], dbKey = "UseBlizzardTooltip"},
             {type = "Subheader", name = L["Readables"], extraWidth = 20},
             {type = "ArrowOption", name = L["Frame Size"], description = L["BookUI Frame Size Desc"], dbKey = "BookUISize",
@@ -1122,7 +1136,8 @@ local function CreateCheckbox(row, optionData)
             end
         end
         if IsDisabled() then
-            self:SetChecked(false);
+            -- Usually unchecked; keepValueWhenDisabled shows the saved choice, dimmed.
+            self:SetChecked(optionData.keepValueWhenDisabled and GetValue() or false);
             self:SetAlpha(0.4);
             row.label:SetAlpha(0.5);
         else
@@ -1135,7 +1150,7 @@ local function CreateCheckbox(row, optionData)
     function widget:Toggle()
         self:SetChecked(not self.checked);
         SetValue(self.checked);
-        SettingsUI:LayoutRows(frame.tabID);     -- sub-options may depend on this one
+        SettingsUI:RefreshTab(frame.tabID);     -- sub-options may depend on this one (shown / hidden / greyed out)
         PlaySound(self.checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff");
         row:OnEnter();
     end
