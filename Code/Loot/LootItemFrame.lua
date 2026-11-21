@@ -44,12 +44,12 @@ local COUNT_DELAY = 0.25;
 local COUNT_DURATION = 0.25;
 local COUNT_RISE = 6;
 
--- Owned count on the icon: 4 below the Loot UI font size setting, so 8 at the default 12. Like every font of the
+local NAME_FONT ={"DUI335_LootItem", 10, {"DarkModeGrey90", "DarkModeGrey90"}};
+
+-- Owned count on the icon: the same size as the item name font (NAME_FONT). Like every font of the
 -- window it follows the setting and the text outline (LootUI.GetFont).
 local COUNT_FONT_FILE = "Fonts\\ARIALN.TTF";     -- the stack count face of the game (retail's NumberFont), not the text face
-local OWNED_COUNT_FONT ={"DUI335_LootOwnedCount", 8, {1, 1, 1}};
-
-local NAME_FONT ={"DUI335_LootItem", 10, {"DarkModeGrey90", "DarkModeGrey90"}};
+local OWNED_COUNT_FONT ={"DUI335_LootOwnedCount", NAME_FONT[2], {1, 1, 1}};
 
 
 ---------------------------------------------------------------------------
