@@ -488,13 +488,15 @@ local function TransmogPlus_Tooltip()
     return text
 end
 
--- Grow Upwards: the text of the current state first and in white, the other one below (as Plumber).
+-- Grow Upwards: the text of the current state first and highlighted (white; black on the brown theme), the other
+-- one below (as Plumber).
 local function GrowUpwards_Tooltip()
     local on, off = L["Grow Upwards On Desc"], L["Grow Upwards Off Desc"];
+    local color = addon.ThemeUtil:IsDarkMode() and "|cffffffff" or "|cff000000";
     if addon.GetDBBool("LootUI_GrowUpwards") then
-        return "|cffffffff" .. on .. "|r\n\n" .. off
+        return color .. on .. "|r\n\n" .. off
     end
-    return "|cffffffff" .. off .. "|r\n\n" .. on
+    return color .. off .. "|r\n\n" .. on
 end
 
 -- Control tab (retail Settings_Definitions). Retail's Input Device has Keyboard & Mouse, Xbox, PlayStation and Switch;
