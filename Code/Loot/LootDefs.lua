@@ -34,7 +34,6 @@ local Def = {
     USE_HOTKEY = true,
     TAKE_ALL_KEY = "E",
     LOOT_UNDER_MOUSE = false,
-    USE_MOG_MARKER = true,
     ALWAYS_LISTEN_LOOT_MSG = false, -- also show items that did not come from a loot window (quest rewards, mail ...)
     SHOW_ALL_MONEY_CHANGE = false,
     SHOW_ITEM_COUNT = true,         -- owned count (bags + bank) on the icon of an item row

@@ -90,9 +90,18 @@ end
 function MainFrame:LoadPosition()
     self:ClearAllPoints();
     local width = UIParent:GetWidth();
+    -- Grow Upwards: the bottom left is the fixed corner, so the window gets taller towards the top.
+    local point = addon.GetDBBool("LootUI_GrowUpwards") and "BOTTOMLEFT" or "TOPLEFT";
     -- Plumber's default: the left edge a third of the screen right of the centre line.
-    self:SetPoint("TOPLEFT", UIParent, "CENTER", math.floor((0.5 - 0.3333) * width), 60);
+    self:SetPoint(point, UIParent, "CENTER", math.floor((0.5 - 0.3333) * width), 60);
 end
+
+-- Not while the window sits under the mouse (manual loot with Loot Under Mouse): that position is set per loot.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_GrowUpwards", function()
+    if not (MainFrame.manualMode and Def.LOOT_UNDER_MOUSE) then
+        MainFrame:LoadPosition();
+    end
+end);
 
 function MainFrame:PositionUnderMouse()
     local x, y = GetCursorPosition();

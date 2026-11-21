@@ -124,7 +124,7 @@ end
 -- Marker for an appearance the player has not collected (server module, see TransmogStatus.lua).
 function ItemFrame:UpdateTransmogMarker()
     local data = self.data;
-    local show = Def.USE_MOG_MARKER and data and data.slotType == Def.SLOT_TYPE_ITEM and data.id
+    local show = data and data.slotType == Def.SLOT_TYPE_ITEM and data.id
         and not data.mergedData and addon.TransmogStatus:IsUncollected(data.id, "LootUI_ShowTransmogStatus");
     ThemeUtil:SetItemOverlay(self.transmogOverlay, show and OVERLAY_TRANSMOG_INDEX or nil);
 end

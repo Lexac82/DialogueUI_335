@@ -488,6 +488,15 @@ local function TransmogPlus_Tooltip()
     return text
 end
 
+-- Grow Upwards: the text of the current state first and in white, the other one below (as Plumber).
+local function GrowUpwards_Tooltip()
+    local on, off = L["Grow Upwards On Desc"], L["Grow Upwards Off Desc"];
+    if addon.GetDBBool("LootUI_GrowUpwards") then
+        return "|cffffffff" .. on .. "|r\n\n" .. off
+    end
+    return "|cffffffff" .. off .. "|r\n\n" .. on
+end
+
 -- Control tab (retail Settings_Definitions). Retail's Input Device has Keyboard & Mouse, Xbox, PlayStation and Switch;
 -- 3.3.5a has no gamepad, so the only choice is Keyboard & Mouse (the arrows are hidden for a single choice).
 -- Use Custom Bindings shows the rows of the actions under it (retail: branch mark = depends on the option above).
@@ -754,6 +763,8 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Number Of Owned Items"], description = L["Show Number Of Owned Items Desc"], dbKey = "LootUI_ShowItemCount",
                 requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Grow Upwards"], description = L["Grow Upwards On Desc"] .. "\n\n" .. L["Grow Upwards Off Desc"], tooltip = GrowUpwards_Tooltip,
+                dbKey = "LootUI_GrowUpwards", requiredParentValueAnd = {LootUI = true}},
             -- Same states as in Other Addons, but not shown at all while the server has no transmog module.
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip,
                 isDisabledFunc = TransmogStatus_IsDisabled, validationFunc = TransmogStatus_IsAvailable, dbKey = "LootUI_ShowTransmogStatus",
