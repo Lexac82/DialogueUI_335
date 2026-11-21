@@ -265,3 +265,23 @@ L["Begins A Quest"] = "Commence une quête";
 L["Format Reward Title Row"] = "Titre : %s";
 L["On Your Gear List"] = "Dans votre liste d'équipement";
 L["Format Exchange It For"] = "À échanger contre : %s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "Expérimental";
+L["Use Loot UI"] = "Utiliser Loot UI";
+L["Use Loot UI Desc"] = "Remplace la fenêtre de butin par défaut du jeu par Loot UI.\n\nLoot UI est un portage du Loot UI de l'addon Plumber de retail.";
+L["Loot UI Font Size Desc"] = "Définit la taille de la police de Loot UI. Elle est indépendante de la taille de police de l'onglet Interface.\n\nPar défaut : 12";
+L["Fade Out Delay Per Item"] = "Délai d'estompage par objet";
+L["Fade Out Delay Per Item Desc"] = "Durée pendant laquelle la fenêtre Loot UI reste à l'écran pour chaque objet affiché, en plus d'une durée de base. Une valeur plus élevée garde les longues listes lisibles plus longtemps.\n\nPar défaut : 0,25s";
+L["Items Per Page"] = "Objets par page";
+L["Items Per Page Desc"] = "Définit combien d'objets tiennent sur une page de la fenêtre Loot UI lorsqu'elle affiche ce que vous avez reçu. Les autres objets sont affichés sur les pages suivantes.\n\nCela n'affecte pas la fenêtre lorsque vous pillez manuellement.\n\nPar défaut : 6";
+L["Opacity"] = "Opacité";
+L["Loot UI Opacity Desc"] = "Définit l'opacité de l'arrière-plan de la fenêtre Loot UI lorsqu'elle affiche ce que vous avez reçu.\n\nCela n'affecte pas la fenêtre lorsque vous pillez manuellement.\n\nPar défaut : 50%";
+L["Show Number Of Owned Items"] = "Afficher le nombre d'objets possédés";
+L["Show Number Of Owned Items Desc"] = "Affiche sur l'icône, dans la fenêtre Loot UI, combien d'exemplaires d'un objet vous possédez. Le total inclut les objets de votre banque (la banque est comptée telle qu'elle était lors de votre dernière visite).\n\nPar défaut : Activé";
+L["Fast Loot"] = "Butin rapide";
+L["Fast Loot Desc"] = "Récupère le butin dès que la fenêtre de butin s'ouvre, au lieu d'attendre un instant. S'applique uniquement si le butin automatique du jeu est activé ou si Loot UI le force.\n\nLe butin rapide de l'addon Plumber.";
+L["You Received"] = "Vous avez reçu";
+L["Junk Items"] = "Objets sans valeur";
+L["Take All"] = "Tout prendre";
+L["Give To"] = "Donner à";

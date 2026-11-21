@@ -262,3 +262,23 @@ L["Begins A Quest"] = "Inicia una misión";
 L["Format Reward Title Row"] = "Título: %s";
 L["On Your Gear List"] = "En tu lista de equipo";
 L["Format Exchange It For"] = "Cámbialo por: %s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "Experimental";
+L["Use Loot UI"] = "Usar Loot UI";
+L["Use Loot UI Desc"] = "Sustituye la ventana de botín predeterminada del juego por Loot UI.\n\nLoot UI es una adaptación del Loot UI del addon Plumber de retail.";
+L["Loot UI Font Size Desc"] = "Establece el tamaño de la fuente de Loot UI. Es independiente del tamaño de fuente de la pestaña UI.\n\nPredeterminado: 12";
+L["Fade Out Delay Per Item"] = "Retraso de desvanecimiento por objeto";
+L["Fade Out Delay Per Item Desc"] = "Cuánto tiempo permanece en pantalla la ventana de Loot UI por cada objeto que muestra, además de un tiempo base. Un valor mayor mantiene legibles más tiempo las listas largas.\n\nPredeterminado: 0,25s";
+L["Items Per Page"] = "Objetos por página";
+L["Items Per Page Desc"] = "Establece cuántos objetos caben en una página de la ventana de Loot UI cuando muestra lo que has recibido. El resto de objetos se muestra en las páginas siguientes.\n\nEsto no afecta a la ventana cuando saqueas manualmente.\n\nPredeterminado: 6";
+L["Opacity"] = "Opacidad";
+L["Loot UI Opacity Desc"] = "Establece la opacidad del fondo de la ventana de Loot UI cuando muestra lo que has recibido.\n\nEsto no afecta a la ventana cuando saqueas manualmente.\n\nPredeterminado: 50%";
+L["Show Number Of Owned Items"] = "Mostrar cantidad de objetos poseídos";
+L["Show Number Of Owned Items Desc"] = "Muestra en el icono, dentro de la ventana de Loot UI, cuántas unidades de un objeto posees. El recuento incluye los objetos del banco (el banco cuenta según tu última visita).\n\nPredeterminado: Activado";
+L["Fast Loot"] = "Saqueo rápido";
+L["Fast Loot Desc"] = "Recoge el botín en cuanto se abre la ventana de saqueo, en lugar de esperar un momento. Solo se aplica si el botín automático del juego está activado o Loot UI lo fuerza.\n\nEl saqueo rápido del addon Plumber.";
+L["You Received"] = "Has recibido";
+L["Junk Items"] = "Objetos basura";
+L["Take All"] = "Recoger todo";
+L["Give To"] = "Dar a";

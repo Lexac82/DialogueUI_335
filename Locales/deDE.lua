@@ -262,3 +262,23 @@ L["Begins A Quest"] = "Startet eine Quest";
 L["Format Reward Title Row"] = "Titel: %s";
 L["On Your Gear List"] = "Auf deiner Ausrüstungsliste";
 L["Format Exchange It For"] = "Eintauschen gegen: %s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "Experimentell";
+L["Use Loot UI"] = "Loot UI verwenden";
+L["Use Loot UI Desc"] = "Ersetzt das Standard-Beutefenster des Spiels durch Loot UI.\n\nLoot UI ist eine Portierung des Loot UI aus dem Addon Plumber der Retail-Version.";
+L["Loot UI Font Size Desc"] = "Legt die Schriftgröße von Loot UI fest. Sie ist unabhängig von der Schriftgröße im Tab Benutzerinterface.\n\nStandard: 12";
+L["Fade Out Delay Per Item"] = "Ausblendverzögerung pro Gegenstand";
+L["Fade Out Delay Per Item Desc"] = "Wie lange das Loot-UI-Fenster pro angezeigtem Gegenstand zusätzlich zu einer Grundzeit auf dem Bildschirm bleibt. Ein höherer Wert hält lange Listen länger lesbar.\n\nStandard: 0,25s";
+L["Items Per Page"] = "Gegenstände pro Seite";
+L["Items Per Page Desc"] = "Legt fest, wie viele Gegenstände auf eine Seite des Loot-UI-Fensters passen, wenn es anzeigt, was du erhalten hast. Weitere Gegenstände erscheinen auf den folgenden Seiten.\n\nDies betrifft das Fenster nicht, wenn du manuell plünderst.\n\nStandard: 6";
+L["Opacity"] = "Deckkraft";
+L["Loot UI Opacity Desc"] = "Legt die Deckkraft des Hintergrunds des Loot-UI-Fensters fest, wenn es anzeigt, was du erhalten hast.\n\nDies betrifft das Fenster nicht, wenn du manuell plünderst.\n\nStandard: 50%";
+L["Show Number Of Owned Items"] = "Anzahl besitzter Gegenstände anzeigen";
+L["Show Number Of Owned Items Desc"] = "Zeigt auf dem Symbol im Loot-UI-Fenster an, wie viele Exemplare eines Gegenstands du besitzt. Die Anzahl enthält die Gegenstände in deiner Bank (die Bank wird so gezählt, wie sie bei deinem letzten Besuch war).\n\nStandard: An";
+L["Fast Loot"] = "Schnelles Plündern";
+L["Fast Loot Desc"] = "Nimmt die Beute, sobald sich das Beutefenster öffnet, statt zuerst einen Moment zu warten. Gilt nur, wenn die automatische Plünderung des Spiels aktiv ist oder Loot UI sie erzwingt.\n\nDas schnelle Plündern des Addons Plumber.";
+L["You Received"] = "Du hast erhalten";
+L["Junk Items"] = "Plunder";
+L["Take All"] = "Alles nehmen";
+L["Give To"] = "Geben an";

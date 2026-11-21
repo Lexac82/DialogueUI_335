@@ -45,7 +45,7 @@ local TAB_ENTRIES = {
     { name = L["Control"] },
     { name = L["Gameplay"] },
     { name = L["Other Addons"] },
-    { name = L["Loot UI"] },
+    { name = L["Experimental"] },
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
@@ -749,6 +749,8 @@ local Schematic = {
                     {dbValue = 1, valueText = "100%"},
                 },
             },
+            {type = "Checkbox", name = L["Show Number Of Owned Items"], description = L["Show Number Of Owned Items Desc"], dbKey = "LootUI_ShowItemCount",
+                requiredParentValueAnd = {LootUI = true}},
         },
     },
 };

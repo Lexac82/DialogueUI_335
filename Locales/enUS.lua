@@ -23,7 +23,7 @@ L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
 L["Minimap"] = "Minimap";
 L["Other Addons"] = "Other Addons";
-L["Loot UI"] = "Loot UI";
+L["Experimental"] = "Experimental";
 
 -- Settings: Other Addons tab
 L["Tooltip"] = "Tooltip";
@@ -53,6 +53,12 @@ L["Items Per Page"] = "Items Per Page";
 L["Items Per Page Desc"] = "Set how many items fit on one page of the Loot UI window when it shows what you received. More items are shown on following pages.\n\nThis does not affect the window while you loot manually.\n\nDefault: 6";
 L["Opacity"] = "Opacity";
 L["Loot UI Opacity Desc"] = "Set the opacity of the background of the Loot UI window when it shows what you received.\n\nThis does not affect the window while you loot manually.\n\nDefault: 50%";
+L["Show Number Of Owned Items"] = "Show Number Of Owned Items";
+L["Show Number Of Owned Items Desc"] = "Show how many of an item you own on its icon in the Loot UI window. The count includes the items in your bank (the bank is counted as of your last visit to it).\n\nDefault: On";
+L["You Received"] = "You Received";
+L["Junk Items"] = "Junk Items";
+L["Take All"] = "Take All";
+L["Give To"] = "Give To";
 L["Fast Loot"] = "Fast Loot";
 L["Fast Loot Desc"] = "Take the loot as soon as the looting window opens, instead of waiting a moment first. Only applies when the game's Auto Loot is on, or Loot UI forces it.\n\nThe fast loot of the Plumber addon.";
 

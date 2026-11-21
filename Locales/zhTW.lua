@@ -262,3 +262,23 @@ L["Begins A Quest"] = "開始一個任務";
 L["Format Reward Title Row"] = "頭銜：%s";
 L["On Your Gear List"] = "在你的裝備清單中";
 L["Format Exchange It For"] = "可換取：%s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "實驗性";
+L["Use Loot UI"] = "使用 Loot UI";
+L["Use Loot UI Desc"] = "以 Loot UI 取代遊戲預設的拾取視窗。\n\nLoot UI 移植自正式服 Plumber 外掛中的 Loot UI。";
+L["Loot UI Font Size Desc"] = "設定 Loot UI 的字體大小。它與「介面」分頁的字體大小互相獨立。\n\n預設：12";
+L["Fade Out Delay Per Item"] = "每件物品的淡出延遲";
+L["Fade Out Delay Per Item Desc"] = "Loot UI 視窗在基本時間之外，每顯示一件物品額外停留在畫面上的時間。數值越大，較長的清單可讀的時間越久。\n\n預設：0.25秒";
+L["Items Per Page"] = "每頁物品數";
+L["Items Per Page Desc"] = "設定 Loot UI 視窗在顯示你所獲得的物品時，每頁可容納的物品數量。其餘物品顯示在後續頁面。\n\n手動拾取時不受影響。\n\n預設：6";
+L["Opacity"] = "不透明度";
+L["Loot UI Opacity Desc"] = "設定 Loot UI 視窗在顯示你所獲得的物品時的背景不透明度。\n\n手動拾取時不受影響。\n\n預設：50%";
+L["Show Number Of Owned Items"] = "顯示擁有的物品數量";
+L["Show Number Of Owned Items Desc"] = "在 Loot UI 視窗中的物品圖示上顯示你擁有該物品的數量。數量包含銀行中的物品（銀行依你上次造訪時的狀態計算）。\n\n預設：開啟";
+L["Fast Loot"] = "快速拾取";
+L["Fast Loot Desc"] = "拾取視窗一開啟就立即拾取，而不是先等待片刻。僅在遊戲的自動拾取開啟或被 Loot UI 強制開啟時生效。\n\n來自 Plumber 外掛的快速拾取。";
+L["You Received"] = "你獲得了";
+L["Junk Items"] = "垃圾物品";
+L["Take All"] = "全部拾取";
+L["Give To"] = "交給";

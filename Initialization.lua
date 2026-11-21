@@ -97,6 +97,7 @@ local DefaultValues = {
         LootUI_FadeDelayPerItem = 0.25,         --Seconds the window stays longer per item, 0.25..1 in steps of 0.25 (needs LootUI)
         LootUI_ItemsPerPage = 6,                --Items on one page of the notification window, 5..8 (needs LootUI)
         LootUI_BackgroundAlpha = 0.5,           --Opacity of the notification window background, 0..1 in steps of 0.1 (needs LootUI)
+        LootUI_ShowItemCount = true,            --Owned count (bags and bank) on the icon of an item row (needs LootUI)
 
     --Minimap button (see Code\Widget\MinimapButton.lua)
     ShowMinimapButton = true,

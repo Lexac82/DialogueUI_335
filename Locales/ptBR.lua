@@ -262,3 +262,23 @@ L["Begins A Quest"] = "Inicia uma missão";
 L["Format Reward Title Row"] = "Título: %s";
 L["On Your Gear List"] = "Na sua lista de equipamento";
 L["Format Exchange It For"] = "Troque por: %s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "Experimental";
+L["Use Loot UI"] = "Usar Loot UI";
+L["Use Loot UI Desc"] = "Substitui a janela de saque padrão do jogo pelo Loot UI.\n\nO Loot UI é uma adaptação do Loot UI do addon Plumber do retail.";
+L["Loot UI Font Size Desc"] = "Define o tamanho da fonte do Loot UI. Ele é independente do tamanho da fonte da aba Interface.\n\nPadrão: 12";
+L["Fade Out Delay Per Item"] = "Atraso de desaparecimento por item";
+L["Fade Out Delay Per Item Desc"] = "Por quanto tempo a janela do Loot UI permanece na tela para cada item exibido, além de um tempo base. Um valor maior mantém listas longas legíveis por mais tempo.\n\nPadrão: 0,25s";
+L["Items Per Page"] = "Itens por página";
+L["Items Per Page Desc"] = "Define quantos itens cabem em uma página da janela do Loot UI quando ela mostra o que você recebeu. Os demais itens aparecem nas páginas seguintes.\n\nIsso não afeta a janela quando você saqueia manualmente.\n\nPadrão: 6";
+L["Opacity"] = "Opacidade";
+L["Loot UI Opacity Desc"] = "Define a opacidade do fundo da janela do Loot UI quando ela mostra o que você recebeu.\n\nIsso não afeta a janela quando você saqueia manualmente.\n\nPadrão: 50%";
+L["Show Number Of Owned Items"] = "Mostrar quantidade de itens possuídos";
+L["Show Number Of Owned Items Desc"] = "Mostra no ícone, na janela do Loot UI, quantas unidades de um item você possui. A contagem inclui os itens do seu banco (o banco é contado como estava na sua última visita).\n\nPadrão: Ativado";
+L["Fast Loot"] = "Saque rápido";
+L["Fast Loot Desc"] = "Pega o saque assim que a janela de saque abre, em vez de esperar um instante. Só vale quando o saque automático do jogo está ativado ou o Loot UI o força.\n\nO saque rápido do addon Plumber.";
+L["You Received"] = "Você recebeu";
+L["Junk Items"] = "Itens inúteis";
+L["Take All"] = "Pegar tudo";
+L["Give To"] = "Dar para";

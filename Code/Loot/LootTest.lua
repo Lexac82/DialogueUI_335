@@ -9,37 +9,49 @@ local MainFrame = LootUI.MainFrame;
 -- close). The fade out delay is not seen: the preview never fades out. Nothing here touches the real loot API. Item
 -- names and icons come from the item cache when it has them.
 
-local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark";
-
--- {itemID, quantity, forced quality or nil, name fallback, mount}
+-- {itemID, quantity, mount, owned}. Everything else (name, icon, quality, link) comes from GetItemInfo.
+-- owned: the number shown on the icon in the preview (the "Show Number Of Owned Items" setting), so it can be seen
+-- without owning the items. The real window counts bags and bank with GetItemCount.
 local ITEMS = {
-    {49623, 1, nil, "Shadowmourne"},
-    {44151, 1, nil, "Reins of the Blue Proto-Drake", true},
-    {36908, 2, nil, "Frost Lotus"},
-    {33470, 14, nil, "Frostweave Cloth"},
-    {2589, 5, 0, "Linen Cloth"},
-    {2592, 3, 0, "Wool Cloth"},
-    {36912, 7, nil, "Saronite Ore"},
-    {36910, 4, nil, "Titanium Ore"},
-    {35623, 2, nil, "Eternal Air"},
-    {35624, 3, nil, "Eternal Earth"},
-    {36903, 5, nil, "Adder's Tongue"},
-    {36860, 1, nil, "Eternal Fire"},
-    {41163, 2, nil, "Titansteel Bar"},
+    {22589, 1},                 -- Atiesh, Greatstaff of the Guardian
+    {17010, 3, nil, 7},         -- Fiery Core
+    {17011, 2, nil, 12},        -- Lava Core
+    {12360, 5, nil, 34},        -- Arcanite Bar
+    {25397, 1},                 -- Eroded Axe (junk)
+    {45630, 1},                 -- Invisible Axe (junk)
+    {33426, 1},                 -- Chipped Timber Axe (junk)
 };
 
+-- GetItemInfo knows only items the client has seen. A hidden tooltip asks the server for the others.
+local scanner;
+local function RequestItem(id)
+    scanner = scanner or CreateFrame("GameTooltip", "DUI335LootTestScanner", nil, "GameTooltipTemplate");
+    scanner:SetOwner(UIParent, "ANCHOR_NONE");
+    scanner:SetHyperlink("item:" .. id);
+    scanner:Hide();
+end
+
+local needRetry = false;
+
+-- nil while the item is not in the cache (it is requested, and Populate runs again shortly).
 local function MakeItem(entry, slotIndex)
-    local id, quantity, forcedQuality, fallbackName, isMount = unpack(entry);
+    local id, quantity, isMount, owned = unpack(entry);
     local name, link, quality, _, _, _, subType, _, equipSlot, icon = GetItemInfo(id);
+    if not name then
+        RequestItem(id);
+        needRetry = true;
+        return nil
+    end
     return {
         slotType = Def.SLOT_TYPE_ITEM,
         slotIndex = slotIndex,
         id = id,
-        icon = icon or FALLBACK_ICON,
-        name = name or fallbackName,
+        icon = icon,
+        name = name,
         quantity = quantity,
-        quality = forcedQuality or quality or 3,
-        link = link or ("item:" .. id),
+        quality = quality,
+        link = link,
+        testOwned = owned,
         subType = (isMount and _G.MOUNT) or subType,
         hideCount = equipSlot ~= nil and equipSlot ~= "",
         looted = false,
@@ -75,8 +87,12 @@ local function Populate()
     MainFrame:ReleaseAll();
     LootUI.WipeLootQueue();
     LootUI.QueueDisplayLoot(MakeMoney(128506, 0));
+    needRetry = false;
     for _, entry in ipairs(ITEMS) do
-        LootUI.QueueDisplayLoot(MakeItem(entry, 0));
+        local item = MakeItem(entry, 0);
+        if item then
+            LootUI.QueueDisplayLoot(item);
+        end
     end
     LootUI.FlushLootQueue();
 end
@@ -122,9 +138,19 @@ end
 
 local watcher = CreateFrame("Frame");
 watcher:Hide();
-watcher:SetScript("OnUpdate", function()
-    if previewing and not IsPreviewIntact() then
+local retryTimer = 0;
+watcher:SetScript("OnUpdate", function(_, elapsed)
+    if not previewing then
+        return
+    end
+    if not IsPreviewIntact() then
         Restore();
+    elseif needRetry then
+        retryTimer = retryTimer + elapsed;
+        if retryTimer >= 0.5 then
+            retryTimer = 0;
+            Restore();                      -- fills the rows again with the items the server has answered for
+        end
     end
 end);
 

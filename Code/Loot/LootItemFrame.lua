@@ -12,6 +12,8 @@ local max = math.max;
 local match = string.match;
 local gsub = string.gsub;
 local ipairs = ipairs;
+local tostring = tostring;
+local GetItemCount = GetItemCount;
 local OutQuart = LootUI.OutQuart;
 
 -- One row of the loot window: reward-button look (ItemButtonBackground, ItemBorder, quality corner, transmog marker)
@@ -40,7 +42,12 @@ local COUNT_DELAY = 0.25;
 local COUNT_DURATION = 0.25;
 local COUNT_RISE = 6;
 
-local NAME_FONT = {"DUI335_LootItem", 10, {"DarkModeGrey90", "DarkModeGrey90"}};
+-- Owned count on the icon: 4 below the Loot UI font size setting, so 8 at the default 12. Like every font of the
+-- window it follows the setting and the text outline (LootUI.GetFont).
+local COUNT_FONT_FILE = "Fonts\\ARIALN.TTF";     -- the stack count face of the game (retail's NumberFont), not the text face
+local OWNED_COUNT_FONT ={"DUI335_LootOwnedCount", 8, {1, 1, 1}};
+
+local NAME_FONT ={"DUI335_LootItem", 10, {"DarkModeGrey90", "DarkModeGrey90"}};
 
 
 ---------------------------------------------------------------------------
@@ -128,6 +135,20 @@ function ItemFrame:RefreshTransmog()
         end
     end
     self:UpdateTransmogMarker();
+end
+
+-- Owned count on the icon's lower right corner (Plumber: Def.SHOW_ITEM_COUNT). Bank included: GetItemCount's second
+-- argument counts the bank too (the bank part is what the client saw at the last bank visit).
+function ItemFrame:UpdateOwnedCount()
+    local data = self.data;
+    local text = "";
+    if Def.SHOW_ITEM_COUNT and data and data.slotType == Def.SLOT_TYPE_ITEM and not data.mergedData and data.link then
+        local owned = data.testOwned or GetItemCount(data.link, true) or 0;     -- testOwned: the settings preview
+        if owned > 0 then
+            text = owned > 9999 and "*" or tostring(owned);
+        end
+    end
+    self.ownedCount:SetText(text);
 end
 
 function ItemFrame:SetBorderColor(r, g, b)
@@ -235,6 +256,8 @@ local function SortByQuality(a, b)
 end
 
 function ItemFrame:SetMergedItem(data)
+    self:UnregisterEvent("BAG_UPDATE");
+    self.ownedCount:SetText("");
     local merged = data.mergedData;
     table.sort(merged, SortByQuality);
 
@@ -281,9 +304,13 @@ function ItemFrame:SetItem(data)
     self:Layout();
     self:ShowGlow(LootUI.IsRareItem(data));
     self:RefreshTransmog();
+    self:UpdateOwnedCount();
+    self:RegisterEvent("BAG_UPDATE");       -- the looted item reaches the bags after the row is shown
 end
 
 function ItemFrame:SetMoney(data)
+    self:UnregisterEvent("BAG_UPDATE");
+    self.ownedCount:SetText("");
     local copper = data.copper or ParseCoinText(data.name);
     local text;
     if copper then
@@ -310,6 +337,8 @@ function ItemFrame:SetMoney(data)
 end
 
 function ItemFrame:SetCustom(data)
+    self:UnregisterEvent("BAG_UPDATE");
+    self.ownedCount:SetText("");
     self.icon:Show();
     self:HideStackedIcons();
     self:SetIcon(data.icon or ICON_JUNK);
@@ -610,8 +639,12 @@ function ItemFrame:OnLeave()
 end
 
 function ItemFrame:OnEvent(event)
-    if event == "MODIFIER_STATE_CHANGED" and self:IsMouseOver() then
-        self:ShowTooltip();         -- Shift toggles the comparison tooltips
+    if event == "MODIFIER_STATE_CHANGED" then
+        if self:IsMouseOver() then
+            self:ShowTooltip();     -- Shift toggles the comparison tooltips
+        end
+    elseif event == "BAG_UPDATE" then
+        self:UpdateOwnedCount();
     end
 end
 
@@ -677,6 +710,8 @@ function ItemFrame:Reset()
     self:ShowGlow(false);
     self:HideStackedIcons();
     self:UnregisterEvent("MODIFIER_STATE_CHANGED");
+    self:UnregisterEvent("BAG_UPDATE");
+    self.ownedCount:SetText("");
     self.data = nil;
     self.hasItem = nil;
     self.toAlpha = nil;
@@ -766,6 +801,16 @@ function LootUI.CreateItemFrame(parent, lootFrame)
     row.transmogOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
     row.transmogOverlay:Hide();
 
+    -- Owned count, drawn on top of the border like a stack count.
+    row.ownedCount = top:CreateFontString(nil, "OVERLAY");
+    local countFont = LootUI.GetFont(OWNED_COUNT_FONT[1], OWNED_COUNT_FONT[2], OWNED_COUNT_FONT[3]);
+    local _, countHeight, countFlags = countFont:GetFont();
+    countFont:SetFont(COUNT_FONT_FILE, countHeight, countFlags);       -- the later size and outline changes keep the file
+    row.ownedCount:SetFontObject(countFont);
+    row.ownedCount:SetJustifyH("RIGHT");
+    row.ownedCount:SetJustifyV("BOTTOM");
+    row.ownedCount:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 2);
+
     row.name = content:CreateFontString(nil, "ARTWORK");
     row.name:SetJustifyH("LEFT");
     row.name:SetJustifyV("MIDDLE");
@@ -795,6 +840,11 @@ function LootUI.CreateItemFrame(parent, lootFrame)
         row:UpdateNameColor();
         if row.data and row:IsShown() then
             row:SetData(row.data);      -- the coin file and the transmog sheet follow the theme
+        end
+    end);
+    addon.CallbackRegistry:Register("LootUI.ItemCountSettingChanged", function()
+        if row.data and row:IsShown() then
+            row:UpdateOwnedCount();
         end
     end);
     addon.CallbackRegistry:Register("TransmogStatusChanged", function(itemID)

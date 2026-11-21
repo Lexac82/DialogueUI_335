@@ -36,6 +36,7 @@ local Def = {
     USE_MOG_MARKER = true,
     ALWAYS_LISTEN_LOOT_MSG = false, -- also show items that did not come from a loot window (quest rewards, mail ...)
     SHOW_ALL_MONEY_CHANGE = false,
+    SHOW_ITEM_COUNT = true,         -- owned count (bags + bank) on the icon of an item row
 };
 LootUI.Def = Def;
 
@@ -236,6 +237,12 @@ addon.CallbackRegistry:Register("SettingChanged.LootUI_FadeDelayPerItem", functi
     if type(value) == "number" then
         Def.FADE_DELAY_PER_ITEM = math.min(1, math.max(0.25, value));
     end
+end);
+
+-- Owned count on the icon ("LootUI_ShowItemCount"): rows refresh it through the ItemCountSettingChanged callback.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_ShowItemCount", function(value)
+    Def.SHOW_ITEM_COUNT = value and true or false;
+    addon.CallbackRegistry:Trigger("LootUI.ItemCountSettingChanged");
 end);
 
 function LootUI.GetFont(name, height, color)

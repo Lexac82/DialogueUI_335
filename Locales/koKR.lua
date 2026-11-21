@@ -262,3 +262,23 @@ L["Begins A Quest"] = "퀘스트 시작";
 L["Format Reward Title Row"] = "칭호: %s";
 L["On Your Gear List"] = "장비 목록에 있음";
 L["Format Exchange It For"] = "교환 대상: %s";
+
+-- Settings: Loot UI tab (Experimental) and the Loot UI window
+L["Experimental"] = "실험적";
+L["Use Loot UI"] = "Loot UI 사용";
+L["Use Loot UI Desc"] = "게임의 기본 전리품 창을 Loot UI로 대체합니다.\n\nLoot UI는 리테일 Plumber 애드온의 Loot UI를 이식한 것입니다.";
+L["Loot UI Font Size Desc"] = "Loot UI의 글자 크기를 설정합니다. UI 탭의 글자 크기와는 별개입니다.\n\n기본값: 12";
+L["Fade Out Delay Per Item"] = "아이템당 사라짐 지연";
+L["Fade Out Delay Per Item Desc"] = "Loot UI 창이 표시하는 아이템마다 기본 시간에 더해 화면에 머무는 시간입니다. 값이 클수록 긴 목록을 더 오래 읽을 수 있습니다.\n\n기본값: 0.25초";
+L["Items Per Page"] = "페이지당 아이템 수";
+L["Items Per Page Desc"] = "받은 아이템을 표시할 때 Loot UI 창의 한 페이지에 들어가는 아이템 수를 설정합니다. 나머지 아이템은 다음 페이지에 표시됩니다.\n\n수동으로 전리품을 획득할 때는 영향을 주지 않습니다.\n\n기본값: 6";
+L["Opacity"] = "불투명도";
+L["Loot UI Opacity Desc"] = "받은 아이템을 표시할 때 Loot UI 창 배경의 불투명도를 설정합니다.\n\n수동으로 전리품을 획득할 때는 영향을 주지 않습니다.\n\n기본값: 50%";
+L["Show Number Of Owned Items"] = "보유 아이템 수 표시";
+L["Show Number Of Owned Items Desc"] = "Loot UI 창의 아이템 아이콘에 보유한 개수를 표시합니다. 은행에 있는 아이템도 포함됩니다 (은행은 마지막으로 방문했을 때를 기준으로 계산됩니다).\n\n기본값: 켜짐";
+L["Fast Loot"] = "빠른 전리품 획득";
+L["Fast Loot Desc"] = "전리품 창이 열리는 즉시 잠시 기다리지 않고 전리품을 획득합니다. 게임의 자동 획득이 켜져 있거나 Loot UI가 이를 강제할 때만 적용됩니다.\n\nPlumber 애드온의 빠른 전리품 획득입니다.";
+L["You Received"] = "획득한 아이템";
+L["Junk Items"] = "잡동사니";
+L["Take All"] = "모두 받기";
+L["Give To"] = "전달 대상";
