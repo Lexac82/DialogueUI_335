@@ -63,17 +63,9 @@ L["Combine Similar Items Desc"] = "Display similar items on a single row.\n\nSup
 L["Send to Back"] = "Send to Back";
 L["Send to Back Desc"] = "While the Loot UI shows what you received, place its window behind other UI.\n\nThis does not affect the window while you loot manually.\n\nDefault: Off";
 L["Loot Under Mouse"] = "Open Loot Window at Mouse";
-L["Loot Under Mouse Desc"] = "While you loot manually, the loot window appears under the current mouse location.
-
-This does not affect the window while it shows what you received.
-
-Default: Off";
+L["Loot Under Mouse Desc"] = "While you loot manually, the loot window appears under the current mouse location.\n\nThis does not affect the window while it shows what you received.\n\nDefault: Off";
 L["Press Key To Take All Items"] = "Press Key To Take All Items";
-L["Press Key To Take All Items Desc"] = "While you loot manually, press the following key to take all items. While the loot window is open, this key does nothing else, even if it is also on your action bar.
-
-Right-click the key to go back to the default key.
-
-Default: On";
+L["Press Key To Take All Items Desc"] = "While you loot manually, press the following key to take all items. While the loot window is open, this key does nothing else, even if it is also on your action bar.\n\nRight-click the key to go back to the default key.\n\nDefault: On";
 L["Hide You Received Text"] = "Hide \"You Received\" Text";
 L["Hide You Received Text Desc"] = "Hide the \"You Received\" text above the Loot UI window when it shows what you received.\n\nDefault: Off";
 L["Show Reputation Changes"] = "Show Reputation Changes";

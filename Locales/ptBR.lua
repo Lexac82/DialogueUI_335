@@ -286,17 +286,9 @@ L["Combine Similar Items Desc"] = "Exibe itens similares em uma única linha.\n\
 L["Send to Back"] = "Colocar no fundo";
 L["Send to Back Desc"] = "Enquanto o Loot UI mostra o que você recebeu, coloca a janela dele atrás de outras interfaces.\n\nIsso não afeta a janela durante o saque manual.\n\nPadrão: Desativado";
 L["Loot Under Mouse"] = "Abrir a janela de saque no mouse";
-L["Loot Under Mouse Desc"] = "Durante o saque manual, a janela de saque aparece sob a posição atual do mouse.
-
-Isso não afeta a janela enquanto ela mostra o que você recebeu.
-
-Padrão: Desativado";
+L["Loot Under Mouse Desc"] = "Durante o saque manual, a janela de saque aparece sob a posição atual do mouse.\n\nIsso não afeta a janela enquanto ela mostra o que você recebeu.\n\nPadrão: Desativado";
 L["Press Key To Take All Items"] = "Pressionar tecla para pegar tudo";
-L["Press Key To Take All Items Desc"] = "Durante o saque manual, pressione a tecla a seguir para pegar todos os itens. Enquanto a janela de saque estiver aberta, essa tecla não faz mais nada, mesmo que também esteja na sua barra de ação.
-
-Clique com o botão direito na tecla para voltar à tecla padrão.
-
-Padrão: Ativado";
+L["Press Key To Take All Items Desc"] = "Durante o saque manual, pressione a tecla a seguir para pegar todos os itens. Enquanto a janela de saque estiver aberta, essa tecla não faz mais nada, mesmo que também esteja na sua barra de ação.\n\nClique com o botão direito na tecla para voltar à tecla padrão.\n\nPadrão: Ativado";
 L["Hide You Received Text"] = "Ocultar o texto \"Você recebeu\"";
 L["Hide You Received Text Desc"] = "Oculta o texto \"Você recebeu\" acima da janela do Loot UI quando ela mostra o que você recebeu.\n\nPadrão: Desativado";
 L["Show Reputation Changes"] = "Exibir mudanças de reputação";

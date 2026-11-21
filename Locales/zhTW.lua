@@ -286,17 +286,9 @@ L["Combine Similar Items Desc"] = "在同一行顯示相似物品。\n\n支援�
 L["Send to Back"] = "置於底層";
 L["Send to Back Desc"] = "在 Loot UI 顯示你所獲得物品期間，將其視窗置於其他介面的後方。\n\n此選項不影響手動拾取時的視窗。\n\n預設：關閉";
 L["Loot Under Mouse"] = "在滑鼠處開啟拾取視窗";
-L["Loot Under Mouse Desc"] = "手動拾取時，拾取視窗會出現在目前滑鼠位置下方。
-
-此選項不影響視窗顯示你所獲得物品期間的位置。
-
-預設：關閉";
+L["Loot Under Mouse Desc"] = "手動拾取時，拾取視窗會出現在目前滑鼠位置下方。\n\n此選項不影響視窗顯示你所獲得物品期間的位置。\n\n預設：關閉";
 L["Press Key To Take All Items"] = "按鍵拾取全部物品";
-L["Press Key To Take All Items Desc"] = "手動拾取時，按下以下按鍵即可拾取全部物品。拾取視窗開啟期間，該按鍵不會執行其他功能，即使它同時設定在動作列上。
-
-右鍵點擊按鍵可恢復為預設按鍵。
-
-預設：開啟";
+L["Press Key To Take All Items Desc"] = "手動拾取時，按下以下按鍵即可拾取全部物品。拾取視窗開啟期間，該按鍵不會執行其他功能，即使它同時設定在動作列上。\n\n右鍵點擊按鍵可恢復為預設按鍵。\n\n預設：開啟";
 L["Hide You Received Text"] = "隱藏「你獲得了」標題";
 L["Hide You Received Text Desc"] = "在 Loot UI 視窗顯示你所獲得物品時，隱藏視窗上方的「你獲得了」標題。\n\n預設：關閉";
 L["Show Reputation Changes"] = "顯示聲望變化";

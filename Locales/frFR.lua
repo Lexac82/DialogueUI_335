@@ -289,17 +289,9 @@ L["Combine Similar Items Desc"] = "Afficher les objets similaires sur une seule 
 L["Send to Back"] = "Placer à l'arrière-plan";
 L["Send to Back Desc"] = "Pendant que Loot UI affiche ce que vous avez reçu, place sa fenêtre derrière les autres éléments de l'interface.\n\nCela n'affecte pas la fenêtre lors d'un butin manuel.\n\nPar défaut : Désactivé";
 L["Loot Under Mouse"] = "Ouvrir la fenêtre de butin sur la souris";
-L["Loot Under Mouse Desc"] = "Lors d'un butin manuel, la fenêtre de butin apparaît sous la position actuelle de la souris.
-
-Cela n'affecte pas la fenêtre pendant qu'elle affiche ce que vous avez reçu.
-
-Par défaut : Désactivé";
+L["Loot Under Mouse Desc"] = "Lors d'un butin manuel, la fenêtre de butin apparaît sous la position actuelle de la souris.\n\nCela n'affecte pas la fenêtre pendant qu'elle affiche ce que vous avez reçu.\n\nPar défaut : Désactivé";
 L["Press Key To Take All Items"] = "Touche pour tout prendre";
-L["Press Key To Take All Items Desc"] = "Lors d'un butin manuel, appuyez sur la touche suivante pour prendre tous les objets. Tant que la fenêtre de butin est ouverte, cette touche ne fait rien d'autre, même si elle est aussi sur votre barre d'action.
-
-Faites un clic droit sur la touche pour revenir à la touche par défaut.
-
-Par défaut : Activé";
+L["Press Key To Take All Items Desc"] = "Lors d'un butin manuel, appuyez sur la touche suivante pour prendre tous les objets. Tant que la fenêtre de butin est ouverte, cette touche ne fait rien d'autre, même si elle est aussi sur votre barre d'action.\n\nFaites un clic droit sur la touche pour revenir à la touche par défaut.\n\nPar défaut : Activé";
 L["Hide You Received Text"] = "Masquer le texte « Vous avez reçu »";
 L["Hide You Received Text Desc"] = "Masque le texte « Vous avez reçu » au-dessus de la fenêtre Loot UI lorsqu'elle affiche ce que vous avez reçu.\n\nPar défaut : Désactivé";
 L["Show Reputation Changes"] = "Afficher les changements de réputation";
