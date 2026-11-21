@@ -95,6 +95,7 @@ local DefaultValues = {
         FastLoot = true,                        --Loot right when the window opens on auto loot, no delay (needs LootUI)
         LootUI_FontSize = 1,                    --0..3 = 10, 12, 14, 16 like FontSizeBase, but only for the loot window (needs LootUI)
         LootUI_FadeDelayPerItem = 0.25,         --Seconds the window stays longer per item, 0.25..1 in steps of 0.25 (needs LootUI)
+        LootUI_ItemsPerPage = 6,                --Items on one page of the notification window, 5..8 (needs LootUI)
         LootUI_BackgroundAlpha = 0.5,           --Opacity of the notification window background, 0..1 in steps of 0.1 (needs LootUI)
 
     --Minimap button (see Code\Widget\MinimapButton.lua)

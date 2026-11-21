@@ -57,6 +57,7 @@ local DECOR_MASK_ALPHA = 0.875;         -- alpha of the mask's opaque part (0xDF
 local DECOR_FADE_ROWS = 8 / 128;        -- fade height as a part of the picture (8 of the mask's 128 rows)
 
 local OTHER_ADDONS_TAB = 4;                   -- index in TAB_ENTRIES
+local LOOT_UI_TAB = 5;                        -- index in TAB_ENTRIES
 
 local TOGGLE_NAME ="DialogueUI335SettingsToggle";      -- global names so key bindings can click them
 local CLOSE_NAME = "DialogueUI335SettingsClose";
@@ -721,6 +722,15 @@ local Schematic = {
                     {dbValue = 0.5, valueText = "0.5s"},
                     {dbValue = 0.75, valueText = "0.75s"},
                     {dbValue = 1, valueText = "1s"},
+                },
+            },
+            {type = "ArrowOption", name = L["Items Per Page"], description = L["Items Per Page Desc"], dbKey = "LootUI_ItemsPerPage",
+                requiredParentValueAnd = {LootUI = true},
+                choices = {
+                    {dbValue = 5, valueText = "5"},
+                    {dbValue = 6, valueText = "6"},
+                    {dbValue = 7, valueText = "7"},
+                    {dbValue = 8, valueText = "8"},
                 },
             },
             {type = "ArrowOption", name = L["Opacity"], description = L["Loot UI Opacity Desc"], dbKey = "LootUI_BackgroundAlpha",
@@ -2010,6 +2020,11 @@ function SettingsUI:SelectTab(tabID, silent)
 end
 
 -- True while the window is open on the UI tab (the Custom orientation lets the parchment be dragged then).
+-- True while the Loot UI tab is on screen (the loot window shows a preview then, see LootTest.lua).
+function SettingsUI:IsOnLootUITab()
+    return frame ~= nil and frame:IsShown() and frame.tabID == LOOT_UI_TAB
+end
+
 function SettingsUI:IsOnUITab()
     return frame:IsShown() and frame.tabID == 1
 end

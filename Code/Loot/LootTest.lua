@@ -2,15 +2,12 @@ local _, addon = ...;
 local LootUI = addon.LootUI;
 local Def = LootUI.Def;
 local MainFrame = LootUI.MainFrame;
-local After = addon.API.After;
 
--- /lootui test [seconds]          the notification ("You Received"): items arrive, a stack grows, money rolls up
--- /lootui test manual [seconds]   the loot window of the game with fake slots (click a row, or Take All)
--- seconds: the frame stays up that long, then fades out. Without it the frame stays until closed.
--- /lootui test all [seconds]      a big loot window with every kind of row: each quality, quest, mount, pet, locked,
---                                 stacks, junk, money
--- /lootui test close                closes it
--- Nothing here touches the real loot API. Item names and icons come from the item cache when it has them.
+-- Preview of the notification window ("You Received") while the Loot UI tab of the Settings is open. It is a static
+-- window: it stays while settings are changed, with no fade in or out. It runs through the real code, so font size,
+-- opacity and the text outline show at once; only Items Per Page fills the rows again, in place (the window does not
+-- close). The fade out delay is not seen: the preview never fades out. Nothing here touches the real loot API. Item
+-- names and icons come from the item cache when it has them.
 
 local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark";
 
@@ -31,46 +28,19 @@ local ITEMS = {
     {41163, 2, nil, "Titansteel Bar"},
 };
 
--- {itemID, quantity, forced quality, name, kind, icon}
--- kind: "mount", "pet", "quest", "locked" (red icon); icon: shown when the item is not in the cache yet.
--- Quality is forced so every row looks the same whether or not the game knows the item.
-local ALL_ITEMS = {
-    {49623, 1, 5, "Shadowmourne (legendary)", nil, "Interface\\Icons\\INV_Axe_113"},
-    {42943, 1, 7, "Bloodied Arcanite Reaper (heirloom)", nil, "Interface\\Icons\\INV_Axe_09"},
-    {50274, 1, 4, "Shadowfrost Shard (epic)", nil, "Interface\\Icons\\INV_Misc_Gem_Ruby_03"},
-    {40395, 1, 4, "Torch of Holy Fire (epic)", nil, "Interface\\Icons\\INV_Mace_28"},
-    {37665, 1, 3, "Rare Item (rare)", nil, "Interface\\Icons\\INV_Jewelry_Ring_53"},
-    {37663, 1, 3, "Another Rare Item (rare)", nil, "Interface\\Icons\\INV_Chest_Plate10"},
-    {36908, 2, 2, "Frost Lotus (uncommon)", nil, "Interface\\Icons\\INV_Misc_Herb_FrostLotus"},
-    {33470, 14, 1, "Frostweave Cloth (common)", nil, "Interface\\Icons\\INV_Fabric_Frostweave"},
-    {44151, 1, 4, "Reins of the Blue Proto-Drake (mount)", "mount", "Interface\\Icons\\Ability_Mount_Drake_Blue"},
-    {44738, 1, 3, "Kirin Tor Familiar (pet)", "pet", "Interface\\Icons\\INV_Misc_Orb_02"},
-    {1, 1, 1, "Quest Item: Sealed Letter", "quest", "Interface\\Icons\\INV_Letter_15"},
-    {2, 8, 1, "Quest Item: Scourge Insignia", "quest", "Interface\\Icons\\INV_Misc_Bone_HumanSkull_01"},
-    {3, 1, 3, "Quest Item (rare quality): Ancient Tablet", "quest", "Interface\\Icons\\INV_Misc_Book_09"},
-    {4, 1, 3, "Locked Item (cannot loot yet)", "locked", "Interface\\Icons\\INV_Misc_Key_14"},
-    {2589, 5, 0, "Linen Cloth (poor)", nil, "Interface\\Icons\\INV_Fabric_Linen_01"},
-    {2592, 3, 0, "Wool Cloth (poor)", nil, "Interface\\Icons\\INV_Fabric_Wool_01"},
-    {36912, 7, 1, "Saronite Ore (stack)", nil, "Interface\\Icons\\INV_Ore_Saronite_01"},
-    {41163, 20, 2, "Titansteel Bar (stack of 20)", nil, "Interface\\Icons\\INV_Ingot_Titansteel_blue"},
-};
-
 local function MakeItem(entry, slotIndex)
-    local id, quantity, forcedQuality, fallbackName, kind, fallbackIcon = unpack(entry);
-    local isMount = kind == "mount";
+    local id, quantity, forcedQuality, fallbackName, isMount = unpack(entry);
     local name, link, quality, _, _, _, subType, _, equipSlot, icon = GetItemInfo(id);
     return {
         slotType = Def.SLOT_TYPE_ITEM,
         slotIndex = slotIndex,
         id = id,
-        icon = icon or fallbackIcon or FALLBACK_ICON,
-        name = (kind and fallbackName) or name or fallbackName,
+        icon = icon or FALLBACK_ICON,
+        name = name or fallbackName,
         quantity = quantity,
         quality = forcedQuality or quality or 3,
         link = link or ("item:" .. id),
-        subType = (isMount and _G.MOUNT) or (kind == "pet" and _G.COMPANION_PETS) or subType,
-        isQuest = kind == "quest" or nil,
-        locked = kind == "locked" or nil,
+        subType = (isMount and _G.MOUNT) or subType,
         hideCount = equipSlot ~= nil and equipSlot ~= "",
         looted = false,
         test = true,
@@ -97,108 +67,94 @@ local function EnsureReady()
     LootUI.forceEnabled = true;
 end
 
--- seconds: how long the frame stays up, then it fades out. nil: it stays until it is closed
--- (right click, the close button, Esc in the manual window, or /lootui test close).
-local testToken = 0;
-
-local function HoldFor(seconds)
-    testToken = testToken + 1;
-    local token = testToken;
-    LootUI.testHoldTime = 99999;            -- no auto hide while the test runs
-    if seconds then
-        After(seconds, function()
-            if token == testToken then
-                LootUI.testHoldTime = nil;
-                MainFrame:CloseFromClick();
-            end
-        end);
+-- Fills the window with the sample items, all at once (more than one page of rows: the page dots show). Rows that are
+-- there are replaced in place, the window itself stays.
+local function Populate()
+    EnsureReady();
+    MainFrame.errorMode = nil;
+    MainFrame:ReleaseAll();
+    LootUI.WipeLootQueue();
+    LootUI.QueueDisplayLoot(MakeMoney(128506, 0));
+    for _, entry in ipairs(ITEMS) do
+        LootUI.QueueDisplayLoot(MakeItem(entry, 0));
     end
-    return token
+    LootUI.FlushLootQueue();
 end
 
-local function CloseTest()
-    testToken = testToken + 1;
+local previewing = false;
+
+local function StartPreview()
+    previewing = true;
+    LootUI.noFade = true;                   -- no fade in or out: the window appears and goes at once (LootFrame.lua)
+    LootUI.testHoldTime = 99999;            -- no auto hide while the preview runs
+    Populate();
+end
+
+local function StopPreview()
+    previewing = false;
     LootUI.testHoldTime = nil;
+    LootUI.WipeLootQueue();
     if not MainFrame.Init then
-        MainFrame:CloseFromClick();
+        MainFrame:TryHide(true);            -- not CloseFromClick: no real CloseLoot for a preview
+    end
+    LootUI.forceEnabled = nil;
+    LootUI.noFade = nil;
+end
+
+-- The preview must always be there while the tab is open. Whatever hides it, empties it or changes its opacity
+-- (a setting, the module switching on or off ...) is undone at once: the OnHide hook runs before the frame is drawn
+-- again, the watcher catches the rest on the next frame. A real loot window in manual mode is left alone.
+local restoring = false;
+
+local function Restore()
+    if restoring or not previewing or MainFrame:IsInManualMode() then
+        return
+    end
+    restoring = true;
+    Populate();
+    restoring = false;
+end
+
+local function IsPreviewIntact()
+    local rows = MainFrame.activeFrames;
+    return MainFrame:IsShown() and MainFrame:GetAlpha() >= 0.99 and rows ~= nil and #rows > 0
+end
+
+local watcher = CreateFrame("Frame");
+watcher:Hide();
+watcher:SetScript("OnUpdate", function()
+    if previewing and not IsPreviewIntact() then
+        Restore();
+    end
+end);
+
+-- After MainFrame:Init: it sets the frame's own OnHide, which would drop an earlier hook.
+local function HookHide()
+    if not MainFrame.previewHooked and not MainFrame.Init then
+        MainFrame.previewHooked = true;
+        MainFrame:HookScript("OnHide", Restore);
     end
 end
 
-local function TestNotification(seconds)
-    EnsureReady();
-    local token = HoldFor(seconds);
-    MainFrame.errorMode = nil;
-    LootUI.QueueDisplayLoot(MakeItem(ITEMS[1], 0));
-    LootUI.QueueDisplayLoot(MakeItem(ITEMS[3], 0));
-    LootUI.QueueDisplayLoot(MakeMoney(123456, 0));
-    LootUI.QueueDisplayLoot(MakeItem(ITEMS[5], 0));
-    LootUI.QueueDisplayLoot(MakeItem(ITEMS[6], 0));
-    -- More than one page of rows (MAX_ITEM_PER_PAGE), so the page dots show.
-    for i = 8, #ITEMS do
-        LootUI.QueueDisplayLoot(MakeItem(ITEMS[i], 0));
-    end
-
-    -- Same item again: the row's count animates, money rolls up.
-    After(1.5, function()
-        if token ~= testToken then return end
-        LootUI.QueueDisplayLoot(MakeItem(ITEMS[3], 0));
-        LootUI.QueueDisplayLoot(MakeMoney(5050, 0));
-    end);
-    -- A mount, glowing; it makes the list a longer one.
-    After(2.5, function()
-        if token ~= testToken then return end
-        LootUI.QueueDisplayLoot(MakeItem(ITEMS[2], 0));
-        LootUI.QueueDisplayLoot(MakeItem(ITEMS[4], 0));
-        LootUI.QueueDisplayLoot(MakeItem(ITEMS[7], 0));
-    end);
-end
-
-local function TestManual(seconds)
-    EnsureReady();
-    HoldFor(seconds);
-    local list = {};
-    list[1] = MakeMoney(98765, -1);
-    for i, entry in ipairs(ITEMS) do
-        list[#list + 1] = MakeItem(entry, -(i + 1));
-    end
-    table.sort(list, LootUI.SortFunc_LootSlot);
-    MainFrame.errorMode = nil;
-    MainFrame:DisplayPendingLoot(list);
-end
-
-local function TestAll(seconds)
-    EnsureReady();
-    HoldFor(seconds);
-    local list = {};
-    list[1] = MakeMoney(1234567, -1);
-    for i, entry in ipairs(ALL_ITEMS) do
-        list[#list + 1] = MakeItem(entry, -(i + 1));
-    end
-    table.sort(list, LootUI.SortFunc_LootSlot);
-    MainFrame.errorMode = nil;
-    MainFrame:DisplayPendingLoot(list);
-end
-
-SLASH_DUILOOTUI1 = "/lootui";
-SlashCmdList["DUILOOTUI"] = function(message)
-    local command, rest = string.match(message or "", "^%s*(%S*)%s*(.-)%s*$");
-    command = string.lower(command or "");
-    if command == "test" and string.lower(rest) == "close" then
-        CloseTest();
-    elseif command == "test" then
-        local manual = string.find(string.lower(rest), "manual", 1, true) ~= nil;
-        local seconds = tonumber(string.match(rest, "(%d+%.?%d*)"));
-        if seconds and seconds <= 0 then
-            seconds = nil;
-        end
-        if string.find(string.lower(rest), "all", 1, true) then
-            TestAll(seconds);
-        elseif manual then
-            TestManual(seconds);
-        else
-            TestNotification(seconds);
-        end
-    else
-        addon.API.PrintMessage("/lootui test [seconds]  |  /lootui test manual [seconds]  |  /lootui test all [seconds]");
+local function UpdatePreview()
+    local settingsUI = addon.SettingsUI;
+    local onTab = settingsUI and settingsUI.IsOnLootUITab and settingsUI:IsOnLootUITab();
+    if onTab and not previewing then
+        StartPreview();
+        HookHide();
+        watcher:Show();
+    elseif not onTab and previewing then
+        watcher:Hide();
+        StopPreview();
     end
 end
+
+addon.CallbackRegistry:Register("SettingsUI.Show", UpdatePreview);
+addon.CallbackRegistry:Register("SettingsUI.Hide", UpdatePreview);
+addon.CallbackRegistry:Register("SettingsUI.TabChanged", UpdatePreview);
+
+addon.CallbackRegistry:Register("SettingChanged.LootUI_ItemsPerPage", function()
+    if previewing then
+        Populate();
+    end
+end);

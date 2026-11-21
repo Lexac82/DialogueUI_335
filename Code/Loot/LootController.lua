@@ -191,6 +191,15 @@ do
         });
     end
 
+    -- Shows what is queued now, without the short wait (the preview of the Settings).
+    function LootUI.FlushLootQueue()
+        QueueFrame.t = 0;
+        QueueFrame:SetScript("OnUpdate", nil);
+        if lootQueue and not MainFrame:IsInManualMode() then
+            MainFrame:DisplayLootResult();
+        end
+    end
+
     function LootUI.GetLootQueue()
         return lootQueue
     end

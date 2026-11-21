@@ -161,7 +161,7 @@ function MainFrame:LayoutActiveFrames()
 end
 
 function MainFrame:SetBackgroundSize(width, height)
-    if self:IsShown() and self:GetAlpha() > 0.05 then
+    if self:IsShown() and self:GetAlpha() > 0.05 and not LootUI.noFade then
         self.BackgroundFrame:AnimateSize(width, height);
     else
         self.BackgroundFrame:SetBackgroundSize(width, height);
@@ -283,7 +283,14 @@ end
 
 -- forceHide: fade out now. Otherwise wait until the mouse is away.
 function MainFrame:TryHide(forceHide)
-    if forceHide then
+    if forceHide and LootUI.noFade then
+        -- The preview in the Settings (LootTest.lua): no fade out, the window is gone at once.
+        self.isUpdatingPage = nil;
+        self.alpha = 0;
+        self:SetScript("OnUpdate", nil);
+        self:SetAlpha(0);
+        self:Hide();
+    elseif forceHide then
         self.isUpdatingPage = nil;
         self.alpha = self:GetAlpha();
         self:SetScript("OnUpdate", OnUpdate_FadeOut);
@@ -544,7 +551,7 @@ function MainFrame:DisplayLootResult()
     table.sort(queue, LootUI.SortFunc_LootSlot);
 
     self.alpha = self:GetAlpha();
-    local fadeIndividual = self:IsShown() and self.alpha > 0.25;
+    local fadeIndividual = self:IsShown() and self.alpha > 0.25 and not LootUI.noFade;
 
     local thisPage;
     if numTotal > Def.MAX_ITEM_PER_PAGE then
@@ -605,8 +612,9 @@ function MainFrame:DisplayLootResult()
             row.alpha = 1;
             row:SetAlpha(1);
         end
-        self.alpha = 0;
-        self:SetAlpha(0);
+        -- The preview in the Settings (LootTest.lua): no fade in, the window appears at once.
+        self.alpha = LootUI.noFade and 1 or 0;
+        self:SetAlpha(self.alpha);
     end
 end
 
@@ -785,7 +793,7 @@ function MainFrame:LootAllItemsSorted()
     end
 end
 
--- /lootui test: a row of the fake window was clicked. Same visuals as a slot the game cleared.
+-- Preview: a row of the fake window was clicked. Same visuals as a slot the game cleared.
 function MainFrame:TestTake(row)
     if row.hasItem then
         self:SetClickedFrameIndex(row.index);

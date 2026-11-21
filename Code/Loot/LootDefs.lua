@@ -25,7 +25,7 @@ local Def = {
     DOT_SIZE = 8,                   -- the dot art fills 26 of its 32 px
 
     -- Behaviour (the Settings menu will own these)
-    MAX_ITEM_PER_PAGE = 5,          -- notifications per page; more are shown on following pages
+    MAX_ITEM_PER_PAGE = 6,          -- notifications per page; more are shown on following pages
     FADE_DELAY_PER_ITEM = 0.25,
     MERGE_SIMILAR_ITEMS = true,     -- gray items become one "Junk Items" row
     AUTO_LOOT_ENABLE_TOOLTIP = true,
@@ -223,6 +223,13 @@ local function ApplyFontSize(id)
 end
 
 addon.CallbackRegistry:Register("SettingChanged.LootUI_FontSize", ApplyFontSize);
+
+-- Items per page ("LootUI_ItemsPerPage"): read by LootFrame when it splits the queue into pages.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_ItemsPerPage", function(value)
+    if type(value) == "number" then
+        Def.MAX_ITEM_PER_PAGE = math.min(8, math.max(5, math.floor(value)));
+    end
+end);
 
 -- Fade out delay per item ("LootUI_FadeDelayPerItem"): read by LootFrame when the window shows its rows.
 addon.CallbackRegistry:Register("SettingChanged.LootUI_FadeDelayPerItem", function(value)
