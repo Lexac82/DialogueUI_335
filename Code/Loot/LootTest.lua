@@ -188,3 +188,4 @@ local function RefillPreview()
 end
 addon.CallbackRegistry:Register("SettingChanged.LootUI_ItemsPerPage", RefillPreview);
 addon.CallbackRegistry:Register("SettingChanged.LootUI_CombineItem", RefillPreview);
+addon.CallbackRegistry:Register("SettingChanged.LootUI_HideTitle", RefillPreview);

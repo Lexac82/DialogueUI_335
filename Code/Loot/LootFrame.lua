@@ -530,6 +530,21 @@ local function OnUpdate_FadeIn_Individual(self, elapsed)
     end
 end
 
+-- "You Received" above the notification window; Hide "You Received" Text ("LootUI_HideTitle") leaves it empty.
+function MainFrame:UpdateHeaderText()
+    if addon.GetDBBool("LootUI_HideTitle") then
+        self.Header:SetText("");
+    else
+        self.Header:SetText(L["You Received"]);
+    end
+end
+
+addon.CallbackRegistry:Register("SettingChanged.LootUI_HideTitle", function()
+    if not MainFrame.Init then
+        MainFrame:UpdateHeaderText();
+    end
+end);
+
 -- Takes the queued items and shows them (merged by item, up to MAX_ITEM_PER_PAGE per page).
 function MainFrame:DisplayLootResult()
     local queue = LootUI.GetLootQueue();
@@ -619,11 +634,7 @@ function MainFrame:DisplayLootResult()
     end
 
     AUTO_HIDE_DELAY = LootUI.testHoldTime or (2.0 + numFrames * Def.FADE_DELAY_PER_ITEM);
-    if addon.GetDBBool("LootUI_HideTitle") then
-        self.Header:SetText("");
-    else
-        self.Header:SetText(L["You Received"]);
-    end
+    self:UpdateHeaderText();
 
     self:LayoutActiveFrames();
     self.t = 0;
