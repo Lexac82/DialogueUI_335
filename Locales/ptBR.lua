@@ -285,6 +285,12 @@ L["Combine Similar Items"] = "Combinar itens similares";
 L["Combine Similar Items Desc"] = "Exibe itens similares em uma única linha.\n\nCategorias suportadas:\n\n- Itens inúteis\n\nPadrão: Ativado";
 L["Send to Back"] = "Colocar no fundo";
 L["Send to Back Desc"] = "Enquanto o Loot UI mostra o que você recebeu, coloca a janela dele atrás de outras interfaces.\n\nIsso não afeta a janela durante o saque manual.\n\nPadrão: Desativado";
+L["Loot Under Mouse"] = "Abrir a janela de saque no mouse";
+L["Loot Under Mouse Desc"] = "Durante o saque manual, a janela de saque aparece sob a posição atual do mouse.
+
+Isso não afeta a janela enquanto ela mostra o que você recebeu.
+
+Padrão: Desativado";
 L["Hide You Received Text"] = "Ocultar o texto \"Você recebeu\"";
 L["Hide You Received Text Desc"] = "Oculta o texto \"Você recebeu\" acima da janela do Loot UI quando ela mostra o que você recebeu.\n\nPadrão: Desativado";
 L["Show Reputation Changes"] = "Exibir mudanças de reputação";

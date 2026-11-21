@@ -260,6 +260,11 @@ addon.CallbackRegistry:Register("SettingChanged.LootUI_LowFrameStrata", function
     Def.LOW_FRAME_STRATA = value and true or false;
 end);
 
+-- Open Loot Window at Mouse ("LootUI_LootUnderMouse"): read by LootFrame when the manual loot window opens.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_LootUnderMouse", function(value)
+    Def.LOOT_UNDER_MOUSE = value and true or false;
+end);
+
 function LootUI.GetFont(name, height, color)
     local fontObject = LootUI.GetSizedFont(name, height, color);
     if not lootFonts[fontObject] then

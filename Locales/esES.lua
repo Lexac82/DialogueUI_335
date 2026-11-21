@@ -285,6 +285,12 @@ L["Combine Similar Items"] = "Combinar objetos similares";
 L["Combine Similar Items Desc"] = "Muestra objetos similares en una sola fila.\n\nCategorías admitidas:\n\n- Objetos basura\n\nPor defecto: Activado";
 L["Send to Back"] = "Enviar al fondo";
 L["Send to Back Desc"] = "Mientras Loot UI muestra lo que has recibido, coloca su ventana detrás del resto de la interfaz.\n\nNo afecta a la ventana cuando saqueas manualmente.\n\nPor defecto: Desactivado";
+L["Loot Under Mouse"] = "Abrir la ventana de botín en el ratón";
+L["Loot Under Mouse Desc"] = "Al saquear manualmente, la ventana de botín aparece bajo la posición actual del ratón.
+
+No afecta a la ventana mientras muestra lo que has recibido.
+
+Por defecto: Desactivado";
 L["Hide You Received Text"] = "Ocultar el texto \"Has recibido\"";
 L["Hide You Received Text Desc"] = "Oculta el texto \"Has recibido\" sobre la ventana de Loot UI cuando muestra lo que has recibido.\n\nPor defecto: Desactivado";
 L["Show Reputation Changes"] = "Mostrar cambios de reputación";

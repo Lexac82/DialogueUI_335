@@ -771,6 +771,8 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Send to Back"], description = L["Send to Back Desc"], dbKey = "LootUI_LowFrameStrata",
                 requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Loot Under Mouse"], description = L["Loot Under Mouse Desc"], dbKey = "LootUI_LootUnderMouse",
+                requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Hide You Received Text"], description = L["Hide You Received Text Desc"], dbKey = "LootUI_HideTitle",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Show Reputation Changes"], description = L["Show Reputation Changes Desc"], dbKey = "LootUI_ShowReputation",

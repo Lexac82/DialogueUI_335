@@ -100,6 +100,7 @@ local DefaultValues = {
         LootUI_ShowItemCount = true,            --Owned count (bags and bank) on the icon of an item row (needs LootUI)
         LootUI_CombineItem = true,              --Gray items on one "Junk Items" row (needs LootUI)
         LootUI_LowFrameStrata = false,          --Notification window behind other UI, "Send to Back" (needs LootUI)
+        LootUI_LootUnderMouse = false,          --Manual loot window opens under the mouse, "Open Loot Window at Mouse" (needs LootUI)
         LootUI_HideTitle = false,               --Leave the "You Received" text above the notification window empty (needs LootUI)
         LootUI_ShowReputation = false,          --Reputation gains in the window (needs LootUI)
         LootUI_ShowAllMoneyChange = false,     --Every gain of money, not only the looted one (needs LootUI)

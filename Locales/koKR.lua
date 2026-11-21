@@ -285,6 +285,12 @@ L["Combine Similar Items"] = "유사 아이템 통합 표시";
 L["Combine Similar Items Desc"] = "유사한 아이템을 하나의 행에 묶어 표시합니다.\n\n지원되는 카테고리:\n\n- 잡동사니\n\n기본값: 켜짐";
 L["Send to Back"] = "뒤로 보내기";
 L["Send to Back Desc"] = "Loot UI가 획득한 아이템을 표시하는 동안 해당 창을 다른 UI 뒤로 배치합니다.\n\n수동으로 전리품을 획득할 때의 창에는 영향을 주지 않습니다.\n\n기본값: 꺼짐";
+L["Loot Under Mouse"] = "마우스 위치에 전리품 창 열기";
+L["Loot Under Mouse Desc"] = "수동으로 전리품을 획득할 때 전리품 창이 현재 마우스 위치 아래에 나타납니다.
+
+획득한 아이템을 표시하는 동안의 창에는 영향을 주지 않습니다.
+
+기본값: 꺼짐";
 L["Hide You Received Text"] = "\"획득한 아이템\" 텍스트 숨기기";
 L["Hide You Received Text Desc"] = "Loot UI 창이 획득한 아이템을 표시할 때 창 위의 \"획득한 아이템\" 텍스트를 숨깁니다.\n\n기본값: 꺼짐";
 L["Show Reputation Changes"] = "평판 변화 표시";

@@ -285,6 +285,12 @@ L["Combine Similar Items"] = "合併相似物品";
 L["Combine Similar Items Desc"] = "在同一行顯示相似物品。\n\n支援的分類：\n\n- 垃圾物品\n\n預設：開啟";
 L["Send to Back"] = "置於底層";
 L["Send to Back Desc"] = "在 Loot UI 顯示你所獲得物品期間，將其視窗置於其他介面的後方。\n\n此選項不影響手動拾取時的視窗。\n\n預設：關閉";
+L["Loot Under Mouse"] = "在滑鼠處開啟拾取視窗";
+L["Loot Under Mouse Desc"] = "手動拾取時，拾取視窗會出現在目前滑鼠位置下方。
+
+此選項不影響視窗顯示你所獲得物品期間的位置。
+
+預設：關閉";
 L["Hide You Received Text"] = "隱藏「你獲得了」標題";
 L["Hide You Received Text Desc"] = "在 Loot UI 視窗顯示你所獲得物品時，隱藏視窗上方的「你獲得了」標題。\n\n預設：關閉";
 L["Show Reputation Changes"] = "顯示聲望變化";
