@@ -99,7 +99,8 @@ local DefaultValues = {
         LootUI_BackgroundAlpha = 0.5,           --Opacity of the notification window background, 0..1 in steps of 0.1 (needs LootUI)
         LootUI_ShowItemCount = true,            --Owned count (bags and bank) on the icon of an item row (needs LootUI)
         LootUI_CombineItem = true,              --Gray items on one "Junk Items" row (needs LootUI)
-        LootUI_GrowUpwards = false,            --The window's bottom left stays still and it grows upwards, instead of the top left staying still (needs LootUI)
+        LootUI_LowFrameStrata = false,          --Notification window behind other UI, "Send to Back" (needs LootUI)
+        LootUI_GrowUpwards = false,           --The window's bottom left stays still and it grows upwards, instead of the top left staying still (needs LootUI)
         LootUI_ShowTransmogStatus = false,      --Marker on rows whose appearance is not collected. Needs the server's transmog module (see TransmogStatus.lua) (needs LootUI)
 
     --Minimap button (see Code\Widget\MinimapButton.lua)

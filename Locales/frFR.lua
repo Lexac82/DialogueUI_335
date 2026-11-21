@@ -286,6 +286,12 @@ L["Grow Upwards On Desc"] = "Option activée : le coin inférieur gauche de la f
 L["Grow Upwards Off Desc"] = "Option désactivée : le coin supérieur gauche de la fenêtre reste immobile et les nouvelles notifications apparaîtront en dessous des anciennes.";
 L["Combine Similar Items"] = "Combiner les objets similaires";
 L["Combine Similar Items Desc"] = "Afficher les objets similaires sur une seule ligne.\n\nCatégories prises en charge :\n\n- Objets sans valeur\n\nPar défaut : Activé";
+L["Send to Back"] = "Placer à l'arrière-plan";
+L["Send to Back Desc"] = "Pendant que Loot UI affiche ce que vous avez reçu, place sa fenêtre derrière les autres éléments de l'interface.
+
+Cela n'affecte pas la fenêtre lors d'un butin manuel.
+
+Par défaut : Désactivé";
 L["You Received"] = "Vous avez reçu";
 L["Junk Items"] = "Objets sans valeur";
 L["Take All"] = "Tout prendre";

@@ -283,6 +283,12 @@ L["Grow Upwards On Desc"] = "Wenn aktiviert: Die untere linke Ecke des Fensters 
 L["Grow Upwards Off Desc"] = "Wenn deaktiviert: Die obere linke Ecke des Fensters bleibt unverändert, und neue Benachrichtigungen erscheinen unter den alten.";
 L["Combine Similar Items"] = "Ähnliche Gegenstände kombinieren";
 L["Combine Similar Items Desc"] = "Zeigt ähnliche Gegenstände in einer einzigen Zeile an.\n\nUnterstützte Kategorien:\n\n- Plunder\n\nStandard: An";
+L["Send to Back"] = "Nach hinten schicken";
+L["Send to Back Desc"] = "Solange Loot UI anzeigt, was du erhalten hast, wird sein Fenster hinter anderen Interface-Elementen angezeigt.
+
+Dies betrifft nicht das Fenster beim manuellen Plündern.
+
+Standard: Aus";
 L["You Received"] = "Du hast erhalten";
 L["Junk Items"] = "Plunder";
 L["Take All"] = "Alles nehmen";

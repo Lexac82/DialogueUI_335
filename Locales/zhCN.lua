@@ -283,6 +283,12 @@ L["Grow Upwards On Desc"] = "勾选时：窗口左下角位置保持不变，新
 L["Grow Upwards Off Desc"] = "未勾选时：窗口左上角位置保持不变，新提示出现在旧提示的下方。";
 L["Combine Similar Items"] = "合并相似物品";
 L["Combine Similar Items Desc"] = "在同一行显示相似物品。\n\n支持的分类：\n\n- 垃圾物品\n\n默认：开启";
+L["Send to Back"] = "置于底层";
+L["Send to Back Desc"] = "在 Loot UI 显示你所获得物品期间，将其窗口置于其他界面的后方。
+
+此选项不影响手动拾取时的窗口。
+
+默认：关闭";
 L["You Received"] = "你获得了";
 L["Junk Items"] = "垃圾物品";
 L["Take All"] = "全部拾取";

@@ -283,6 +283,12 @@ L["Grow Upwards On Desc"] = "Si está activado: la esquina inferior izquierda de
 L["Grow Upwards Off Desc"] = "Si está desactivado: la esquina superior izquierda de la ventana permanece fija y las nuevas notificaciones aparecerán debajo de las anteriores.";
 L["Combine Similar Items"] = "Combinar objetos similares";
 L["Combine Similar Items Desc"] = "Muestra objetos similares en una sola fila.\n\nCategorías admitidas:\n\n- Objetos basura\n\nPor defecto: Activado";
+L["Send to Back"] = "Enviar al fondo";
+L["Send to Back Desc"] = "Mientras Loot UI muestra lo que has recibido, coloca su ventana detrás del resto de la interfaz.
+
+No afecta a la ventana cuando saqueas manualmente.
+
+Por defecto: Desactivado";
 L["You Received"] = "Has recibido";
 L["Junk Items"] = "Objetos basura";
 L["Take All"] = "Recoger todo";

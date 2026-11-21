@@ -34,7 +34,7 @@ local FADE_OUT_SPEED = 4;           -- alpha per second, TryHide(true)
 function MainFrame:Init()
     self.Init = nil;
 
-    self:SetFrameStrata("DIALOG");
+    self:UpdateFrameStrata();
     self:SetToplevel(true);
     self:SetClampedToScreen(true);
     self:EnableMouse(false);
@@ -100,6 +100,22 @@ end
 addon.CallbackRegistry:Register("SettingChanged.LootUI_GrowUpwards", function()
     if not (MainFrame.manualMode and Def.LOOT_UNDER_MOUSE) then
         MainFrame:LoadPosition();
+    end
+end);
+
+-- Send to Back: the notification window (not the manual loot window, which must be usable) sits behind other UI.
+function MainFrame:UpdateFrameStrata()
+    if Def.LOW_FRAME_STRATA and not self.manualMode then
+        self:SetFrameStrata("MEDIUM");
+        self:Lower();
+    else
+        self:SetFrameStrata("DIALOG");
+    end
+end
+
+addon.CallbackRegistry:Register("SettingChanged.LootUI_LowFrameStrata", function()
+    if not MainFrame.Init then
+        MainFrame:UpdateFrameStrata();
     end
 end);
 
@@ -386,6 +402,7 @@ function MainFrame:SetManualMode(state)
         self:ReleaseAll();
     end
     self.manualMode = state;
+    self:UpdateFrameStrata();
 
     if state then
         self.Header:Hide();

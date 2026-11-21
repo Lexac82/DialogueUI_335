@@ -283,6 +283,12 @@ L["Grow Upwards On Desc"] = "활성화 시: 창의 왼쪽 하단이 고정되며
 L["Grow Upwards Off Desc"] = "비활성화 시: 창의 왼쪽 상단이 고정되며, 새로운 알림이 기존 알림 아래에 표시됩니다.";
 L["Combine Similar Items"] = "유사 아이템 통합 표시";
 L["Combine Similar Items Desc"] = "유사한 아이템을 하나의 행에 묶어 표시합니다.\n\n지원되는 카테고리:\n\n- 잡동사니\n\n기본값: 켜짐";
+L["Send to Back"] = "뒤로 보내기";
+L["Send to Back Desc"] = "Loot UI가 획득한 아이템을 표시하는 동안 해당 창을 다른 UI 뒤로 배치합니다.
+
+수동으로 전리품을 획득할 때의 창에는 영향을 주지 않습니다.
+
+기본값: 꺼짐";
 L["You Received"] = "획득한 아이템";
 L["Junk Items"] = "잡동사니";
 L["Take All"] = "모두 받기";

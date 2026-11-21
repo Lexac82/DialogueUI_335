@@ -34,6 +34,7 @@ local Def = {
     USE_HOTKEY = true,
     TAKE_ALL_KEY = "E",
     LOOT_UNDER_MOUSE = false,
+    LOW_FRAME_STRATA = false,       -- notification window behind other UI ("Send to Back"); not the manual loot window
     ALWAYS_LISTEN_LOOT_MSG = false, -- also show items that did not come from a loot window (quest rewards, mail ...)
     SHOW_ALL_MONEY_CHANGE = false,
     SHOW_ITEM_COUNT = true,         -- owned count (bags + bank) on the icon of an item row
@@ -248,6 +249,11 @@ end);
 -- Combine Similar Items ("LootUI_CombineItem"): read by LootFrame when the queued items are merged.
 addon.CallbackRegistry:Register("SettingChanged.LootUI_CombineItem", function(value)
     Def.MERGE_SIMILAR_ITEMS = value and true or false;
+end);
+
+-- Send to Back ("LootUI_LowFrameStrata"): LootFrame applies it (MainFrame:UpdateFrameStrata).
+addon.CallbackRegistry:Register("SettingChanged.LootUI_LowFrameStrata", function(value)
+    Def.LOW_FRAME_STRATA = value and true or false;
 end);
 
 function LootUI.GetFont(name, height, color)
