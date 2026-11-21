@@ -291,6 +291,12 @@ L["Loot Under Mouse Desc"] = "手动拾取时，拾取窗口会出现在当前�
 此选项不影响窗口显示你所获得物品期间的位置。
 
 默认：关闭";
+L["Press Key To Take All Items"] = "按键拾取全部物品";
+L["Press Key To Take All Items Desc"] = "手动拾取时，按下以下按键即可拾取全部物品。拾取窗口打开期间，该按键不会执行其他功能，即使它同时设置在动作条上。
+
+右键点击按键可恢复为默认按键。
+
+默认：开启";
 L["Hide You Received Text"] = "隐藏“你获得了”标题";
 L["Hide You Received Text Desc"] = "在 Loot UI 窗口显示你所获得物品时，隐藏窗口上方的“你获得了”标题。\n\n默认：关闭";
 L["Show Reputation Changes"] = "显示声望变化";

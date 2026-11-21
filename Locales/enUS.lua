@@ -68,6 +68,12 @@ L["Loot Under Mouse Desc"] = "While you loot manually, the loot window appears u
 This does not affect the window while it shows what you received.
 
 Default: Off";
+L["Press Key To Take All Items"] = "Press Key To Take All Items";
+L["Press Key To Take All Items Desc"] = "While you loot manually, press the following key to take all items. While the loot window is open, this key does nothing else, even if it is also on your action bar.
+
+Right-click the key to go back to the default key.
+
+Default: On";
 L["Hide You Received Text"] = "Hide \"You Received\" Text";
 L["Hide You Received Text Desc"] = "Hide the \"You Received\" text above the Loot UI window when it shows what you received.\n\nDefault: Off";
 L["Show Reputation Changes"] = "Show Reputation Changes";

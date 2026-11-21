@@ -291,6 +291,12 @@ L["Loot Under Mouse Desc"] = "Beim manuellen Plündern erscheint das Beutefenste
 Dies betrifft nicht das Fenster, solange es anzeigt, was du erhalten hast.
 
 Standard: Aus";
+L["Press Key To Take All Items"] = "Taste zum Nehmen aller Gegenstände";
+L["Press Key To Take All Items Desc"] = "Beim manuellen Plündern nimmst du mit der folgenden Taste alle Gegenstände. Solange das Beutefenster offen ist, hat diese Taste keine andere Funktion, auch wenn sie auf deiner Aktionsleiste liegt.
+
+Rechtsklick auf die Taste setzt sie auf die Standardtaste zurück.
+
+Standard: An";
 L["Hide You Received Text"] = "„Du hast erhalten“-Text ausblenden";
 L["Hide You Received Text Desc"] = "Blendet den Text „Du hast erhalten“ über dem Loot-UI-Fenster aus, wenn es anzeigt, was du erhalten hast.\n\nStandard: Aus";
 L["Show Reputation Changes"] = "Rufänderungen anzeigen";

@@ -291,6 +291,12 @@ L["Loot Under Mouse Desc"] = "Durante o saque manual, a janela de saque aparece 
 Isso não afeta a janela enquanto ela mostra o que você recebeu.
 
 Padrão: Desativado";
+L["Press Key To Take All Items"] = "Pressionar tecla para pegar tudo";
+L["Press Key To Take All Items Desc"] = "Durante o saque manual, pressione a tecla a seguir para pegar todos os itens. Enquanto a janela de saque estiver aberta, essa tecla não faz mais nada, mesmo que também esteja na sua barra de ação.
+
+Clique com o botão direito na tecla para voltar à tecla padrão.
+
+Padrão: Ativado";
 L["Hide You Received Text"] = "Ocultar o texto \"Você recebeu\"";
 L["Hide You Received Text Desc"] = "Oculta o texto \"Você recebeu\" acima da janela do Loot UI quando ela mostra o que você recebeu.\n\nPadrão: Desativado";
 L["Show Reputation Changes"] = "Exibir mudanças de reputação";

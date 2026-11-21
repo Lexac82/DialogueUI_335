@@ -291,6 +291,12 @@ L["Loot Under Mouse Desc"] = "수동으로 전리품을 획득할 때 전리품 
 획득한 아이템을 표시하는 동안의 창에는 영향을 주지 않습니다.
 
 기본값: 꺼짐";
+L["Press Key To Take All Items"] = "키를 눌러 모든 아이템 획득";
+L["Press Key To Take All Items Desc"] = "수동으로 전리품을 획득할 때 다음 키를 눌러 모든 아이템을 획득합니다. 전리품 창이 열려 있는 동안 이 키는 다른 기능을 하지 않으며, 행동 단축바에 지정되어 있어도 마찬가지입니다.
+
+키를 우클릭하면 기본 키로 되돌립니다.
+
+기본값: 켜짐";
 L["Hide You Received Text"] = "\"획득한 아이템\" 텍스트 숨기기";
 L["Hide You Received Text Desc"] = "Loot UI 창이 획득한 아이템을 표시할 때 창 위의 \"획득한 아이템\" 텍스트를 숨깁니다.\n\n기본값: 꺼짐";
 L["Show Reputation Changes"] = "평판 변화 표시";

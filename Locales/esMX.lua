@@ -291,6 +291,12 @@ L["Loot Under Mouse Desc"] = "Al saquear manualmente, la ventana de botín apare
 No afecta a la ventana mientras muestra lo que has recibido.
 
 Predeterminado: Desactivado";
+L["Press Key To Take All Items"] = "Presionar tecla para tomar todo";
+L["Press Key To Take All Items Desc"] = "Al saquear manualmente, presiona la siguiente tecla para tomar todos los objetos. Mientras la ventana de botín esté abierta, esta tecla no hace nada más, aunque también esté en tu barra de acción.
+
+Haz clic derecho en la tecla para volver a la tecla predeterminada.
+
+Predeterminado: Activado";
 L["Hide You Received Text"] = "Ocultar el texto \"Has recibido\"";
 L["Hide You Received Text Desc"] = "Oculta el texto \"Has recibido\" sobre la ventana de Loot UI cuando muestra lo que has recibido.\n\nPredeterminado: Desactivado";
 L["Show Reputation Changes"] = "Mostrar cambios de reputación";

@@ -260,6 +260,28 @@ addon.CallbackRegistry:Register("SettingChanged.LootUI_LowFrameStrata", function
     Def.LOW_FRAME_STRATA = value and true or false;
 end);
 
+-- Press Key To Take All Items ("LootUI_UseHotkey") and its key ("LootUI_HotkeyName"): the Take All button reads
+-- them in UpdateHotkey, so an open window is updated at once.
+local function UpdateTakeAllHotkey()
+    local mainFrame = LootUI.MainFrame;
+    local button = mainFrame and mainFrame.TakeAllButton;
+    if button and button:IsShown() then
+        button:UpdateHotkey();
+    end
+end
+
+addon.CallbackRegistry:Register("SettingChanged.LootUI_UseHotkey", function(value)
+    Def.USE_HOTKEY = value and true or false;
+    UpdateTakeAllHotkey();
+end);
+
+addon.CallbackRegistry:Register("SettingChanged.LootUI_HotkeyName", function(value)
+    if type(value) == "string" and value ~= "" then
+        Def.TAKE_ALL_KEY = value;
+    end
+    UpdateTakeAllHotkey();
+end);
+
 -- Open Loot Window at Mouse ("LootUI_LootUnderMouse"): read by LootFrame when the manual loot window opens.
 addon.CallbackRegistry:Register("SettingChanged.LootUI_LootUnderMouse", function(value)
     Def.LOOT_UNDER_MOUSE = value and true or false;

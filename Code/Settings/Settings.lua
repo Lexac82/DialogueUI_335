@@ -773,6 +773,10 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Loot Under Mouse"], description = L["Loot Under Mouse Desc"], dbKey = "LootUI_LootUnderMouse",
                 requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Press Key To Take All Items"], description = L["Press Key To Take All Items Desc"], dbKey = "LootUI_UseHotkey",
+                requiredParentValueAnd = {LootUI = true}},
+            {type = "Keybinding", branchLevel = 2, name = L["Take All"], description = L["Press Key To Take All Items Desc"], dbKey = "LootUI_HotkeyName",
+                defaultKey = "E", requiredParentValueAnd = {LootUI = true, LootUI_UseHotkey = true}},
             {type = "Checkbox", name = L["Hide You Received Text"], description = L["Hide You Received Text Desc"], dbKey = "LootUI_HideTitle",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Show Reputation Changes"], description = L["Show Reputation Changes Desc"], dbKey = "LootUI_ShowReputation",
@@ -872,8 +876,12 @@ KeybindCapture:SetScript("OnClick", function(self, key)
         return
     end
     local owner = self.owner;
-    if not addon.BindingUtil:IsKeyInvalid(key) and owner.action then
-        addon.BindingUtil:CheckAndSetBindingKey(owner.action, key, true);
+    if not addon.BindingUtil:IsKeyInvalid(key) then
+        if owner.dbKey then
+            SetDBValue(owner.dbKey, key, true);
+        elseif owner.action then
+            addon.BindingUtil:CheckAndSetBindingKey(owner.action, key, true);
+        end
     end
     self:Stop();
 end);
@@ -932,6 +940,7 @@ local function CreateKeybinding(row, optionData)
     widget:SetPoint("RIGHT", row.content, "RIGHT", -BUTTON_PADDING_LARGE, 0);
     widget:RegisterForClicks("LeftButtonUp", "RightButtonUp");
     widget.action = optionData.action;
+    widget.dbKey = optionData.dbKey;            -- a key saved as a setting of its own (Loot UI: Take All), not a dialogue action
 
     local background = widget:CreateTexture(nil, "ARTWORK");
     background:SetAllPoints(widget);
@@ -961,7 +970,12 @@ local function CreateKeybinding(row, optionData)
     end
 
     function widget:Refresh()
-        local key = addon.BindingUtil:GetBindingKey(self.action);
+        local key;
+        if self.dbKey then
+            key = GetDBValue(self.dbKey);
+        else
+            key = addon.BindingUtil:GetBindingKey(self.action);
+        end
         valueText:SetText(key or L["Not Bound"]);
         self:SetButtonState(self.isBinding and "binding" or (self:IsMouseOver() and "hover" or "normal"));
     end
@@ -1003,7 +1017,11 @@ local function CreateKeybinding(row, optionData)
             end
         else    -- RightButton: back to the default key
             KeybindCapture:Stop();
-            addon.BindingUtil:CheckAndSetBindingKey(self.action, nil, true);
+            if self.dbKey then
+                SetDBValue(self.dbKey, optionData.defaultKey, true);
+            else
+                addon.BindingUtil:CheckAndSetBindingKey(self.action, nil, true);
+            end
         end
     end);
     widget:SetScript("OnHide", function(self)
@@ -1015,6 +1033,11 @@ local function CreateKeybinding(row, optionData)
     CallbackRegistry:Register("ThemeChanged", function()
         widget:Refresh();
     end);
+    if widget.dbKey then
+        CallbackRegistry:Register("SettingChanged." .. widget.dbKey, function()
+            widget:Refresh();
+        end);
+    end
 
     return widget
 end
