@@ -90,6 +90,7 @@ L["Minimap Button Drag"] = "Drag to move";
 -- Settings: UI tab
 L["Theme"] = "Theme";
 L["Theme Desc"] = "Select a color theme for the UI.";
+L["Loot Theme Desc"] = "Select a color theme for the Loot UI. It can differ from the theme of the rest of the UI.";
 L["Theme Brown"] = "Brown";
 L["Theme Dark"] = "Dark";
 L["Frame Size"] = "Frame Size";

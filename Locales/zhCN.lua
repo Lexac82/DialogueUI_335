@@ -50,6 +50,7 @@ L["Minimap Button Drag"] = "拖动以移动";
 -- Settings: UI tab
 L["Theme"] = "主题";
 L["Theme Desc"] = "选择一个主题色。";
+L["Loot Theme Desc"] = "为拾取界面选择一个主题色。可以与其他界面的主题不同。";
 L["Theme Brown"] = "棕色";
 L["Theme Dark"] = "深色";
 L["Frame Size"] = "界面大小";

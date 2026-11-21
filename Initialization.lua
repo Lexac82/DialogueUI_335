@@ -92,6 +92,7 @@ local DefaultValues = {
 
     --Loot UI (see Code\Loot). A port of the Loot UI of the Plumber addon (retail)
     LootUI = false,                             --Replace the game's loot window (see LootController.lua)
+        LootUI_Theme = 1,                       --1 Brown, 2 Dark, only for the loot window (needs LootUI)
         FastLoot = true,                        --Loot right when the window opens on auto loot, no delay (needs LootUI)
         LootUI_FontSize = 1,                    --0..3 = 11, 12, 13, 14 like FontSizeBase, but only for the loot window (needs LootUI)
         LootUI_FadeDelayPerItem = 0.25,         --Seconds the window stays longer per item, 0.25..1 in steps of 0.25 (needs LootUI)

@@ -50,6 +50,7 @@ L["Minimap Button Drag"] = "드래그하여 이동";
 -- Settings: UI tab
 L["Theme"] = "테마";
 L["Theme Desc"] = "UI의 테마 색상을 선택 합니다.";
+L["Loot Theme Desc"] = "전리품 UI의 테마 색상을 선택 합니다. 나머지 UI의 테마와 다르게 설정할 수 있습니다.";
 L["Theme Brown"] = "갈색";
 L["Theme Dark"] = "검정색";
 L["Frame Size"] = "프레임 크기";

@@ -53,6 +53,7 @@ L["Minimap Button Drag"] = "Faites glisser pour déplacer";
 -- Paramètres : onglet Interface
 L["Theme"] = "Thème";
 L["Theme Desc"] = "Choisissez un thème de couleur pour l'interface.";
+L["Loot Theme Desc"] = "Choisissez un thème de couleur pour l'interface de butin. Il peut différer du thème du reste de l'interface.";
 L["Theme Brown"] = "Marron";
 L["Theme Dark"] = "Sombre";
 L["Frame Size"] = "Taille de la fenêtre";

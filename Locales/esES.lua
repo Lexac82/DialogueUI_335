@@ -50,6 +50,7 @@ L["Minimap Button Drag"] = "Arrastra para mover";
 -- Settings: UI tab
 L["Theme"] = "Tema";
 L["Theme Desc"] = "Selecciona un tema de color para la interfaz.";
+L["Loot Theme Desc"] = "Selecciona un tema de color para la interfaz de botín. Puede ser distinto del tema del resto de la interfaz.";
 L["Theme Brown"] = "Marrón";
 L["Theme Dark"] = "Oscuro";
 L["Frame Size"] = "Tamaño de la ventana";

@@ -50,6 +50,7 @@ L["Minimap Button Drag"] = "Ziehen zum Verschieben";
 -- Settings: UI tab
 L["Theme"] = "Farbschema";
 L["Theme Desc"] = "Ändert das Farbschema des Addons.";
+L["Loot Theme Desc"] = "Ändert das Farbschema des Loot-Fensters. Es kann vom Farbschema der restlichen Oberfläche abweichen.";
 L["Theme Brown"] = "Braun";
 L["Theme Dark"] = "Schwarz";
 L["Frame Size"] = "Fenstergröße";

@@ -1,7 +1,7 @@
 local _, addon = ...;
 local LootUI = addon.LootUI;
 local Def = LootUI.Def;
-local ThemeUtil = addon.ThemeUtil;
+local ThemeUtil = addon.LootThemeUtil;
 local NineSlice = addon.NineSlice;
 local MoneyUtil = addon.MoneyUtil;
 
@@ -881,7 +881,7 @@ function LootUI.CreateItemFrame(parent, lootFrame)
     row:EnableMouseScript(0);
 
     row:UpdateNameColor();
-    addon.CallbackRegistry:Register("ThemeChanged", function()
+    addon.CallbackRegistry:Register("LootThemeChanged", function()
         row:UpdateNameColor();
         if row.data and row:IsShown() then
             row:SetData(row.data);      -- the coin file and the transmog sheet follow the theme

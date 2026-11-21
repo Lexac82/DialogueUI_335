@@ -1,6 +1,6 @@
 local _, addon = ...;
 local LootUI = addon.LootUI;
-local ThemeUtil = addon.ThemeUtil;
+local ThemeUtil = addon.LootThemeUtil;
 local NineSlice = addon.NineSlice;
 
 local abs = math.abs;

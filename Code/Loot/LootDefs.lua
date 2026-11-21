@@ -301,7 +301,7 @@ end
 bgOpacity = Def.BG_OPACITY;
 
 local function ApplyTextOutline()
-    local outline = not addon.ThemeUtil:IsDarkMode() or (bgOpacity or 1) <= OUTLINE_MAX_OPACITY;
+    local outline = not addon.LootThemeUtil:IsDarkMode() or (bgOpacity or 1) <= OUTLINE_MAX_OPACITY;
     local flags = outline and "OUTLINE" or "";
     if flags == textFlags then
         return
@@ -320,7 +320,7 @@ function LootUI.UpdateTextOutline(opacity)
     ApplyTextOutline();
 end
 
-addon.CallbackRegistry:Register("ThemeChanged", ApplyTextOutline);
+addon.CallbackRegistry:Register("LootThemeChanged", ApplyTextOutline);
 ApplyTextOutline();
 
 

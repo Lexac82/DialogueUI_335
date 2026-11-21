@@ -2,7 +2,7 @@ local _, addon = ...;
 local LootUI = addon.LootUI;
 local Def = LootUI.Def;
 local FontUtil = addon.FontUtil;
-local ThemeUtil = addon.ThemeUtil;
+local ThemeUtil = addon.LootThemeUtil;
 local NineSlice = addon.NineSlice;
 local L = addon.L;
 
