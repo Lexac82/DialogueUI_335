@@ -173,6 +173,21 @@ function MainFrame:SetBackgroundAlpha(alpha)
     LootUI.UpdateTextOutline(alpha);
 end
 
+-- Opacity setting ("LootUI_BackgroundAlpha", Plumber's key): the background of the notification window.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_BackgroundAlpha", function(value)
+    if type(value) ~= "number" then
+        return
+    end
+    value = math.min(1, math.max(0, value));
+    if value < 0.01 then
+        value = 0;
+    end
+    Def.BG_OPACITY = value;
+    if MainFrame.BackgroundFrame and not MainFrame.manualMode then
+        MainFrame:SetBackgroundAlpha(value);
+    end
+end);
+
 -- After clicks the bottom rows may be gone: the window shrinks to the last row that still has an item.
 function MainFrame:UpdateBackgroundHeightAfterClicks()
     if not self.clickedFrameIndex then
@@ -348,7 +363,7 @@ function MainFrame:SetManualMode(state)
     if state then
         self.Header:Hide();
         self.HeaderWidgetContainer:Show();
-        self:SetBackgroundAlpha(Def.BG_OPACITY);
+        self:SetBackgroundAlpha(1);             -- the opacity setting is for the notification window only
         self.isFocused = false;
         self:EnableMouse(true);
         if Def.LOOT_UNDER_MOUSE then

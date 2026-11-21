@@ -46,6 +46,11 @@ L["Disable DUI In Instance Desc"] = "Disable Dialogue UI and use WoW's default o
 -- Settings: Loot UI tab
 L["Use Loot UI"] = "Use Loot UI";
 L["Use Loot UI Desc"] = "Replace the game's default looting window with Loot UI.\n\nLoot UI is a port of the Loot UI from the Plumber addon from retail.";
+L["Loot UI Font Size Desc"] = "Set the font size for the Loot UI. It is separate from the font size of the UI tab.\n\nDefault: 12";
+L["Fade Out Delay Per Item"] = "Fade Out Delay Per Item";
+L["Fade Out Delay Per Item Desc"] = "How long the Loot UI window stays on screen for each item it shows, on top of a base time. A higher value keeps long lists readable for longer.\n\nDefault: 0.25s";
+L["Opacity"] = "Opacity";
+L["Loot UI Opacity Desc"] = "Set the opacity of the background of the Loot UI window when it shows what you received.\n\nThis does not affect the window while you loot manually.\n\nDefault: 50%";
 L["Fast Loot"] = "Fast Loot";
 L["Fast Loot Desc"] = "Take the loot as soon as the looting window opens, instead of waiting a moment first. Only applies when the game's Auto Loot is on, or Loot UI forces it.\n\nThe fast loot of the Plumber addon.";
 

@@ -164,8 +164,8 @@ function LootUI.CreateTakeAllButton(parent, lootFrame)
     addon.API.Mixin(button, TakeAll);
     button.lootFrame = lootFrame;
 
-    button.font = FontUtil:GetColoredFont("DUI335_LootButton", 10, FONT_COLOR);
-    button.hotkeyFont = FontUtil:GetColoredFont("DUI335_LootHotkey", 10, HOTKEY_FONT_COLOR);
+    button.font = LootUI.GetSizedFont("DUI335_LootButton", 10, FONT_COLOR);
+    button.hotkeyFont = LootUI.GetSizedFont("DUI335_LootHotkey", 10, HOTKEY_FONT_COLOR);
 
     button.text = button.content:CreateFontString(nil, "OVERLAY");
     button.text:SetFontObject(button.font);
@@ -253,7 +253,7 @@ do
         f:Hide();
         f.background = LootUI.CreateBackground(f);
         f.title = f:CreateFontString(nil, "OVERLAY");
-        f.title:SetFontObject(FontUtil:GetColoredFont("DUI335_LootButton", 10, FONT_COLOR));
+        f.title:SetFontObject(LootUI.GetSizedFont("DUI335_LootButton", 10, FONT_COLOR));
         f.title:SetPoint("TOPLEFT", f, "TOPLEFT", MENU_PAD, -MENU_PAD);
         f.title:SetText(L["Give To"]);
         f:SetScript("OnHide", function()
@@ -270,7 +270,7 @@ do
             b:SetHeight(BUTTON_H);
             b:SetFrameLevel(menu:GetFrameLevel() + 3);
             b.text = b:CreateFontString(nil, "OVERLAY");
-            b.text:SetFontObject(FontUtil:GetColoredFont("DUI335_LootButton", 10, FONT_COLOR));
+            b.text:SetFontObject(LootUI.GetSizedFont("DUI335_LootButton", 10, FONT_COLOR));
             b.text:SetPoint("LEFT", b, "LEFT", 6, 0);
             b.highlight = b:CreateTexture(nil, "HIGHLIGHT");
             b.highlight:SetTexture(ThemeUtil:GetTextureFile("ButtonHighlight-Add.blp"));

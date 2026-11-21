@@ -173,7 +173,6 @@ local FONT_HEIGHT = {
 
     DUI335_Tooltip_Medium = HEIGHT_2,
     DUI335_Item = HEIGHT_2,
-    DUI335_LootItem = HEIGHT_2,             -- Loot window item names (own object: it gets an outline)
     DUI335_ItemSelect = HEIGHT_2,
     DUI335_Hotkey = HEIGHT_2,
     DUI335_QuestType = HEIGHT_2,

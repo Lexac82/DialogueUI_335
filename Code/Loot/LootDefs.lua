@@ -26,7 +26,7 @@ local Def = {
 
     -- Behaviour (the Settings menu will own these)
     MAX_ITEM_PER_PAGE = 5,          -- notifications per page; more are shown on following pages
-    FADE_DELAY_PER_ITEM = 0.2,
+    FADE_DELAY_PER_ITEM = 0.25,
     MERGE_SIMILAR_ITEMS = true,     -- gray items become one "Junk Items" row
     AUTO_LOOT_ENABLE_TOOLTIP = true,
     BG_OPACITY = 0.5,    -- window background while it is a notification
@@ -182,29 +182,71 @@ end
 
 
 ---------------------------------------------------------------------------
--- Text outline: with a see-through background the text needs an outline to stay readable.
--- Every font object of the loot window comes from LootUI.GetFont, so one call restyles all of them.
+-- Text outline, never a shadow. Brown theme: always outlined (light text over paper-colored art). Dark theme: outlined
+-- once the background opacity is 70% or less. The text fonts of the loot window (item names, header) come from
+-- LootUI.GetFont, so one call restyles all of them.
 ---------------------------------------------------------------------------
 
-local OUTLINE_BELOW_OPACITY = 0.8;
 local lootFonts = {};
-local textFlags = "";
+local OUTLINE_MAX_OPACITY = 0.75;    -- Dark theme: outline at or below 0.7 (the steps are 0.1; margin for rounding)
+local textFlags = "OUTLINE";
+local bgOpacity = 0.5;                  -- Def.BG_OPACITY, set below
 
-function LootUI.GetFont(name, height, color)
+-- Font size ("LootUI_FontSize" 0..3, the same choices as the UI tab's "FontSizeBase" but a setting of its own).
+-- Every font object of the loot window is made with its height for choice 1 (the default); each choice is
+-- FONT_SIZE_STEP more or less.
+local FONT_SIZE_STEP = 2;
+local DEFAULT_SIZE_ID = 1;
+local sizeID = DEFAULT_SIZE_ID;
+local sizedFonts = {};                  -- [fontObject] = height at the default choice
+
+-- Like FontUtil:GetColoredFont, and the font follows the loot window's font size. No outline.
+function LootUI.GetSizedFont(name, height, color)
     local fontObject = addon.FontUtil:GetColoredFont(name, height, color);
-    if not lootFonts[fontObject] then
-        lootFonts[fontObject] = true;
-        local file, size = fontObject:GetFont();
-        fontObject:SetFont(file, size, textFlags);
+    if not sizedFonts[fontObject] then
+        sizedFonts[fontObject] = height;
+        local file, _, flags = fontObject:GetFont();
+        fontObject:SetFont(file, height + FONT_SIZE_STEP * (sizeID - DEFAULT_SIZE_ID), flags);
     end
     return fontObject
 end
 
-local bgOpacity = Def.BG_OPACITY;
+local function ApplyFontSize(id)
+    if type(id) ~= "number" or id < 0 or id > 3 or id == sizeID then
+        return
+    end
+    sizeID = id;
+    for fontObject, height in pairs(sizedFonts) do
+        local file, _, flags = fontObject:GetFont();
+        fontObject:SetFont(file, height + FONT_SIZE_STEP * (id - DEFAULT_SIZE_ID), flags);
+    end
+end
 
--- Outline when the background is see-through, and always on the Brown theme (light text over paper-colored art).
+addon.CallbackRegistry:Register("SettingChanged.LootUI_FontSize", ApplyFontSize);
+
+-- Fade out delay per item ("LootUI_FadeDelayPerItem"): read by LootFrame when the window shows its rows.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_FadeDelayPerItem", function(value)
+    if type(value) == "number" then
+        Def.FADE_DELAY_PER_ITEM = math.min(1, math.max(0.25, value));
+    end
+end);
+
+function LootUI.GetFont(name, height, color)
+    local fontObject = LootUI.GetSizedFont(name, height, color);
+    if not lootFonts[fontObject] then
+        lootFonts[fontObject] = true;
+        local file, size = fontObject:GetFont();
+        fontObject:SetFont(file, size, textFlags);
+        fontObject:SetShadowOffset(0, 0);
+    end
+    return fontObject
+end
+
+bgOpacity = Def.BG_OPACITY;
+
 local function ApplyTextOutline()
-    local flags = ((bgOpacity or 1) < OUTLINE_BELOW_OPACITY or not addon.ThemeUtil:IsDarkMode()) and "OUTLINE" or "";
+    local outline = not addon.ThemeUtil:IsDarkMode() or (bgOpacity or 1) <= OUTLINE_MAX_OPACITY;
+    local flags = outline and "OUTLINE" or "";
     if flags == textFlags then
         return
     end
@@ -212,10 +254,11 @@ local function ApplyTextOutline()
     for fontObject in pairs(lootFonts) do
         local file, size = fontObject:GetFont();
         fontObject:SetFont(file, size, flags);
+        fontObject:SetShadowOffset(0, 0);
     end
 end
 
--- Called whenever the background opacity changes (the Settings slider will call it too).
+-- Called whenever the background opacity changes.
 function LootUI.UpdateTextOutline(opacity)
     bgOpacity = opacity;
     ApplyTextOutline();
