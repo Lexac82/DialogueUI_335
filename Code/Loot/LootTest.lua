@@ -254,7 +254,8 @@ end
 
 local function UpdatePreview()
     local settingsUI = addon.SettingsUI;
-    local onTab = settingsUI and settingsUI.IsOnLootUITab and settingsUI:IsOnLootUITab();
+    local onTab = settingsUI and settingsUI.IsOnLootUITab and settingsUI:IsOnLootUITab()
+        and addon.GetDBBool("LootUI");      -- no preview while "Use Loot UI" is off
     if onTab and not previewing then
         StartPreview();
         HookHide();
@@ -276,6 +277,7 @@ end);
 addon.CallbackRegistry:Register("SettingsUI.Show", UpdatePreview);
 addon.CallbackRegistry:Register("SettingsUI.Hide", UpdatePreview);
 addon.CallbackRegistry:Register("SettingsUI.TabChanged", UpdatePreview);
+addon.CallbackRegistry:Register("SettingChanged.LootUI", UpdatePreview);      -- the checkbox turns the preview on / off
 
 -- Settings that change which rows there are: the rows are made again (Combine Similar Items folds the three junk
 -- items of the sample into one row, or lists them one by one).
