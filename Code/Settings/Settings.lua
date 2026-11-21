@@ -734,7 +734,7 @@ local Schematic = {
     },
     {   -- Loot UI
         options = {
-            {type = "Checkbox", name = L["Use Loot UI"], description = L["Use Loot UI Desc"], dbKey = "LootUI"},
+            {type = "Checkbox", name = L["Use Loot UI"], description = L["Use Loot UI Desc"], dbKey = "LootUI", preview = "LootUI", ratio = 504 / 560},     -- picture is 504 x 560 stretched to 512 x 512
             {type = "Checkbox", name = L["Fast Loot"], description = L["Fast Loot Desc"], dbKey = "FastLoot",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "ArrowOption", name = L["Font Size"], description = L["Loot UI Font Size Desc"], dbKey = "LootUI_FontSize",

@@ -84,6 +84,11 @@ Books, notes and other readable objects open in their own window. Choose its siz
 
 ![Readables](Preview/BookUI.png)
 
+### Experimental features
+**Loot UI** (off by default): replaces the game's looting window with a "You Received" notification window, a port of the Loot UI from the Plumber addon. Options include Fast Loot, font size, items per page, fade out delay and a transmog status mark. Enable it in the **Loot UI** tab of the settings.
+
+![Loot UI](Preview/LootUI.png)
+
 ### Supported addons
 
 - **Auctionator**
