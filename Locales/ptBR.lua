@@ -284,11 +284,7 @@ L["Grow Upwards Off Desc"] = "Quando desabilitado: a parte superior esquerda da 
 L["Combine Similar Items"] = "Combinar itens similares";
 L["Combine Similar Items Desc"] = "Exibe itens similares em uma única linha.\n\nCategorias suportadas:\n\n- Itens inúteis\n\nPadrão: Ativado";
 L["Send to Back"] = "Colocar no fundo";
-L["Send to Back Desc"] = "Enquanto o Loot UI mostra o que você recebeu, coloca a janela dele atrás de outras interfaces.
-
-Isso não afeta a janela durante o saque manual.
-
-Padrão: Desativado";
+L["Send to Back Desc"] = "Enquanto o Loot UI mostra o que você recebeu, coloca a janela dele atrás de outras interfaces.\n\nIsso não afeta a janela durante o saque manual.\n\nPadrão: Desativado";
 L["You Received"] = "Você recebeu";
 L["Junk Items"] = "Itens inúteis";
 L["Take All"] = "Pegar tudo";
