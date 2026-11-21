@@ -300,8 +300,10 @@ function TransmogStatus:ProbeOriginal()
     self:StartSync();
 end
 
+-- Status is collected while any of the two settings is on: ShowTransmogStatus (tooltips, quest rewards; Other Addons
+-- tab) or LootUI_ShowTransmogStatus (marker in the Loot UI; Experimental tab).
 function TransmogStatus:IsEnabled()
-    return GetDBBool("ShowTransmogStatus")
+    return GetDBBool("ShowTransmogStatus") or GetDBBool("LootUI_ShowTransmogStatus")
 end
 
 -- true: the server runs mod-transmog-plus (own protocol); false: the original module (.transmog sync).
@@ -314,8 +316,9 @@ function TransmogStatus:GetItemID(link)
 end
 
 -- "uncollected", "collected", "ineligible", or nil while unknown (or the setting is off).
-function TransmogStatus:Get(itemID)
-    if not itemID or not self:IsEnabled() then
+-- settingKey: the setting of the place that asks (default ShowTransmogStatus; the Loot UI passes its own).
+function TransmogStatus:Get(itemID, settingKey)
+    if not itemID or not GetDBBool(settingKey or "ShowTransmogStatus") then
         return nil
     end
     if self:IsPlus() then
@@ -324,8 +327,8 @@ function TransmogStatus:Get(itemID)
     return GetSyncStatus(itemID)
 end
 
-function TransmogStatus:IsUncollected(itemID)
-    return self:Get(itemID) == "uncollected"
+function TransmogStatus:IsUncollected(itemID, settingKey)
+    return self:Get(itemID, settingKey) == "uncollected"
 end
 
 function TransmogStatus:Request(itemID)
@@ -373,3 +376,4 @@ local function SettingsChanged()
 end
 CallbackRegistry:Register("SettingChanged.ShowTransmogStatus", SettingsChanged);
 CallbackRegistry:Register("SettingChanged.UseTransmogPlus", SettingsChanged);
+CallbackRegistry:Register("SettingChanged.LootUI_ShowTransmogStatus", SettingsChanged);

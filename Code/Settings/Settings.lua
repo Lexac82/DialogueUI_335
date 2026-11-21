@@ -467,6 +467,9 @@ end
 local function TransmogStatus_IsDisabled()
     return not addon.TransmogStatus:IsModuleAvailable()
 end
+local function TransmogStatus_IsAvailable()
+    return addon.TransmogStatus:IsModuleAvailable()
+end
 local function TransmogPlus_IsDisabled()
     return not addon.TransmogStatus:IsPlusAvailable()
 end
@@ -751,6 +754,10 @@ local Schematic = {
             },
             {type = "Checkbox", name = L["Show Number Of Owned Items"], description = L["Show Number Of Owned Items Desc"], dbKey = "LootUI_ShowItemCount",
                 requiredParentValueAnd = {LootUI = true}},
+            -- Same states as in Other Addons, but not shown at all while the server has no transmog module.
+            {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip,
+                isDisabledFunc = TransmogStatus_IsDisabled, validationFunc = TransmogStatus_IsAvailable, dbKey = "LootUI_ShowTransmogStatus",
+                preview = "Transmog", ratio = 511 / 484, requiredParentValueAnd = {LootUI = true}},
         },
     },
 };
@@ -2084,14 +2091,14 @@ end);
 
 -- The Other Addons tab asks the server which transmog module it has (the answer greys out the options of the missing one).
 CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
-    if tabID == OTHER_ADDONS_TAB then
+    if tabID == OTHER_ADDONS_TAB or tabID == LOOT_UI_TAB then
         addon.TransmogStatus:ProbePlus();
         addon.TransmogStatus:ProbeOriginal();
     end
 end);
 CallbackRegistry:Register("TransmogModuleChanged", function()
-    if frame and frame:IsShown() and frame.tabID == OTHER_ADDONS_TAB then
-        SettingsUI:LayoutRows(OTHER_ADDONS_TAB);
+    if frame and frame:IsShown() and (frame.tabID == OTHER_ADDONS_TAB or frame.tabID == LOOT_UI_TAB) then
+        SettingsUI:LayoutRows(frame.tabID);
     end
 end);
 
