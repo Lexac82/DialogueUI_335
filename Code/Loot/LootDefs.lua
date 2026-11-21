@@ -201,7 +201,7 @@ local bgOpacity = 0.5;                  -- Def.BG_OPACITY, set below
 -- Font size ("LootUI_FontSize" 0..3, the same choices as the UI tab's "FontSizeBase" but a setting of its own).
 -- Every font object of the loot window is made with its height for choice 1 (the default); each choice is
 -- FONT_SIZE_STEP more or less.
-local FONT_SIZE_STEP = 2;
+local FONT_SIZE_STEP = 1;
 local DEFAULT_SIZE_ID = 1;
 local sizeID = DEFAULT_SIZE_ID;
 local sizedFonts = {};                  -- [fontObject] = height at the default choice

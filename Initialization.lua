@@ -24,7 +24,7 @@ local DefaultValues = {
     --Appearance
     Theme = 1,                                  --1 Brown, 2 Dark
     FrameSize = 2,                              --0..3 = 0.9, 1.0, 1.1, 1.25 (retail default 2, see FrameSize.lua)
-    FontSizeBase = 1,                           --0..3 = 10, 12, 14, 16 (see FontUtil.lua)
+    FontSizeBase = 1,                           --0..3 = 11, 12, 13, 14 (see FontUtil.lua)
     FontText = "default",                       --"default" Friz Quadrata, "system" the client font, or the file of a LibSharedMedia font (see FontUtil.lua)
     OpenAnimationDuration = 0.25,               --Seconds the parchment takes to open, 0..2 in steps of 0.25 (not in retail, see ParchmentBackground.lua)
     HideUI = true,                              --Fade out the game UI during a conversation (see HideUI.lua)
@@ -93,7 +93,7 @@ local DefaultValues = {
     --Loot UI (see Code\Loot). A port of the Loot UI of the Plumber addon (retail)
     LootUI = false,                             --Replace the game's loot window (see LootController.lua)
         FastLoot = true,                        --Loot right when the window opens on auto loot, no delay (needs LootUI)
-        LootUI_FontSize = 1,                    --0..3 = 10, 12, 14, 16 like FontSizeBase, but only for the loot window (needs LootUI)
+        LootUI_FontSize = 1,                    --0..3 = 11, 12, 13, 14 like FontSizeBase, but only for the loot window (needs LootUI)
         LootUI_FadeDelayPerItem = 0.25,         --Seconds the window stays longer per item, 0.25..1 in steps of 0.25 (needs LootUI)
         LootUI_ItemsPerPage = 6,                --Items on one page of the notification window, 5..8 (needs LootUI)
         LootUI_BackgroundAlpha = 0.5,           --Opacity of the notification window background, 0..1 in steps of 0.1 (needs LootUI)
