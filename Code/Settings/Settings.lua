@@ -734,7 +734,7 @@ local Schematic = {
     },
     {   -- Loot UI
         options = {
-            {type = "Checkbox", name = L["Use Loot UI"], description = L["Use Loot UI Desc"], dbKey = "LootUI", preview = "LootUI", ratio = 504 / 560},     -- picture is 504 x 560 stretched to 512 x 512
+            {type = "Checkbox", name = L["Use Loot UI"], description = L["Use Loot UI Desc"], dbKey = "LootUI", preview = "LootUI", ratio = 504 / 560, previewScale = 1.6},     -- picture is 504 x 560 stretched to 512 x 512
             {type = "Checkbox", name = L["Fast Loot"], description = L["Fast Loot Desc"], dbKey = "FastLoot",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "ArrowOption", name = L["Font Size"], description = L["Loot UI Font Size Desc"], dbKey = "LootUI_FontSize",
@@ -2263,7 +2263,8 @@ function SettingsUI:SetDescription(text, optionData)
     if hasPreview then
         -- ratio = width / height of the picture as it should look (any number; wider than 2 uses the full width)
         local ratio = optionData.ratio or 2;
-        local width = math.min(frame.previewFullWidth, frame.previewHeight * ratio);
+        -- previewScale (optional): the picture may be this many times higher than the usual slot (a tall picture)
+        local width = math.min(frame.previewFullWidth, frame.previewHeight * (optionData.previewScale or 1) * ratio);
         local height = width / ratio;
         frame.currentPreviewHeight = height;
         preview:SetWidth(width);
