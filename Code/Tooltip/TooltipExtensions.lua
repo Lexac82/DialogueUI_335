@@ -3,7 +3,7 @@ local _, addon = ...;
 -- Lets other addons add lines to our item tooltip. Our tooltip is not a GameTooltip, so the hooks other addons
 -- put on GameTooltip never run for it. An addon registers an item provider instead:
 --
---     DialogueUI_335_API.RegisterItemTooltipProvider("MyAddon", function(tooltip, itemLink, count)
+--     DialogueUI_API.RegisterItemTooltipProvider("MyAddon", function(tooltip, itemLink, count)
 --         tooltip:AddLine("Some text", 1, 1, 1);
 --         tooltip:AddDoubleLine("Left", "Right");
 --     end);
@@ -60,7 +60,7 @@ function TooltipExtensions:GetItemLines(link, count, early)
                 end
             elseif not reported[provider.name] then
                 reported[provider.name] = true;
-                geterrorhandler()("DialogueUI_335: tooltip provider \"" .. provider.name .. "\" failed: " .. tostring(err));
+                geterrorhandler()("DialogueUI: tooltip provider \"" .. provider.name .. "\" failed: " .. tostring(err));
             end
         end
     end
@@ -68,7 +68,7 @@ function TooltipExtensions:GetItemLines(link, count, early)
 end
 
 -- The only global of the extension API. `version` changes only when an existing call breaks.
-DialogueUI_335_API = {
+DialogueUI_API = {
     version = 1,
     RegisterItemTooltipProvider = function(name, func, early)
         return TooltipExtensions:RegisterItemProvider(name, func, early)

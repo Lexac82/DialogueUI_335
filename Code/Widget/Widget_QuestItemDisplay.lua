@@ -6,7 +6,7 @@ local _, addon = ...;
 -- Differences from retail:
 --   * no C_TooltipInfo / GetItemInfoInstant: the item is detected from its tooltip text (TooltipScan);
 --   * no mask textures: the auto close countdown is a thin bar along the bottom edge instead of a circular swipe;
---   * no settings window yet: options are saved in DialogueUI_335_DB;
+--   * no settings window yet: options are saved in DialogueUI_DB;
 --   * no widget chain (this is the only popup), no edit mode (use /duiqid test, then drag).
 local L = addon.L;
 local API = addon.API;
@@ -60,8 +60,8 @@ local DEFER_CHECK_INTERVAL = 0.25;
 -- Art: Textures/Theme_Brown/QuestItemDisplay-UI.blp is a 512x512 sheet.
 local SHEET_FILE = "QuestItemDisplay-UI.blp";
 local SHEET_SIZE = 512;
-local CLOSE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\WidgetCloseButton.blp";
-local QUEST_MARK_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\QuestItem-NotOnQuest.blp";
+local CLOSE_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\WidgetCloseButton.blp";
+local QUEST_MARK_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\QuestItem-NotOnQuest.blp";
 local SOLID_FILE = "Interface\\Buttons\\WHITE8X8";
 
 -- Regions of the sheet in px: {x, y, width, height}.

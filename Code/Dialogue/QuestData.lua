@@ -148,7 +148,7 @@ end
 -- The dialogue APIs (valid during the quest event) tell daily / weekly / PvP. The Dungeon / Raid / Elite /
 -- Heroic / Group tag exists only in the quest log, so it is found by title and is missing on the accept page
 -- of a quest the player has not taken yet. 3.3.5a has no legendary / campaign / important quest types.
-local ICON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\";
+local ICON_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\";
 local ICON_AVAILABLE = ICON_PATH .. "AvailableQuest.blp";
 local ICON_DAILY = ICON_PATH .. "DailyQuest.blp";
 local ICON_WEEKLY = ICON_PATH .. "WeeklyQuest.blp";

@@ -158,7 +158,7 @@ local function OnAddOnLoaded()
         end
     end
 
-    DialogueUI_335_API.RegisterItemTooltipProvider(ADDON_NAME, provider);
+    DialogueUI_API.RegisterItemTooltipProvider(ADDON_NAME, provider);
 end
 
 addon.AddSupportedAddOn(ADDON_NAME, OnAddOnLoaded, REQUIRED);

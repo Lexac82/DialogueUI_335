@@ -95,7 +95,7 @@ local DefaultValues = {
     MinimapButtonAngle = 215,                   --Position on the minimap rim in degrees (set by dragging, not shown in the Settings)
 
     --Not shown in the Settings. Accessible by other means
-    DebugGossip = false,                        --Prints the raw gossip lists: /run DialogueUI_335_DB.DebugGossip = true
+    DebugGossip = false,                        --Prints the raw gossip lists: /run DialogueUI_DB.DebugGossip = true
 
     --ParchmentPosition = {point, relativePoint, x, y}
     --BookPosition = {point, relativePoint, x, y}
@@ -142,8 +142,22 @@ end
 addon.IsDBValue = IsDBValue;
 
 local function LoadDatabase()
-    DialogueUI_335_DB = DialogueUI_335_DB or {};
-    DB = DialogueUI_335_DB;
+    --One-time migration from the old addon name (DialogueUI_335). The old variable is left untouched as a backup.
+    if type(DialogueUI_DB) ~= "table" then
+        if type(DialogueUI_335_DB) == "table" then
+            local function DeepCopy(t)
+                local copy = {};
+                for k, v in pairs(t) do
+                    copy[k] = (type(v) == "table") and DeepCopy(v) or v;
+                end
+                return copy;
+            end
+            DialogueUI_DB = DeepCopy(DialogueUI_335_DB);
+        else
+            DialogueUI_DB = {};
+        end
+    end
+    DB = DialogueUI_DB;
 
     for _, v in ipairs(RenamedKeys) do
         local oldKey, newKey = v[1], v[2];

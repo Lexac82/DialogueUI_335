@@ -5,7 +5,7 @@ local _, addon = ...;
 -- window), Option1..Option9 (the rows of a first-contact list). Esc is not an action: it always says goodbye.
 --
 -- Settings > Control > "Use Custom Bindings" off: the default keys below. On: the player's keys (saved in
--- DialogueUI_335_DB.CustomBindings = {action = key}); an action without a custom key keeps its default key unless the
+-- DialogueUI_DB.CustomBindings = {action = key}); an action without a custom key keeps its default key unless the
 -- player took that key for another action.
 local L = addon.L;
 local CallbackRegistry = addon.CallbackRegistry;

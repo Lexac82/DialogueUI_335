@@ -31,7 +31,7 @@ local max = math.max;
 local min = math.min;
 local pi = math.pi;
 
-local FILE_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\";
+local FILE_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\";
 local BACKGROUND_FILE = FILE_PATH .. "StatusBar-Background.blp";
 local BORDER_FILE = FILE_PATH .. "StatusBar-Border.blp";
 local FILL_FILE = FILE_PATH .. "StatusBar-FillShort-Purple.blp";

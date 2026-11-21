@@ -48,8 +48,8 @@ local TAB_ENTRIES = {
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
-local PREVIEW_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\PreviewPicture\\";
-local DECOR_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\ParchmentDecor\\Dalaran.blp";
+local PREVIEW_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\PreviewPicture\\";
+local DECOR_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\ParchmentDecor\\Dalaran.blp";
 local DECOR_INSET = 4;                  -- distance from the frame's bottom right corner
 local DECOR_MASK_OFFSET = 24;           -- mask edge below the description text
 local DECOR_MASK_ALPHA = 0.875;         -- alpha of the mask's opaque part (0xDF)
@@ -400,7 +400,7 @@ local function QuestDifficultyStyle_Tooltip()
 end
 
 -- Description with the arrow drawn inline (retail ItemEvaluatorTooltip uses UpgradeArrowSmall the same way).
-local UPGRADE_ARROW_ICON = "|TInterface\\AddOns\\DialogueUI_335\\Textures\\Shared\\UpgradeArrowSmall.blp:0:0:0:-6|t";     -- retail's numbers (0 = font height)
+local UPGRADE_ARROW_ICON = "|TInterface\\AddOns\\DialogueUI\\Textures\\Shared\\UpgradeArrowSmall.blp:0:0:0:-6|t";     -- retail's numbers (0 = font height)
 local PAWN_URL = "https://warperia.com/addon-wotlk/pawn/download/";
 local function QuickSlot_Tooltip()
     local text = L["Valuable Reward Popup Desc"];

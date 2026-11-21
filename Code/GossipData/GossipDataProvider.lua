@@ -13,7 +13,7 @@ local UnitFactionGroup = UnitFactionGroup;
 local lower, find, format = string.lower, string.find, string.format;
 local sort = table.sort;
 
-local ICON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\";
+local ICON_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\";
 local CLIENT_ICON_PATH = "Interface\\GossipFrame\\";     -- client files, not in wow-docs: check in game
 
 -- Row spacing, from retail (DialogueUI.lua:43-44), unscaled.
@@ -374,7 +374,7 @@ local function DebugDump(event, ...)
         for i = 1, count do
             parts[i] = tostring((select(i, ...)));
         end
-        print("DialogueUI_335 " .. event .. " (" .. count .. " values): " .. table.concat(parts, ", "));
+        print("DialogueUI " .. event .. " (" .. count .. " values): " .. table.concat(parts, ", "));
     end
 end
 

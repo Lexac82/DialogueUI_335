@@ -118,7 +118,7 @@ end
 
 -- Texture kits --------------------------------------------------------------------------------------------
 
-local TEXTURE_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Book\\";
+local TEXTURE_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Book\\";
 
 local TextureKit = {
     [1] = {file = "TextureKit-Parchment.blp", text = {0.19, 0.17, 0.13}, selected = {0.87, 0.86, 0.75}, normal = {0.50, 0.36, 0.24}, shadow = false},

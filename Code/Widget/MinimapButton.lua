@@ -7,7 +7,7 @@ local L = addon.L;
 
 local cos, sin, atan2, rad, deg = math.cos, math.sin, math.atan2, math.rad, math.deg;
 
-local LOGO_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Logo.blp";
+local LOGO_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Logo.blp";
 local BUTTON_SIZE = 31;
 local DEFAULT_ANGLE = 215;
 

@@ -102,7 +102,7 @@ local function OnAddOnLoaded()
     frame:SetScript("OnEvent", function() dirty = true; end);
 
     -- Early: drawn above the transmog line.
-    DialogueUI_335_API.RegisterItemTooltipProvider(ADDON_NAME, provider, true);
+    DialogueUI_API.RegisterItemTooltipProvider(ADDON_NAME, provider, true);
 end
 
 addon.AddSupportedAddOn(ADDON_NAME, OnAddOnLoaded, REQUIRED);

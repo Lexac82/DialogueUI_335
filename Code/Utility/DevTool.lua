@@ -10,7 +10,7 @@ local MainFrame = addon.DialogueUI;
 local GetItemInfo = GetItemInfo;
 local UnitExists = UnitExists;
 
-local ICON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Icons\\";
+local ICON_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\";
 local PORTRAIT_UNIT = "target";             -- the portrait comes from the selected target
 local CHECK_INTERVAL = 0.5;
 local WAIT_MAX = 15;                        -- seconds to wait for the server before showing placeholders

@@ -3,9 +3,9 @@
 ## Title: Dialogue UI
 ## Notes: Quest Dialogue UI (WotLK 3.3.5a port)
 ## Author: Navardraz
-## IconTexture: Interface\AddOns\DialogueUI_335\Textures\Logo.tga
+## IconTexture: Interface\AddOns\DialogueUI\Textures\Logo.tga
 
-## SavedVariables: DialogueUI_335_DB
+## SavedVariables: DialogueUI_DB, DialogueUI_335_DB
 
 Initialization.lua
 Locales\Localization.xml

@@ -33,7 +33,7 @@ local BORDER_NORMAL = "ItemBorder.blp";
 local BORDER_CHOOSE = "RewardChoice-ItemBorder.blp";
 local SHEEN_FILE = "RewardChoice-Sheen.blp";
 local COIN_FILE = "Coin-Gold.blp";
-local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
+local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
 local UPGRADE_SIZE = ICON_SIZE;           -- retail: 32; here the same as the item icon
 -- Retail IconAnimation_FlyUp: starts 0.5 s late, rises 12 px over 0.5 s (outSine), fades in at 4 per second.
 local UPGRADE_DELAY = 0.5;

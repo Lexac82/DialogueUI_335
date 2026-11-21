@@ -65,11 +65,11 @@ local RING_COLOR = {0.88, 0.76, 0.55};
 
 -- Art: Textures\Shared\QuestFlyoutButton.blp, 512 x 512: six coloured strips of 64 px (grey, green, blue, purple, red,
 -- teal), the round icon border in the bottom right corner.
-local SHEET_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\QuestFlyoutButton.blp";
-local CLOSE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\WidgetCloseButton.blp";
-local ARROW_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\ItemIsUpgrade.blp";
-local HOTKEY_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Theme_Dark\\HotkeyBackground.blp";     -- the popup is always dark
-local SPACE_FILE = "Interface\\AddOns\\DialogueUI_335\\Textures\\Keys\\SPACE.blp";
+local SHEET_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\QuestFlyoutButton.blp";
+local CLOSE_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\WidgetCloseButton.blp";
+local ARROW_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\ItemIsUpgrade.blp";
+local HOTKEY_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Theme_Dark\\HotkeyBackground.blp";     -- the popup is always dark
+local SPACE_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Keys\\SPACE.blp";
 local HOTKEY_SIZE = 20;
 local HOTKEY_ICON_SIZE = 14;
 local HOTKEY_CORNER = 6;

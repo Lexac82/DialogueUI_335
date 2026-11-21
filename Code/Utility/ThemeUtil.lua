@@ -15,7 +15,7 @@ local SetTextureKeepCoords = addon.API.SetTextureKeepCoords;
 local ipairs = ipairs;
 local gsub = string.gsub;
 
-local ADDON_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\";
+local ADDON_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\";
 local BROWN_PATH = ADDON_PATH .. "Theme_Brown\\";
 local DARK_PATH = ADDON_PATH .. "Theme_Dark\\";
 local KEY_PATH = ADDON_PATH .. "Keys\\";

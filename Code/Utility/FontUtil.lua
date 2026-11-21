@@ -6,11 +6,11 @@ addon.FontUtil = FontUtil;
 
 -- Friz Quadrata for Latin and Cyrillic, the client's own CJK fonts for Asian locales.
 local TITLE_FONT_FILE = {
-    roman = "Interface\\AddOns\\DialogueUI_335\\Fonts\\frizqt__.ttf",
+    roman = "Interface\\AddOns\\DialogueUI\\Fonts\\frizqt__.ttf",
     korean = "Fonts\\2002.TTF",
     simplifiedchinese = "Fonts\\ARKai_T.ttf",
     traditionalchinese = "Fonts\\blei00d.TTF",
-    russian = "Interface\\AddOns\\DialogueUI_335\\Fonts\\frizqt___cyr.ttf",
+    russian = "Interface\\AddOns\\DialogueUI\\Fonts\\frizqt___cyr.ttf",
 };
 
 local TITLE_COLOR = { 0.19, 0.17, 0.13 };

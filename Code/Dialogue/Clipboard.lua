@@ -19,7 +19,7 @@ local GetCursorPosition = GetCursorPosition;
 local IsMouseButtonDown = IsMouseButtonDown;
 local max = math.max;
 
-local SHARED_PATH = "Interface\\AddOns\\DialogueUI_335\\Textures\\Shared\\";
+local SHARED_PATH = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\";
 local BACKGROUND_FILE = SHARED_PATH .. "ClipboardBackground.blp";
 local BUTTON_FILE = SHARED_PATH .. "CopyTextButton.blp";
 
