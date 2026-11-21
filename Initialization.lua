@@ -90,6 +90,10 @@ local DefaultValues = {
     ShowJournalGearTooltip = true,              --"On your gear list" line from Journal: Gear (JournalGearBIS). On: it was always shown
     ShowRetailAHTooltip = false,                --AH bot prices of mod-retail-ah (needs ShowAuctionHouseTooltip)
 
+    --Loot UI (see Code\Loot). A port of the Loot UI of the Plumber addon (retail)
+    LootUI = false,                             --Replace the game's loot window (see LootController.lua)
+        FastLoot = true,                        --Loot right when the window opens on auto loot, no delay (needs LootUI)
+
     --Minimap button (see Code\Widget\MinimapButton.lua)
     ShowMinimapButton = true,
     MinimapButtonAngle = 215,                   --Position on the minimap rim in degrees (set by dragging, not shown in the Settings)

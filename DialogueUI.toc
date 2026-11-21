@@ -59,4 +59,11 @@ Code\SupportedAddOns\Auctionator.lua
 Code\SupportedAddOns\RetailAH.lua
 Code\SupportedAddOns\JournalGearBIS.lua
 Code\Core.lua
+Code\Loot\LootDefs.lua
+Code\Loot\LootBackground.lua
+Code\Loot\LootItemFrame.lua
+Code\Loot\LootWidgets.lua
+Code\Loot\LootFrame.lua
+Code\Loot\LootController.lua
+Code\Loot\LootTest.lua
 Code\Utility\DevTool.lua

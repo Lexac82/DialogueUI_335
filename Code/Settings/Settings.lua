@@ -45,6 +45,7 @@ local TAB_ENTRIES = {
     { name = L["Control"] },
     { name = L["Gameplay"] },
     { name = L["Other Addons"] },
+    { name = L["Loot UI"] },
 };
 
 -- Decor picture of the right area (retail Art/ParchmentDecor/Dalaran, a white silhouette tinted in code).
@@ -697,6 +698,13 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip, isDisabledFunc = TransmogStatus_IsDisabled, dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
             {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], tooltip = TransmogPlus_Tooltip, isDisabledFunc = TransmogPlus_IsDisabled, dbKey = "UseTransmogPlus",
                 requiredParentValueAnd = {ShowTransmogStatus = true}},
+        },
+    },
+    {   -- Loot UI
+        options = {
+            {type = "Checkbox", name = L["Use Loot UI"], description = L["Use Loot UI Desc"], dbKey = "LootUI"},
+            {type = "Checkbox", name = L["Fast Loot"], description = L["Fast Loot Desc"], dbKey = "FastLoot",
+                requiredParentValueAnd = {LootUI = true}},
         },
     },
 };

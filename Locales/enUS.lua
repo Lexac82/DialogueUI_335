@@ -23,6 +23,7 @@ L["Control"] = "Control";
 L["Gameplay"] = "Gameplay";
 L["Minimap"] = "Minimap";
 L["Other Addons"] = "Other Addons";
+L["Loot UI"] = "Loot UI";
 
 -- Settings: Other Addons tab
 L["Tooltip"] = "Tooltip";
@@ -41,6 +42,12 @@ L["AH Bot BiS Bonus"] = "BiS bonus";
 L["Compatibility"] = "Compatibility";
 L["Disable DUI In Instance"] = "Use WoW's Default UI In Instance";
 L["Disable DUI In Instance Desc"] = "Disable Dialogue UI and use WoW's default one when you are in dungeon or raid.";
+
+-- Settings: Loot UI tab
+L["Use Loot UI"] = "Use Loot UI";
+L["Use Loot UI Desc"] = "Replace the game's default looting window with Loot UI.\n\nLoot UI is a port of the Loot UI from the Plumber addon from retail.";
+L["Fast Loot"] = "Fast Loot";
+L["Fast Loot Desc"] = "Take the loot as soon as the looting window opens, instead of waiting a moment first. Only applies when the game's Auto Loot is on, or Loot UI forces it.\n\nThe fast loot of the Plumber addon.";
 
 -- Settings: Minimap tab and minimap button
 L["Show Minimap Button"] = "Show Minimap Button";
