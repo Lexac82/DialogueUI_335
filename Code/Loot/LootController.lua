@@ -292,14 +292,102 @@ function EL:ListenDynamicEvents(state)
     if state and not self.dynamicRegistered then
         self.dynamicRegistered = true;
         self:RegisterEvent("CHAT_MSG_LOOT");
-        self:RegisterEvent("PLAYER_MONEY");
+        self:RefreshExtraListening();
     elseif not state and self.dynamicRegistered then
         self.dynamicRegistered = nil;
         self:UnregisterEvent("CHAT_MSG_LOOT");
+        self:RefreshExtraListening();
+    end
+end
+
+---------------------------------------------------------------------------
+-- Show Any Money / Currency Changes
+-- Money: PLAYER_MONEY all the time (not only around looting); every gain is a row. Currency: 3.3.5a has honor and
+-- arena points (GetHonorCurrency / GetArenaCurrency, not hidden by a collapsed category) and item currencies in the
+-- currency list (Emblems ...; only the expanded categories are listed, so only currencies seen in both snapshots count).
+-- There is no CHAT_MSG_CURRENCY: item currencies come as items through CHAT_MSG_LOOT while that is listened to, and
+-- through the currency list otherwise. Only gains are shown.
+---------------------------------------------------------------------------
+
+local HONOR_ID, ARENA_ID = 1901, 1900;      -- the ids retail gives them (they have none here)
+
+local function TakeCurrencySnapshot()
+    local snapshot = {};
+    local faction = UnitFactionGroup("player");
+    -- Icon paths: UNVERIFIED for this client (the currency list has the same icons for the visible entries).
+    snapshot[HONOR_ID] = {id = HONOR_ID, count = (GetHonorCurrency()) or 0, name = _G.HONOR_POINTS or "Honor Points",
+        icon = "Interface\\PVPFrame\\PVP-Currency-" .. (faction or "Alliance")};
+    snapshot[ARENA_ID] = {id = ARENA_ID, count = GetArenaCurrency() or 0, name = _G.ARENA_POINTS or "Arena Points",
+        icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"};
+    for i = 1, GetCurrencyListSize() do
+        local name, isHeader, _, _, _, count, extraType, icon, itemID = GetCurrencyListInfo(i);
+        if not isHeader and itemID and itemID > 0 and (extraType or 0) == 0 then
+            snapshot[itemID] = {id = itemID, count = count or 0, name = name, icon = icon, item = true};
+        end
+    end
+    return snapshot
+end
+
+function EL:OnCurrencyUpdate()
+    local old = self.currencySnapshot;
+    local new = TakeCurrencySnapshot();
+    self.currencySnapshot = new;
+    if not old then
+        return
+    end
+    for id, current in pairs(new) do
+        local before = old[id];
+        local delta = before and (current.count - before.count) or 0;
+        -- An item currency is a row of its own already while the chat messages of loot are listened to.
+        if delta > 0 and not (current.item and self.dynamicRegistered) then
+            local quality = 1;
+            if current.item then
+                quality = select(3, GetItemInfo(id)) or 1;
+            end
+            LootUI.QueueDisplayLoot({
+                slotType = Def.SLOT_TYPE_CURRENCY,
+                id = id,
+                icon = current.icon,
+                name = current.name,
+                quantity = delta,
+                quality = quality,
+                link = current.item and ("item:" .. id) or nil,
+                hideCount = false,
+                looted = true,
+            });
+        end
+    end
+end
+
+-- Which of the always-on events are needed now (PLAYER_MONEY is also the loot window's money).
+function EL:RefreshExtraListening()
+    if not enabled then
+        return
+    end
+    if Def.SHOW_ALL_MONEY_CHANGE or self.dynamicRegistered then
+        self:RegisterEvent("PLAYER_MONEY");
+        self.playerMoney = self.playerMoney or GetMoney();
+    else
         self:UnregisterEvent("PLAYER_MONEY");
         self.playerMoney = nil;
     end
+    if Def.SHOW_ALL_CURRENCY_CHANGE then
+        self:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
+        self.currencySnapshot = self.currencySnapshot or TakeCurrencySnapshot();
+    else
+        self:UnregisterEvent("CURRENCY_DISPLAY_UPDATE");
+        self.currencySnapshot = nil;
+    end
 end
+
+CallbackRegistry:Register("SettingChanged.LootUI_ShowAllMoneyChange", function(value)
+    Def.SHOW_ALL_MONEY_CHANGE = value and true or false;
+    EL:RefreshExtraListening();
+end);
+CallbackRegistry:Register("SettingChanged.LootUI_ShowAllCurrencyChange", function(value)
+    Def.SHOW_ALL_CURRENCY_CHANGE = value and true or false;
+    EL:RefreshExtraListening();
+end);
 
 function EL:RequestUnregisterDynamicEvents()
     local token = lootToken;
@@ -427,6 +515,12 @@ function EL:OnEvent(event, ...)
         self:ProcessMessageItem((...));
     elseif event == "PLAYER_MONEY" then
         self:ProcessMoneyFromLoot();
+    elseif event == "CURRENCY_DISPLAY_UPDATE" then
+        self:OnCurrencyUpdate();
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        -- Money and currencies are not known yet when the addon loads: start from what the player has now.
+        self.playerMoney = (Def.SHOW_ALL_MONEY_CHANGE or self.dynamicRegistered) and GetMoney() or nil;
+        self.currencySnapshot = Def.SHOW_ALL_CURRENCY_CHANGE and TakeCurrencySnapshot() or nil;
     elseif event == "OPEN_MASTER_LOOT_LIST" then
         if MainFrame.manualMode then
             LootUI.ShowMasterLootMenu(LootUI.lastClickedSlot, LootUI.lastClickedRow);
@@ -476,12 +570,16 @@ local function Apply()
             EL:RegisterEvent(event);
         end
         EL:RegisterEvent("DISPLAY_SIZE_CHANGED");
+        EL:RegisterEvent("PLAYER_ENTERING_WORLD");
+        EL:RefreshExtraListening();
         if Def.ALWAYS_LISTEN_LOOT_MSG then
             EL:ListenDynamicEvents(true);
         end
     else
         EL:UnregisterAllEvents();
         EL.dynamicRegistered = nil;
+        EL.playerMoney = nil;
+        EL.currencySnapshot = nil;
         EL.lootOpened = nil;
         EL.currentLoot = nil;
         LootUI.WipeLootQueue();

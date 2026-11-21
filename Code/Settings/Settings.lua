@@ -773,6 +773,10 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Hide You Received Text"], description = L["Hide You Received Text Desc"], dbKey = "LootUI_HideTitle",
                 requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Show Any Money Changes"], description = L["Show Any Money Changes Desc"], dbKey = "LootUI_ShowAllMoneyChange",
+                requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Show Any Currency Changes"], description = L["Show Any Currency Changes Desc"], dbKey = "LootUI_ShowAllCurrencyChange",
+                requiredParentValueAnd = {LootUI = true}},
             -- Same states as in Other Addons, but not shown at all while the server has no transmog module.
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip,
                 isDisabledFunc = TransmogStatus_IsDisabled, validationFunc = TransmogStatus_IsAvailable, dbKey = "LootUI_ShowTransmogStatus",
@@ -1940,14 +1944,19 @@ local function CreateSettingsFrame()
         { 64, 64 }, 8, BACKGROUND_SCALE, "OVERLAY");
     ThemeUtil:BindSlice(f.previewBorder, "Settings-PreviewBorder.blp");
 
+    -- The description is one text; a coloured part (|cAARRGGBB...|r, a warning) is its own text below the other parts
+    -- because only a whole text can have an outline (see SetDescription).
+    f.descriptionFont = FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" });
+    f.descriptionWidth = descriptionWidth;
     local description = content:CreateFontString(nil, "OVERLAY");
-    description:SetFontObject(FontUtil:GetQuestFont("DUI335_SettingsDescription", FONT_HEIGHT, { "DarkBrown", "DarkModeGrey70" }));
+    description:SetFontObject(f.descriptionFont);
     description:SetJustifyH("LEFT");
     description:SetJustifyV("TOP");
     description:SetSpacing(4);
     description:SetWidth(descriptionWidth);
     description:SetPoint("TOP", preview, "TOP", 0, -8);
     f.description = description;
+    f.descriptionParts = { description };
 
     -- Decor picture, bottom right (retail BackgroundDecor + DecorMask). 3.3.5a has no mask texture, so the picture
     -- is two textures that follow the description text: the body below the mask edge, a short fade band above it.
@@ -2166,8 +2175,69 @@ function SettingsUI:SetDescription(text, optionData)
         end
     end
 
-    frame.description:SetText(text or "");
+    self:SetDescriptionParts(text or "");
     self:UpdateDecor();
+end
+
+-- Splits the text into plain parts and warning parts: red / orange (|cffff48.. or |cffff80..: |cffffGGBB with GG
+-- below 90; the white highlight of a state is not one). The blank lines around a warning are left out (the parts are
+-- put below each other with a gap).
+local function SplitDescription(text)
+    local list, position = {}, 1;
+    local function Add(part, colored)
+        part = part:gsub("^\n+", "");
+        part = part:gsub("\n+$", "");
+        if part ~= "" then
+            list[#list + 1] = { text = part, colored = colored };
+        end
+    end
+    while true do
+        local first, last = text:find("|cffff[0-8]%x%x%x.-|r", position);
+        if not first then
+            break
+        end
+        Add(text:sub(position, first - 1), false);
+        Add(text:sub(first, last), true);
+        position = last + 1;
+    end
+    Add(text:sub(position), false);
+    return list
+end
+
+function SettingsUI:SetDescriptionParts(text)
+    local parts = frame.descriptionParts;
+    local list = SplitDescription(text);
+    local gap = FONT_HEIGHT + 8;                    -- a blank line
+    local total = 0;
+    for i, data in ipairs(list) do
+        local part = parts[i];
+        if not part then
+            part = frame.description:GetParent():CreateFontString(nil, "OVERLAY");
+            part:SetJustifyH("LEFT");
+            part:SetJustifyV("TOP");
+            part:SetSpacing(4);
+            part:SetWidth(frame.descriptionWidth);
+            part:SetPoint("TOP", parts[i - 1], "BOTTOM", 0, -gap);
+            parts[i] = part;
+        end
+        part:SetFontObject(frame.descriptionFont);
+        if data.colored then
+            local file, size = part:GetFont();
+            part:SetFont(file, size, "OUTLINE");
+        end
+        part:SetText(data.text);
+        part:Show();
+        total = total + part:GetStringHeight() + (i > 1 and gap or 0);
+    end
+    if #list == 0 then
+        frame.description:SetText("");
+        frame.description:Show();
+    end
+    for i = max(#list, 1) + 1, #parts do
+        parts[i]:SetText("");
+        parts[i]:Hide();
+    end
+    frame.descriptionHeight = total;
 end
 
 -- Places the decor picture. Retail: the mask's bottom edge sits 24 below the description text. Below that edge
@@ -2178,7 +2248,7 @@ function SettingsUI:UpdateDecor()
     local pictureBottom = DECOR_INSET;                  -- from the frame bottom
     local pictureTop = DECOR_INSET + size;
     local textOffset = frame.hasPreview and ((frame.currentPreviewHeight or frame.previewHeight) + FRAME_PADDING) or 8;
-    local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + textOffset + frame.description:GetStringHeight();  -- from the frame top
+    local descriptionBottom = TAB_HEIGHT + 2.5 * FRAME_PADDING + textOffset + (frame.descriptionHeight or frame.description:GetStringHeight());  -- from the frame top
     local edge = decor.frameHeight - descriptionBottom - DECOR_MASK_OFFSET;
     local fadeHeight = size * DECOR_FADE_ROWS;
 

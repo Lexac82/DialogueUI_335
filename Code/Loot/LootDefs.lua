@@ -10,6 +10,7 @@ local tremove = table.remove;
 local Def = {
     -- Slot types. Money sorts to the top (the game's own value for it is 2 in retail, 3.3.5a has none).
     SLOT_TYPE_ITEM = 1,
+    SLOT_TYPE_CURRENCY = 3,         -- honor / arena points and item currencies (rows are made with SetCustom)
     SLOT_TYPE_MONEY = 10,
     SLOT_TYPE_CUSTOM = -1,          -- text + icon sent by another module (LootUI.QueueDisplayCustom)
 
@@ -36,7 +37,8 @@ local Def = {
     LOOT_UNDER_MOUSE = false,
     LOW_FRAME_STRATA = false,       -- notification window behind other UI ("Send to Back"); not the manual loot window
     ALWAYS_LISTEN_LOOT_MSG = false, -- also show items that did not come from a loot window (quest rewards, mail ...)
-    SHOW_ALL_MONEY_CHANGE = false,
+    SHOW_ALL_MONEY_CHANGE = false,  -- every gain of money, not only the looted one ("LootUI_ShowAllMoneyChange")
+    SHOW_ALL_CURRENCY_CHANGE = false,   -- every gain of honor / arena points and currencies ("LootUI_ShowAllCurrencyChange")
     SHOW_ITEM_COUNT = true,         -- owned count (bags + bank) on the icon of an item row
 };
 LootUI.Def = Def;
