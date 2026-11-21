@@ -10,7 +10,6 @@ local MoneyUtil = addon.MoneyUtil;
 
 local CreateFrame = CreateFrame;
 local UnitXPMax = UnitXPMax;
-local UnitFactionGroup = UnitFactionGroup;
 local GetMoney = GetMoney;
 local GetCoinText = GetCoinText;
 local floor = math.floor;
@@ -24,11 +23,8 @@ local BACKGROUND_FILE = "ItemButtonBackground.blp";
 local XP_FILE = "XP-Purple.blp";
 local TEXT_COLOR = {"DarkBrown", "DarkModeGrey90"};     -- DUIFont_Item
 
-local ICON_HONOR = {
-    Alliance = "Interface\\PVPFrame\\PVP-Currency-Alliance",
-    Horde = "Interface\\PVPFrame\\PVP-Currency-Horde",
-};
-local ICON_ARENA = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon";
+local ICON_HONOR = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Honor-Small.blp";
+local ICON_ARENA = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Conquest-Small.blp";
 local ICON_TALENTS = "Interface\\Icons\\INV_Misc_Book_11";
 
 local RewardSmallButton = {};
@@ -60,7 +56,7 @@ function RewardSmallButton:SetEntry(entry)
             text = text .. " (" .. floor(entry.amount / maxXP * 100 + 0.5) .. "%)";
         end
     elseif kind == "honor" then
-        icon = ICON_HONOR[UnitFactionGroup("player")] or ICON_HONOR.Horde;
+        icon = ICON_HONOR;
         text = MoneyUtil.Thousands(entry.amount) .. " " .. L["Honor Points"];
     elseif kind == "arena" then
         icon = ICON_ARENA;

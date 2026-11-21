@@ -773,6 +773,8 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Hide You Received Text"], description = L["Hide You Received Text Desc"], dbKey = "LootUI_HideTitle",
                 requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Show Reputation Changes"], description = L["Show Reputation Changes Desc"], dbKey = "LootUI_ShowReputation",
+                requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Show Any Money Changes"], description = L["Show Any Money Changes Desc"], dbKey = "LootUI_ShowAllMoneyChange",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Show Any Currency Changes"], description = L["Show Any Currency Changes Desc"], dbKey = "LootUI_ShowAllCurrencyChange",

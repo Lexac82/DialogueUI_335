@@ -5,22 +5,33 @@ local MainFrame = LootUI.MainFrame;
 
 -- Preview of the notification window ("You Received") while the Loot UI tab of the Settings is open. It is a static
 -- window: it stays while settings are changed, with no fade in or out. It runs through the real code, so font size,
--- opacity and the text outline show at once; only Items Per Page fills the rows again, in place (the window does not
--- close). The fade out delay is not seen: the preview never fades out. Nothing here touches the real loot API. Item
+-- opacity and the text outline show at once; Items Per Page and the settings that change the rows fill them again, in
+-- place (the window does not close). The preview shows two pages in turn. The fade out delay is not seen: the preview
+-- never fades out. Nothing here touches the real loot API. Item
 -- names and icons come from the item cache when it has them.
 
--- {itemID, quantity, mount, owned}. Everything else (name, icon, quality, link) comes from GetItemInfo.
+-- Two pages that take turns every PAGE_SECONDS (the dots on the left show on the first one, as in the real window).
+-- A page is cut to "Items Per Page" entries (page 2 has 5), so a page never needs a second one.
+local PAGE_SECONDS = 3;
+
+-- Page 1. {itemID, quantity, mount, owned}. Everything else (name, icon, quality, link) comes from GetItemInfo.
 -- owned: the number shown on the icon in the preview (the "Show Number Of Owned Items" setting), so it can be seen
 -- without owning the items. The real window counts bags and bank with GetItemCount.
+-- The money row is queued first, then these. The junk items come first so that "Combine Similar Items" shows at once.
 local ITEMS = {
-    {22589, 1},                 -- Atiesh, Greatstaff of the Guardian
-    {17010, 3, nil, 7},         -- Fiery Core
-    {17011, 2, nil, 12},        -- Lava Core
-    {12360, 5, nil, 34},        -- Arcanite Bar
     {25397, 1},                 -- Eroded Axe (junk)
     {45630, 1},                 -- Invisible Axe (junk)
     {33426, 1},                 -- Chipped Timber Axe (junk)
+    {22589, 1},                 -- Atiesh, Greatstaff of the Guardian
+    {12360, 5, nil, 34},        -- Arcanite Bar
+    {17010, 3, nil, 7},         -- Fiery Core
+    {17011, 2, nil, 12},        -- Lava Core
 };
+
+-- Page 2: reputation, honor points, arena points and an item currency (Emblem of Triumph).
+local EMBLEM_ID = 47241;
+local HONOR_ICON = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Honor.blp";
+local ARENA_ICON = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Conquest.blp";
 
 -- GetItemInfo knows only items the client has seen. A hidden tooltip asks the server for the others.
 local scanner;
@@ -72,6 +83,47 @@ local function MakeMoney(copper, slotIndex)
     }
 end
 
+local function MakeReputation(name, amount)
+    return {
+        slotType = Def.SLOT_TYPE_REP,
+        slotIndex = 0,
+        id = name,
+        name = name,
+        quantity = amount,
+        quality = 1,
+        looted = false,
+        test = true,
+    }
+end
+
+local function MakeCurrency(id, name, icon, amount, quality)
+    return {
+        slotType = Def.SLOT_TYPE_CURRENCY,
+        slotIndex = 0,
+        id = id,
+        name = name,
+        icon = icon,
+        quantity = amount,
+        quality = quality or 1,
+        hideCount = false,
+        looted = false,
+        test = true,
+    }
+end
+
+-- nil while the Emblem is not in the item cache (it is requested, and Populate runs again shortly).
+local function MakeEmblem(amount)
+    local name, link, quality, _, _, _, _, _, _, icon = GetItemInfo(EMBLEM_ID);
+    if not name then
+        RequestItem(EMBLEM_ID);
+        needRetry = true;
+        return nil
+    end
+    local data = MakeCurrency(EMBLEM_ID, name, icon, amount, quality);
+    data.link = link;
+    return data
+end
+
 local function EnsureReady()
     if MainFrame.Init then
         MainFrame:Init();
@@ -79,28 +131,49 @@ local function EnsureReady()
     LootUI.forceEnabled = true;
 end
 
--- Fills the window with the sample items, all at once (more than one page of rows: the page dots show). Rows that are
--- there are replaced in place, the window itself stays.
+local page = 1;                      -- the page that is shown (1 or 2)
+local pageTimer = 0;
+
+-- Fills the window with the sample rows of the current page, all at once. Rows that are there are replaced in place,
+-- the window itself stays.
 local function Populate()
     EnsureReady();
     MainFrame.errorMode = nil;
     MainFrame:ReleaseAll();
     LootUI.WipeLootQueue();
-    LootUI.QueueDisplayLoot(MakeMoney(128506, 0));
     needRetry = false;
-    for _, entry in ipairs(ITEMS) do
-        local item = MakeItem(entry, 0);
-        if item then
-            LootUI.QueueDisplayLoot(item);
+    local count = 0;
+    local function Queue(data)
+        if data and count < Def.MAX_ITEM_PER_PAGE then      -- a page never needs a second one (Items Per Page)
+            count = count + 1;
+            LootUI.QueueDisplayLoot(data);
         end
     end
+
+    if page == 1 then
+        Queue(MakeMoney(128506, 0));
+        for _, entry in ipairs(ITEMS) do
+            Queue(MakeItem(entry, 0));
+        end
+    else
+        Queue(MakeReputation("Argent Crusade", 250));
+        Queue(MakeReputation("Kirin Tor", 125));
+        Queue(MakeCurrency(1901, _G.HONOR_POINTS or "Honor Points", HONOR_ICON, 54));
+        Queue(MakeCurrency(1900, _G.ARENA_POINTS or "Arena Points", ARENA_ICON, 12));
+        Queue(MakeEmblem(2));
+    end
     LootUI.FlushLootQueue();
+    if page == 1 then
+        MainFrame:SetMaxPage(2);        -- the dot of the next page (the real window shows what is still to come)
+    end
 end
 
 local previewing = false;
 
 local function StartPreview()
     previewing = true;
+    page = 1;
+    pageTimer = 0;
     LootUI.noFade = true;                   -- no fade in or out: the window appears and goes at once (LootFrame.lua)
     LootUI.testHoldTime = 99999;            -- no auto hide while the preview runs
     Populate();
@@ -143,7 +216,15 @@ watcher:SetScript("OnUpdate", function(_, elapsed)
     if not previewing then
         return
     end
-    if not IsPreviewIntact() then
+    if MainFrame:IsInManualMode() then
+        return
+    end
+    pageTimer = pageTimer + elapsed;
+    if pageTimer >= PAGE_SECONDS then
+        pageTimer = 0;
+        page = (page == 1) and 2 or 1;
+        Restore();
+    elseif not IsPreviewIntact() then
         Restore();
     elseif needRetry then
         retryTimer = retryTimer + elapsed;

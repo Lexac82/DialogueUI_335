@@ -353,6 +353,27 @@ function ItemFrame:SetMoney(data)
     end
 end
 
+-- Reputation gain: the addon's reputation icon (there are no faction icons), the faction's name in light blue
+-- (Plumber: INFLUENCE_COLOR, the default blue is too dark) and the amount as the count.
+local ICON_REPUTATION = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Reputation.blp";
+
+function ItemFrame:SetReputation(data)
+    self:UnregisterEvent("BAG_UPDATE");
+    self.ownedCount:SetText("");
+    self.icon:Show();
+    self:HideStackedIcons();
+    self:SetIcon(ICON_REPUTATION);
+    self.icon:SetVertexColor(1, 1, 1);
+    self:SetBorderColor(1, 1, 1);
+    ThemeUtil:SetItemOverlay(self.overlay, nil);
+    ThemeUtil:SetItemOverlay(self.transmogOverlay, nil);
+    self:SetCount(data);
+    self:SetNameByQuality(data.name, 1);
+    self.name:SetTextColor(0, 0.8, 1);
+    self:Layout();
+    self:ShowGlow(false);
+end
+
 function ItemFrame:SetCustom(data)
     self:UnregisterEvent("BAG_UPDATE");
     self.ownedCount:SetText("");
@@ -391,6 +412,8 @@ function ItemFrame:SetData(data)
         end
     elseif data.slotType == Def.SLOT_TYPE_MONEY then
         self:SetMoney(data);
+    elseif data.slotType == Def.SLOT_TYPE_REP then
+        self:SetReputation(data);
     else
         self:SetCustom(data);
     end

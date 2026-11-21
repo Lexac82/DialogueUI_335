@@ -436,7 +436,7 @@ local function MergeData(d1, d2)
             d1.quantity = (d1.quantity or 0) + (d2.quantity or 0);
             d1.copper = (d1.copper or 0) + (d2.copper or 0);
             return true
-        elseif d1.slotType == Def.SLOT_TYPE_CURRENCY then
+        elseif d1.slotType == Def.SLOT_TYPE_CURRENCY or d1.slotType == Def.SLOT_TYPE_REP then
             if d1.id == d2.id then
                 d1.quantity = d1.quantity + d2.quantity;
                 return true

@@ -309,16 +309,46 @@ end
 -- through the currency list otherwise. Only gains are shown.
 ---------------------------------------------------------------------------
 
+-- Show Reputation Changes: CHAT_MSG_COMBAT_FACTION_CHANGE, "Reputation with %s increased by %d." Only increases with
+-- an amount are shown. Messages come at once, also in combat (retail shows the ones of combat afterwards).
+local RepPattern;
+
+function EL:ProcessMessageFaction(text)
+    if not RepPattern then
+        RepPattern = ToPattern(_G.FACTION_STANDING_INCREASED) or false;
+    end
+    if not (RepPattern and text) then
+        return
+    end
+    local first, second = match(text, RepPattern);
+    if not first then
+        return
+    end
+    -- A language may put the amount first (positional format arguments).
+    local name, amount = first, tonumber(second);
+    if not amount and tonumber(first) then
+        name, amount = second, tonumber(first);
+    end
+    if name and amount and amount > 0 then
+        LootUI.QueueDisplayLoot({
+            slotType = Def.SLOT_TYPE_REP,
+            id = name,
+            name = name,
+            quantity = amount,
+            quality = 1,
+            hideCount = false,
+        });
+    end
+end
+
 local HONOR_ID, ARENA_ID = 1901, 1900;      -- the ids retail gives them (they have none here)
 
 local function TakeCurrencySnapshot()
     local snapshot = {};
-    local faction = UnitFactionGroup("player");
-    -- Icon paths: UNVERIFIED for this client (the currency list has the same icons for the visible entries).
     snapshot[HONOR_ID] = {id = HONOR_ID, count = (GetHonorCurrency()) or 0, name = _G.HONOR_POINTS or "Honor Points",
-        icon = "Interface\\PVPFrame\\PVP-Currency-" .. (faction or "Alliance")};
+        icon = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Honor.blp"};
     snapshot[ARENA_ID] = {id = ARENA_ID, count = GetArenaCurrency() or 0, name = _G.ARENA_POINTS or "Arena Points",
-        icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"};
+        icon = "Interface\\AddOns\\DialogueUI\\Textures\\Icons\\Conquest.blp"};
     for i = 1, GetCurrencyListSize() do
         local name, isHeader, _, _, _, count, extraType, icon, itemID = GetCurrencyListInfo(i);
         if not isHeader and itemID and itemID > 0 and (extraType or 0) == 0 then
@@ -371,6 +401,11 @@ function EL:RefreshExtraListening()
         self:UnregisterEvent("PLAYER_MONEY");
         self.playerMoney = nil;
     end
+    if Def.SHOW_REPUTATION then
+        self:RegisterEvent("CHAT_MSG_COMBAT_FACTION_CHANGE");
+    else
+        self:UnregisterEvent("CHAT_MSG_COMBAT_FACTION_CHANGE");
+    end
     if Def.SHOW_ALL_CURRENCY_CHANGE then
         self:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
         self.currencySnapshot = self.currencySnapshot or TakeCurrencySnapshot();
@@ -380,6 +415,10 @@ function EL:RefreshExtraListening()
     end
 end
 
+CallbackRegistry:Register("SettingChanged.LootUI_ShowReputation", function(value)
+    Def.SHOW_REPUTATION = value and true or false;
+    EL:RefreshExtraListening();
+end);
 CallbackRegistry:Register("SettingChanged.LootUI_ShowAllMoneyChange", function(value)
     Def.SHOW_ALL_MONEY_CHANGE = value and true or false;
     EL:RefreshExtraListening();
@@ -517,6 +556,8 @@ function EL:OnEvent(event, ...)
         self:ProcessMoneyFromLoot();
     elseif event == "CURRENCY_DISPLAY_UPDATE" then
         self:OnCurrencyUpdate();
+    elseif event == "CHAT_MSG_COMBAT_FACTION_CHANGE" then
+        self:ProcessMessageFaction((...));
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Money and currencies are not known yet when the addon loads: start from what the player has now.
         self.playerMoney = (Def.SHOW_ALL_MONEY_CHANGE or self.dynamicRegistered) and GetMoney() or nil;
