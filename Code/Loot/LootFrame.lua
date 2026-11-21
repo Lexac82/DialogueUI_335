@@ -78,6 +78,9 @@ function MainFrame:Init()
     self:SetScript("OnEnter", self.OnEnter);
     self:SetScript("OnLeave", self.OnLeave);
     self:SetScript("OnMouseUp", self.OnMouseUp);
+    self:RegisterForDrag("LeftButton");
+    self:SetScript("OnDragStart", self.StartDrag);
+    self:SetScript("OnDragStop", self.StopDrag);
 
     self:LoadPosition();
 end
@@ -87,13 +90,113 @@ end
 -- Position
 ---------------------------------------------------------------------------
 
+-- The dragged position ("LootUIPosition" = {x, y}, no default in Initialization.lua) is the fixed corner of the window
+-- from the bottom left of the screen: its top left, or its bottom left with Grow Upwards.
+local function GetSavedPosition()
+    local pos = addon.GetDBValue("LootUIPosition");
+    if type(pos) == "table" and type(pos[1]) == "number" and type(pos[2]) == "number" then
+        return pos
+    end
+end
+
 function MainFrame:LoadPosition()
     self:ClearAllPoints();
-    local width = UIParent:GetWidth();
     -- Grow Upwards: the bottom left is the fixed corner, so the window gets taller towards the top.
     local point = addon.GetDBBool("LootUI_GrowUpwards") and "BOTTOMLEFT" or "TOPLEFT";
-    -- Plumber's default: the left edge a third of the screen right of the centre line.
-    self:SetPoint(point, UIParent, "CENTER", math.floor((0.5 - 0.3333) * width), 60);
+    local pos = GetSavedPosition();
+    if pos then
+        self:SetPoint(point, UIParent, "BOTTOMLEFT", pos[1], pos[2]);
+    else
+        -- Plumber's default (MainFrame:LoadPosition): the left edge a third of the viewport right of the centre line,
+        -- vertically centered. The viewport is never wider than 16:9, so an ultrawide screen does not push it far out.
+        local viewportWidth, viewportHeight = WorldFrame:GetWidth(), WorldFrame:GetHeight();
+        viewportWidth = min(viewportWidth, viewportHeight * 16 / 9);
+        local scale = UIParent:GetEffectiveScale();
+        self:SetPoint(point, UIParent, "CENTER", math.floor((0.5 - 0.3333) * viewportWidth / scale), 0);
+    end
+end
+
+-- Where the window is, from the left of the screen: left edge and right edge. Works before the window is shown (the
+-- Settings use it to stay clear of the preview), so it is worked out from the position, not read from the frame.
+function MainFrame:GetHorizontalExtent()
+    local left;
+    local pos = GetSavedPosition();
+    if pos then
+        left = pos[1];
+    else
+        local viewportWidth = min(WorldFrame:GetWidth(), WorldFrame:GetHeight() * 16 / 9);
+        left = UIParent:GetWidth() / 2 + math.floor((0.5 - 0.3333) * viewportWidth / UIParent:GetEffectiveScale());
+    end
+    local width = max(self:GetWidth() or 0, Def.ROW_WIDTH + 2 * Def.FRAME_PADDING);
+    return left, left + width
+end
+
+function MainFrame:IsUsingCustomPosition()
+    return GetSavedPosition() ~= nil
+end
+
+function MainFrame:ResetPosition()
+    addon.SetDBValue("LootUIPosition", nil);
+    if not (self.manualMode and Def.LOOT_UNDER_MOUSE) then
+        self:LoadPosition();
+    end
+end
+
+-- Move (Settings > Loot UI): only while it is on, a left drag on the preview window or on any of its rows (the rows
+-- forward it, see LootItemFrame.lua) moves it, so the window cannot be dragged by mistake. The position is saved when
+-- it is dropped. It ends when the Settings or the tab close, and when a real manual loot window opens.
+function MainFrame:IsMoveMode()
+    return self.moveMode and true or false
+end
+
+function MainFrame:SetMoveMode(state)
+    state = state and true or false;
+    if state == self:IsMoveMode() then
+        return
+    end
+    self:StopDrag();
+    self.moveMode = state;
+    if not self.manualMode then
+        self:EnableMouse(state);        -- the gaps between the rows can be dragged too (the notification is click-through)
+    end
+    local settingsUI = addon.SettingsUI;
+    if settingsUI and settingsUI.RefreshToggles and settingsUI.IsShown and settingsUI:IsShown() then
+        settingsUI:RefreshToggles();
+    end
+end
+
+function MainFrame:StartDrag()
+    if self.isDragging or not self.moveMode then
+        return
+    end
+    self.isDragging = true;
+    self:SetMovable(true);
+    self:StartMoving();
+end
+
+function MainFrame:StopDrag()
+    if not self.isDragging then
+        return
+    end
+    self.isDragging = nil;
+    self:StopMovingOrSizing();
+    self.dragEndTime = GetTime();       -- a drop on a row must not count as a click on it (ItemFrame:OnClick)
+    local left, top, bottom = self:GetLeft(), self:GetTop(), self:GetBottom();
+    if not (left and top and bottom) then
+        return
+    end
+    if self.manualMode and Def.LOOT_UNDER_MOUSE then
+        self:ClearAllPoints();
+        self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top);
+        return
+    end
+    local y = addon.GetDBBool("LootUI_GrowUpwards") and bottom or top;
+    addon.SetDBValue("LootUIPosition", { math.floor(left + 0.5), math.floor(y + 0.5) });
+    self:LoadPosition();                -- anchor on the fixed corner again, so the window keeps growing from it
+end
+
+function MainFrame:WasJustDragged()
+    return self.dragEndTime and GetTime() - self.dragEndTime < 0.25
 end
 
 -- Not while the window sits under the mouse (manual loot with Loot Under Mouse): that position is set per loot.
@@ -347,6 +450,7 @@ function MainFrame:OnShow()
 end
 
 function MainFrame:OnHide()
+    self:StopDrag();
     if self.manualMode then
         CloseLoot();
     end
@@ -398,6 +502,9 @@ end
 
 function MainFrame:SetManualMode(state)
     state = state == true;
+    if state then
+        self:SetMoveMode(false);
+    end
     if state or self.manualMode then
         self:ReleaseAll();
     end
@@ -417,7 +524,7 @@ function MainFrame:SetManualMode(state)
         self.Header:Show();
         self.HeaderWidgetContainer:Hide();
         self:SetBackgroundAlpha(Def.BG_OPACITY);
-        self:EnableMouse(false);
+        self:EnableMouse(self.moveMode and true or false);
         if Def.LOOT_UNDER_MOUSE then
             self:LoadPosition();
         end

@@ -120,6 +120,7 @@ local DefaultValues = {
     --ParchmentPosition = {point, relativePoint, x, y}
     --BookPosition = {point, relativePoint, x, y}
     --QuestItemDisplayPosition = {x, y}
+    --LootUIPosition = {x, y}                 --Fixed corner of the Loot UI window (top left, bottom left with Grow Upwards), from the bottom left of the screen
     --QuickSlotPosition = {x, y}               --Center of the Valuable Reward Popup, from the bottom left of the screen
     --QuestItems = {[itemID] = true}          --Items the Quest Item Display has shown
 };

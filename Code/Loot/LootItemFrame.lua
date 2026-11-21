@@ -690,7 +690,7 @@ end
 
 function ItemFrame:OnClick(button)
     local data = self.data;
-    if not data then
+    if not data or self.lootFrame:WasJustDragged() then
         return
     end
     if button == "RightButton" then
@@ -773,6 +773,10 @@ function LootUI.CreateItemFrame(parent, lootFrame)
     row:SetWidth(Def.ROW_WIDTH);
     row:SetHeight(Def.ROW_HEIGHT);
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+    -- A drag on a row moves the whole window (a child that has the mouse does not pass the drag on by itself).
+    row:RegisterForDrag("LeftButton");
+    row:SetScript("OnDragStart", function() lootFrame:StartDrag() end);
+    row:SetScript("OnDragStop", function() lootFrame:StopDrag() end);
     row:Hide();
     local level = row:GetFrameLevel();
 

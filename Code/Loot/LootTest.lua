@@ -181,6 +181,7 @@ end
 
 local function StopPreview()
     previewing = false;
+    MainFrame:SetMoveMode(false);
     LootUI.testHoldTime = nil;
     LootUI.WipeLootQueue();
     if not MainFrame.Init then
@@ -219,6 +220,14 @@ watcher:SetScript("OnUpdate", function(_, elapsed)
     if MainFrame:IsInManualMode() then
         return
     end
+    if MainFrame:IsMoveMode() then
+        -- Move: the page stays (a row that is released under a drag would never see the drop), and a drop that no
+        -- row or frame saw (the mouse button came up elsewhere) is finished here.
+        pageTimer = 0;
+        if MainFrame.isDragging and not IsMouseButtonDown("LeftButton") then
+            MainFrame:StopDrag();
+        end
+    end
     pageTimer = pageTimer + elapsed;
     if pageTimer >= PAGE_SECONDS then
         pageTimer = 0;
@@ -255,6 +264,14 @@ local function UpdatePreview()
         StopPreview();
     end
 end
+
+-- Move ends with the tab (the preview itself follows on Show / Hide).
+addon.CallbackRegistry:Register("SettingsUI.TabChanged", function()
+    local settingsUI = addon.SettingsUI;
+    if not (settingsUI and settingsUI.IsOnLootUITab and settingsUI:IsOnLootUITab()) then
+        MainFrame:SetMoveMode(false);
+    end
+end);
 
 addon.CallbackRegistry:Register("SettingsUI.Show", UpdatePreview);
 addon.CallbackRegistry:Register("SettingsUI.Hide", UpdatePreview);

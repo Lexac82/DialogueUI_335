@@ -329,6 +329,23 @@ local function QuestItemDisplayPosition_Validation()
     return addon.QuestItemDisplay:IsUsingCustomPosition()
 end
 
+-- Loot UI: the window is dragged where it is (no Move row), Reset puts it back at the default place.
+local function LootUI_Move_OnClick()
+    addon.LootUI.MainFrame:SetMoveMode(not addon.LootUI.MainFrame:IsMoveMode());
+end
+
+local function LootUI_Move_IsToggled()
+    return addon.LootUI.MainFrame:IsMoveMode()
+end
+
+local function LootUI_Reset_OnClick()
+    addon.LootUI.MainFrame:ResetPosition();
+end
+
+local function LootUIPosition_Validation()
+    return addon.LootUI.MainFrame:IsUsingCustomPosition()
+end
+
 -- Valuable Reward Popup: Move shows a sample popup to drag, Reset puts it back. Needs Pawn like the upgrade arrow,
 -- so without it the checkbox is greyed out (UpgradeArrow_* below) and the rows under it stay hidden.
 local function QuickSlot_Move_OnClick()
@@ -777,6 +794,10 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Keybinding", branchLevel = 2, name = L["Take All"], description = L["Press Key To Take All Items Desc"], dbKey = "LootUI_HotkeyName",
                 defaultKey = "E", requiredParentValueAnd = {LootUI = true, LootUI_UseHotkey = true}},
+            {type = "Custom", name = L["Move Position"], description = L["Move Position Desc"], icon = "Settings-Move.blp",
+                onClickFunc = LootUI_Move_OnClick, isToggledFunc = LootUI_Move_IsToggled, requiredParentValueAnd = {LootUI = true}},
+            {type = "Custom", name = L["Reset Position"], description = L["Quest Item Display Reset Position Desc"], icon = "Settings-Reset.blp",
+                onClickFunc = LootUI_Reset_OnClick, validationFunc = LootUIPosition_Validation, requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Hide You Received Text"], description = L["Hide You Received Text Desc"], dbKey = "LootUI_HideTitle",
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Show Reputation Changes"], description = L["Show Reputation Changes Desc"], dbKey = "LootUI_ShowReputation",
@@ -1999,7 +2020,7 @@ local function CreateSettingsFrame()
     -- Keys while the window is open: Esc and F1 close it.
     f:SetScript("OnShow", function()
         f.UpdateBackgroundScale();
-        SettingsUI:MoveToBestPosition();
+        SettingsUI:MoveToBestPosition(true);
         SettingsUI:RefreshTab(f.tabID);         -- a setting may have changed by other means (/run)
         SettingsUI:UpdateKeys();
         CallbackRegistry:Trigger("SettingsUI.Show");
@@ -2093,15 +2114,59 @@ function SettingsUI:IsOnUITab()
     return frame:IsShown() and frame.tabID == 1
 end
 
+-- Loot UI tab: puts the window beside the loot window (left or right of it, whichever has room for it; the larger
+-- side when neither has), centered in that space. onlyIfOverlap: leaves it alone when it does not cover the loot
+-- window (the player may have moved it by hand). Returns false when the loot window is not to be avoided.
+local LOOT_WINDOW_GAP = 16;
+
+function SettingsUI:PlaceAwayFromLootWindow(force)
+    local f = frame;
+    local lootFrame = addon.LootUI and addon.LootUI.MainFrame;
+    if not (f and lootFrame and lootFrame.GetHorizontalExtent) then
+        return false
+    end
+    local screenWidth = UIParent:GetWidth();
+    local width = f:GetWidth();
+    local lootLeft, lootRight = lootFrame:GetHorizontalExtent();
+
+    if not force and f:GetLeft() and f:GetRight() then
+        if f:GetRight() <= lootLeft - LOOT_WINDOW_GAP / 2 or f:GetLeft() >= lootRight + LOOT_WINDOW_GAP / 2 then
+            return true                 -- already clear of it
+        end
+    end
+
+    local leftSpace = lootLeft - LOOT_WINDOW_GAP;
+    local rightSpace = screenWidth - lootRight - LOOT_WINDOW_GAP;
+    local centerX;
+    if rightSpace >= width then
+        centerX = lootRight + LOOT_WINDOW_GAP + rightSpace / 2;
+    elseif leftSpace >= width then
+        centerX = leftSpace / 2;
+    elseif rightSpace >= leftSpace then
+        centerX = screenWidth - width / 2;      -- no room on either side: as far from it as the screen allows
+    else
+        centerX = width / 2;
+    end
+    centerX = max(width / 2, min(screenWidth - width / 2, centerX));
+    f:ClearAllPoints();
+    f:SetPoint("CENTER", UIParent, "CENTER", centerX - screenWidth / 2, 0);
+    return true
+end
+
 -- Retail: the window opens on the opposite side of the dialogue so both can be seen, centered when no dialogue is
 -- up. Left orientation: window on the right. Right: on the left. Custom: not moved at all.
-function SettingsUI:MoveToBestPosition()
+function SettingsUI:MoveToBestPosition(force)
     local f = frame;
     local parchment = addon.DialogueUI;
     local orientation = GetDBValue("FrameOrientation");
 
     -- Custom: the window stays wherever it is (the player moves both frames by hand).
     if orientation == ORIENTATION_CUSTOM then
+        return
+    end
+
+    -- Loot UI tab: the loot window shows a preview, so the Settings go to the side of it that has room.
+    if f.tabID == LOOT_UI_TAB and self:PlaceAwayFromLootWindow(force) then
         return
     end
 
@@ -2126,6 +2191,17 @@ local function MoveIfShown()
         SettingsUI:MoveToBestPosition();
     end
 end
+
+-- The loot window was dropped somewhere else, or reset, or the tab changed: the Settings step aside if they are in the way.
+local function AvoidLootWindowIfShown()
+    if frame and frame:IsShown() and frame.tabID == LOOT_UI_TAB
+        and GetDBValue("FrameOrientation") ~= ORIENTATION_CUSTOM then
+        SettingsUI:PlaceAwayFromLootWindow(false);
+    end
+end
+CallbackRegistry:Register("SettingChanged.LootUIPosition", AvoidLootWindowIfShown);
+CallbackRegistry:Register("SettingChanged.LootUI_GrowUpwards", AvoidLootWindowIfShown);
+CallbackRegistry:Register("SettingsUI.TabChanged", AvoidLootWindowIfShown);
 CallbackRegistry:Register("SettingChanged.FrameOrientation", MoveIfShown);
 CallbackRegistry:Register("ParchmentShown", MoveIfShown);       -- Left / Right: to the other side of the parchment
 CallbackRegistry:Register("ParchmentHidden", MoveIfShown);      -- and back to the middle
@@ -2161,6 +2237,13 @@ end);
 CallbackRegistry:Register("SettingChanged.QuickSlotPosition", function()
     if frame and frame:IsShown() and frame.tabID == 3 then
         SettingsUI:LayoutRows(3);
+    end
+end);
+
+-- The Loot UI window was dragged (or reset): same for its Reset row.
+CallbackRegistry:Register("SettingChanged.LootUIPosition", function()
+    if frame and frame:IsShown() then
+        SettingsUI:LayoutRows(frame.tabID);
     end
 end);
 
