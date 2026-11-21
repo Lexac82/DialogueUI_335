@@ -245,6 +245,11 @@ addon.CallbackRegistry:Register("SettingChanged.LootUI_ShowItemCount", function(
     addon.CallbackRegistry:Trigger("LootUI.ItemCountSettingChanged");
 end);
 
+-- Combine Similar Items ("LootUI_CombineItem"): read by LootFrame when the queued items are merged.
+addon.CallbackRegistry:Register("SettingChanged.LootUI_CombineItem", function(value)
+    Def.MERGE_SIMILAR_ITEMS = value and true or false;
+end);
+
 function LootUI.GetFont(name, height, color)
     local fontObject = LootUI.GetSizedFont(name, height, color);
     if not lootFonts[fontObject] then

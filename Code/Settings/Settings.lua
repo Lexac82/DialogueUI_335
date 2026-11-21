@@ -767,6 +767,8 @@ local Schematic = {
                 requiredParentValueAnd = {LootUI = true}},
             {type = "Checkbox", name = L["Grow Upwards"], description = L["Grow Upwards On Desc"] .. "\n\n" .. L["Grow Upwards Off Desc"], tooltip = GrowUpwards_Tooltip,
                 dbKey = "LootUI_GrowUpwards", requiredParentValueAnd = {LootUI = true}},
+            {type = "Checkbox", name = L["Combine Similar Items"], description = L["Combine Similar Items Desc"], dbKey = "LootUI_CombineItem",
+                requiredParentValueAnd = {LootUI = true}},
             -- Same states as in Other Addons, but not shown at all while the server has no transmog module.
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip,
                 isDisabledFunc = TransmogStatus_IsDisabled, validationFunc = TransmogStatus_IsAvailable, dbKey = "LootUI_ShowTransmogStatus",

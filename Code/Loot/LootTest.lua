@@ -179,8 +179,12 @@ addon.CallbackRegistry:Register("SettingsUI.Show", UpdatePreview);
 addon.CallbackRegistry:Register("SettingsUI.Hide", UpdatePreview);
 addon.CallbackRegistry:Register("SettingsUI.TabChanged", UpdatePreview);
 
-addon.CallbackRegistry:Register("SettingChanged.LootUI_ItemsPerPage", function()
+-- Settings that change which rows there are: the rows are made again (Combine Similar Items folds the three junk
+-- items of the sample into one row, or lists them one by one).
+local function RefillPreview()
     if previewing then
         Populate();
     end
-end);
+end
+addon.CallbackRegistry:Register("SettingChanged.LootUI_ItemsPerPage", RefillPreview);
+addon.CallbackRegistry:Register("SettingChanged.LootUI_CombineItem", RefillPreview);
