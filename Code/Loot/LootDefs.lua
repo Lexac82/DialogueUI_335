@@ -15,7 +15,8 @@ local Def = {
 
     -- Layout, in UI units. A row is the reward button of the dialogue: 36 px high, 24 px icon in a 36 px border.
     ROW_HEIGHT = 36,
-    ROW_WIDTH = 256,
+    ROW_WIDTH = 256,                -- widest a row gets: longer names wrap
+    ROW_MIN_WIDTH = 120,            -- the window shrinks to fit its rows, but not below this
     ROW_SPACING = 4,
     FRAME_PADDING = 14,             -- between the window edge and the rows
     HEADER_GAP = 6,                 -- "You Received" above the window

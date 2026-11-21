@@ -153,7 +153,18 @@ function MainFrame:LayoutActiveFrames()
     end
 
     self:SetBottomFrameIndex(#frames);
-    local width = Def.ROW_WIDTH + 2 * P;
+
+    -- The window fits the widest row; every row gets that width.
+    local rowWidth = Def.ROW_MIN_WIDTH;
+    for _, row in ipairs(frames) do
+        rowWidth = max(rowWidth, row:GetDesiredWidth());
+    end
+    for _, row in ipairs(frames) do
+        row:SetRowWidth(rowWidth);
+    end
+    self.rowWidth = rowWidth;
+
+    local width = rowWidth + 2 * P;
     local height = RowsHeight(#frames) + 2 * P;
     self:SetWidth(width);
     self:SetHeight(height);
@@ -209,7 +220,7 @@ function MainFrame:UpdateBackgroundHeightAfterClicks()
         self:SetBottomFrameIndex(bottom);
         local height = RowsHeight(bottom) + 2 * P;
         self:SetHeight(height);
-        self.BackgroundFrame:AnimateSize(Def.ROW_WIDTH + 2 * P, height);
+        self.BackgroundFrame:AnimateSize((self.rowWidth or Def.ROW_WIDTH) + 2 * P, height);
     end
 end
 

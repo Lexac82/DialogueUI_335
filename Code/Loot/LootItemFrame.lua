@@ -7,6 +7,8 @@ local MoneyUtil = addon.MoneyUtil;
 
 local CreateFrame = CreateFrame;
 local floor = math.floor;
+local ceil = math.ceil;
+local NAME_RIGHT_PAD = 10;
 local min = math.min;
 local max = math.max;
 local match = string.match;
@@ -186,8 +188,23 @@ function ItemFrame:Layout()
     self.name:ClearAllPoints();
     self.name:SetPoint("TOPLEFT", self.content, "TOPLEFT", nameLeft, 0);
     self.name:SetPoint("BOTTOMLEFT", self.content, "BOTTOMLEFT", nameLeft, 0);
-    self.name:SetWidth(Def.ROW_WIDTH - nameLeft - 10);
+    self.name:SetWidth((self.rowWidth or Def.ROW_WIDTH) - nameLeft - NAME_RIGHT_PAD);
     self.nameLeft = nameLeft;
+end
+
+-- Width this row needs to show its name on one line (the window takes the widest row, capped at Def.ROW_WIDTH).
+function ItemFrame:GetDesiredWidth()
+    local textWidth = self.name:GetStringWidth() + 1;
+    local width = (self.nameLeft or Def.NAME_LEFT) + textWidth + NAME_RIGHT_PAD;
+    return max(Def.ROW_MIN_WIDTH, min(Def.ROW_WIDTH, ceil(width)))
+end
+
+function ItemFrame:SetRowWidth(width)
+    self.rowWidth = width;
+    self:SetWidth(width);
+    self.body:SetWidth(width);
+    self.content:SetWidth(width);
+    self.name:SetWidth(width - (self.nameLeft or Def.NAME_LEFT) - NAME_RIGHT_PAD);
 end
 
 function ItemFrame:SetNameByQuality(name, quality)
@@ -717,6 +734,7 @@ function ItemFrame:Reset()
     self.toAlpha = nil;
     self.index = nil;
     self.quality = nil;
+    self.rowWidth = nil;
     self.countWidth = 0;
     ThemeUtil:SetItemOverlay(self.overlay, nil);
     ThemeUtil:SetItemOverlay(self.transmogOverlay, nil);
