@@ -98,7 +98,7 @@ Books, notes and other readable objects open in their own window. Choose its siz
 ## Installation
 
 1. Download this repository (Code > Download ZIP) or clone it.
-2. Put the folder in `World of Warcraft\Interface\AddOns\` and make sure it is named `DialogueUI_335`.
+2. Put the folder in `World of Warcraft\Interface\AddOns\`.
 3. Start the game and enable **Dialogue UI** in the AddOns list on the character select screen.
 
 ## Notes
