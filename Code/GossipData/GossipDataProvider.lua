@@ -479,7 +479,14 @@ local function ReadOptions()
         options[#options + 1] = {
             kind = "option", index = i, text = adjusted, optionType = gossipType,
             icon = icon, iconSize = CLASS_ICON_FILES[icon] and CLASS_ICON_SIZE or nil, art = 0,
-            select = function(index) SelectGossipOption(index) end,
+            select = function(index)
+                -- Hide UI keeps UIParent hidden during the conversation. A shop, trainer, bank... opens under
+                -- UIParent within milliseconds, so the game UI is brought back first, not after the parchment closes.
+                if gossipType and gossipType ~= "gossip" and not UIParent:IsShown() and addon.UIParentFadeHelper then
+                    addon.UIParentFadeHelper:ShowUIParentInstantly();
+                end
+                SelectGossipOption(index);
+            end,
         };
     end
     return options
