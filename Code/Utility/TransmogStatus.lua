@@ -37,7 +37,7 @@ local match = string.match;
 local find = string.find;
 
 local PREFIX = "transmog";
-local PROBE_ITEM = 6948;                    -- Hearthstone: the plus module answers "2" (not eligible) at once
+local PROBE_ITEM = 6948;                   -- Hearthstone: the plus module answers "2" (not eligible) at once
 local STATE_BY_NUMBER = {[0] = "uncollected", [1] = "collected", [2] = "ineligible"};
 
 local SYNC_COMMAND = ".transmog sync";
@@ -80,12 +80,22 @@ local function ClearPlusCache()
     pendingByItem = {};
 end
 
+-- The plus protocol is an addon whisper to ourselves. Servers differ in the level from which whispers are allowed (below
+-- it: a red error), so it is only sent when the player chose "Use Transmog Plus".
+local function SendPlus(text)
+    if TransmogStatus:IsPlus() then
+        SendAddonMessage(PREFIX, text, "WHISPER", UnitName("player"));
+        return true
+    end
+end
+
 local function RequestPlus(itemID)
     if statusByItem[itemID] or pendingByItem[itemID] then
         return
     end
-    pendingByItem[itemID] = true;
-    SendAddonMessage(PREFIX, "GetCollectionStatus:" .. itemID, "WHISPER", UnitName("player"));
+    if SendPlus("GetCollectionStatus:" .. itemID) then
+        pendingByItem[itemID] = true;
+    end
 end
 
 -- Listeners get the item ID, or nil when everything may have changed.
@@ -172,9 +182,9 @@ function TransmogStatus:StartSync()
     syncStartedAt = GetTime();
     syncDeadline = syncStartedAt + SYNC_TIMEOUT;
     ArmTimer();
-    -- The server runs "." commands whatever the chat type is. A whisper to yourself is never broadcast, so if the
-    -- server does not take it as a command (no module, no rights), nobody else sees the text, unlike with /say.
-    SendChatMessage(SYNC_COMMAND, "WHISPER", nil, UnitName("player"));
+    -- The server runs "." commands whatever the chat type is. /emote is used because some servers block whispers
+    -- until a certain level. If the server does not take it as a command, the text goes out as a custom emote.
+    SendChatMessage(SYNC_COMMAND, "EMOTE");
 end
 
 local function FinishSync()
@@ -247,13 +257,11 @@ local function SystemFilter(_, _, message)
 end
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", SystemFilter);
 
--- Our own sync command is not shown back, neither as "To <you>: .transmog sync" nor as "<you> whispers: .transmog sync"
--- (a server that does not swallow the command delivers it as a plain whisper to ourselves).
+-- Our own sync command is not shown back (a server that does not swallow the command echoes it as a custom emote).
 local function HideSyncCommand(_, _, message)
     return message == SYNC_COMMAND
 end
-ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", HideSyncCommand);
-ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", HideSyncCommand);
+ChatFrame_AddMessageEventFilter("CHAT_MSG_EMOTE", HideSyncCommand);
 
 local function GetSyncStatus(itemID)
     if not syncSet then
@@ -287,14 +295,14 @@ end
 -- Silent: an addon message. Safe to repeat until the answer comes.
 function TransmogStatus:ProbePlus()
     if not plusDetected then
-        SendAddonMessage(PREFIX, "GetCollectionStatus:" .. PROBE_ITEM, "WHISPER", UnitName("player"));
+        SendPlus("GetCollectionStatus:" .. PROBE_ITEM);
     end
 end
 
 -- Not silent on the server's side (a chat command), so only when asked for: once per session, and not when plus is
 -- there (it has no .transmog sync).
 function TransmogStatus:ProbeOriginal()
-    if plusDetected or syncSet or syncGaveUp then
+    if plusDetected or self:IsPlus() or syncSet or syncGaveUp then
         return
     end
     self:StartSync();
@@ -375,5 +383,8 @@ local function SettingsChanged()
     CallbackRegistry:Trigger("TransmogStatusChanged");
 end
 CallbackRegistry:Register("SettingChanged.ShowTransmogStatus", SettingsChanged);
-CallbackRegistry:Register("SettingChanged.UseTransmogPlus", SettingsChanged);
+CallbackRegistry:Register("SettingChanged.UseTransmogPlus", function()
+    SettingsChanged();
+    TransmogStatus:ProbePlus();             -- the tooltip of the option says whether the module answered
+end);
 CallbackRegistry:Register("SettingChanged.LootUI_ShowTransmogStatus", SettingsChanged);

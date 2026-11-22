@@ -487,8 +487,10 @@ end
 local function TransmogStatus_IsAvailable()
     return addon.TransmogStatus:IsModuleAvailable()
 end
-local function TransmogPlus_IsDisabled()
-    return not addon.TransmogStatus:IsPlusAvailable()
+-- Never greyed out: finding out whether plus is there takes an addon whisper, which some servers block (with a red error)
+-- until a level. So it is only sent once the player turns this option on.
+local function TransmogPlus_IsMissing()
+    return addon.TransmogStatus:IsPlus() and not addon.TransmogStatus:IsPlusAvailable()
 end
 local function TransmogStatus_Tooltip()
     local text = L["Show Transmog Status Desc"];
@@ -499,7 +501,7 @@ local function TransmogStatus_Tooltip()
 end
 local function TransmogPlus_Tooltip()
     local text = L["Use Transmog Plus Desc"];
-    if TransmogPlus_IsDisabled() then
+    if TransmogPlus_IsMissing() then
         text = text .. "\n\n" .. L["Transmog Module Missing"]:format("mod-transmog-plus");
     end
     return text
@@ -728,7 +730,7 @@ local Schematic = {
             {type = "Checkbox", name = "Journal: Gear", description = L["Journal Gear Desc"],
                 validationFunc = JournalGear_IsAvailable, dbKey = "ShowJournalGearTooltip"},
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip, isDisabledFunc = TransmogStatus_IsDisabled, dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
-            {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], tooltip = TransmogPlus_Tooltip, isDisabledFunc = TransmogPlus_IsDisabled, dbKey = "UseTransmogPlus",
+            {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], tooltip = TransmogPlus_Tooltip, dbKey = "UseTransmogPlus",
                 requiredParentValueAnd = {ShowTransmogStatus = true}},
         },
     },
