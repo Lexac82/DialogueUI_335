@@ -21,16 +21,6 @@ local HideEvents = {
     QUEST_FINISHED = true,
 };
 
--- Windows a gossip option can open. They replace the dialogue.
-local InteractionEvents = {
-    MERCHANT_SHOW = true,
-    TRAINER_SHOW = true,
-    BANKFRAME_OPENED = true,
-    TAXIMAP_OPENED = true,
-    AUCTION_HOUSE_SHOW = true,
-    PETITION_SHOW = true,
-};
-
 -- Closing events are acted on a moment later. Choosing a quest in the list closes the gossip window and opens the
 -- quest page right after, and accepting a quest can reopen the list: the frame should stay up for both.
 local HIDE_DELAY = 0.15;
@@ -61,14 +51,6 @@ function EL:OnEvent(event)
         MainFrame:ShowUI(event);
     elseif HideEvents[event] then
         self:HideNextUpdate();
-    elseif InteractionEvents[event] then
-        -- A vendor, trainer, bank... window opened from a gossip option. Some servers never send GOSSIP_CLOSED
-        -- for it, which left the parchment up (and Hide UI hiding the new window). The game side is already
-        -- done with the gossip, so only our frame closes.
-        self:CancelPendingHide();
-        if MainFrame:IsShown() and not MainFrame:IsEditMode() then
-            MainFrame:HideUI();
-        end
     elseif event == "QUEST_ITEM_UPDATE" then
         MainFrame:OnItemUpdate();
     end
@@ -78,9 +60,6 @@ for event in pairs(ShowEvents) do
     EL:RegisterEvent(event);
 end
 for event in pairs(HideEvents) do
-    EL:RegisterEvent(event);
-end
-for event in pairs(InteractionEvents) do
     EL:RegisterEvent(event);
 end
 EL:RegisterEvent("QUEST_ITEM_UPDATE");
