@@ -30,13 +30,14 @@ SetBlizzardFrames(true);
 
 -- Some servers open the default windows themselves (not through the frame events) and only answer gossip and quest
 -- selections while that window counts as shown. Hiding it would also close the conversation (its OnHide calls
--- CloseGossip / CloseQuest). So when such a window shows up while our UI is active, it stays "shown" but hangs under a
--- hidden parent: nothing is drawn or clickable, no hide ever fires, and its OnHide is taken off in case the server
--- hides it itself. Only frames seen opening this way are touched, so other servers keep the plain behaviour above.
+-- CloseGossip / CloseQuest). So on such a server the windows hang under a hidden parent from the start: they can still
+-- be "shown", but nothing is drawn or clickable, no hide ever fires, and their OnHide is taken off in case the server
+-- hides them itself. They must be parked before the server shows them: parking a visible frame fires its OnHide.
+-- Only that server is touched (found by its CoAResourceSegmentBar frame), others keep the plain behaviour above.
 local hiddenParent = CreateFrame("Frame");
 hiddenParent:Hide();
 local savedOnHide = {};
-local serverOpened = {};     -- frames the server has been seen opening on its own
+local parkingActive = false;
 
 local function SilenceOnHide(frame, state)
     if state then
@@ -55,19 +56,35 @@ local function SetParked(frame, state)
     pcall(frame.SetParent, frame, state and hiddenParent or UIParent);
 end
 
-local function OnServerShow(frame)
-    if addon.defaultUIActive then
-        return
+local function ParkFrames(state)
+    for _, info in ipairs(FRAME_EVENTS) do
+        local frame = info.frame;
+        -- A frame that is visible already is left alone: moving it would hide it.
+        if frame and (not state or not frame:IsShown()) then
+            SetParked(frame, state);
+        end
     end
-    serverOpened[frame] = true;
-    frame:UnregisterAllEvents();      -- the server's code may have registered them again
-    SetParked(frame, true);
 end
 
-for _, info in ipairs(FRAME_EVENTS) do
-    if info.frame then
-        info.frame:HookScript("OnShow", OnServerShow);
+-- The server's frame may be created after this file loads, so it is looked for again at login.
+local function CheckServer()
+    if parkingActive or not _G.CoAResourceSegmentBar then
+        return
     end
+    parkingActive = true;
+    if not addon.defaultUIActive then
+        ParkFrames(true);
+    end
+end
+
+CheckServer();
+if not parkingActive then
+    local watcher = CreateFrame("Frame");
+    watcher:RegisterEvent("PLAYER_LOGIN");
+    watcher:SetScript("OnEvent", function(self)
+        self:UnregisterAllEvents();
+        CheckServer();
+    end);
 end
 
 -- "Use WoW's Default UI In Instance" (Core.lua). The book UI and the event listener read addon.defaultUIActive.
@@ -80,10 +97,8 @@ function addon.SetDefaultUIActive(state)
     end
     addon.defaultUIActive = state;
     SetBlizzardFrames(not state);
-    for _, info in ipairs(FRAME_EVENTS) do
-        if info.frame and serverOpened[info.frame] then
-            SetParked(info.frame, not state);
-        end
+    if parkingActive then
+        ParkFrames(not state);
     end
     addon.CallbackRegistry:Trigger("DefaultUIActiveChanged", state);
 end
