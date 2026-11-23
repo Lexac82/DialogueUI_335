@@ -192,11 +192,13 @@ function ItemFrame:Layout()
     self.nameLeft = nameLeft;
 end
 
--- Width this row needs to show its name on one line (the window takes the widest row, capped at Def.ROW_WIDTH).
+-- Width this row needs to show its name on one line (the window takes the widest row, so the longest name decides).
 function ItemFrame:GetDesiredWidth()
+    -- Measure unwrapped: a narrow fontstring would report the wrapped width.
+    self.name:SetWidth(2048);
     local textWidth = self.name:GetStringWidth() + 1;
     local width = (self.nameLeft or Def.NAME_LEFT) + textWidth + NAME_RIGHT_PAD;
-    return max(Def.ROW_MIN_WIDTH, min(Def.ROW_WIDTH, ceil(width)))
+    return max(Def.ROW_MIN_WIDTH, ceil(width))
 end
 
 function ItemFrame:SetRowWidth(width)

@@ -59,6 +59,7 @@ L["Size Extra Small"] = "Очень малый";
 L["Size Small"] = "Малый";
 L["Size Medium"] = "Средний";
 L["Size Large"] = "Большой";
+L["Size Extra Large"] = "Очень большой";
 L["Open Animation"] = "Анимация открытия";
 L["Open Animation Desc"] = "Сколько времени открывается окно диалога. 0с показывает его сразу.\n\nПо умолчанию: 0,25с";
 L["Font Size"] = "Размер шрифта";

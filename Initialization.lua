@@ -1,4 +1,4 @@
-local VERSION_TEXT = "1.1.5";
+local VERSION_TEXT = "1.2.0";
 
 
 local addonName, addon = ...;
@@ -23,8 +23,8 @@ addon.VERSION_TEXT = VERSION_TEXT;
 local DefaultValues = {
     --Appearance
     Theme = 1,                                  --1 Brown, 2 Dark
-    FrameSize = 2,                              --0..3 = 0.9, 1.0, 1.1, 1.25 (retail default 2, see FrameSize.lua)
-    FontSizeBase = 1,                           --0..3 = 11, 12, 13, 14 (see FontUtil.lua)
+    FrameSize = 2,                              --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4 (retail default 2, see FrameSize.lua)
+    FontSizeBase = 1,                           --0..7 = 11 to 18 (see FontUtil.lua)
     FontText = "default",                       --"default" Friz Quadrata, "system" the client font, or the file of a LibSharedMedia font (see FontUtil.lua)
     OpenAnimationDuration = 0.25,               --Seconds the parchment takes to open, 0..2 in steps of 0.25 (not in retail, see ParchmentBackground.lua)
     HideUI = true,                              --Fade out the game UI during a conversation (see HideUI.lua)
@@ -74,7 +74,6 @@ local DefaultValues = {
     BookUIEnabled = true,
         BookPositionMode = 1,                   --1 Default (left edge), 2 Custom (not in retail: drag the frame, BookPosition)
         BookUISize = 1,                         --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
-        BookFontSize = 12,                      --Not in retail (it follows FontSizeBase)
         BookHideUI = false,                     --Fade out the game UI while a readable is open (not in retail, see HideUI.lua)
         BookKeepUIOpen = false,
         BookShowLocation = true,                --Retail: false
@@ -94,7 +93,7 @@ local DefaultValues = {
     LootUI = false,                             --Replace the game's loot window (see LootController.lua)
         LootUI_Theme = 1,                       --1 Brown, 2 Dark, only for the loot window (needs LootUI)
         FastLoot = true,                        --Loot right when the window opens on auto loot, no delay (needs LootUI)
-        LootUI_FontSize = 1,                    --0..3 = 11, 12, 13, 14 like FontSizeBase, but only for the loot window (needs LootUI)
+        LootUI_FontSize = 1,                    --0..7 = 11 to 18 like FontSizeBase, but only for the loot window (needs LootUI)
         LootUI_FadeDelayPerItem = 0.25,         --Seconds the window stays longer per item, 0.25..1 in steps of 0.25 (needs LootUI)
         LootUI_ItemsPerPage = 6,                --Items on one page of the notification window, 5..8 (needs LootUI)
         LootUI_BackgroundAlpha = 0.5,           --Opacity of the notification window background, 0..1 in steps of 0.1 (needs LootUI)

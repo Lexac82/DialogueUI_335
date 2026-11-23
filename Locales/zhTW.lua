@@ -59,6 +59,7 @@ L["Size Extra Small"] = "極小";
 L["Size Small"] = "小";
 L["Size Medium"] = "中";
 L["Size Large"] = "大";
+L["Size Extra Large"] = "極大";
 L["Open Animation"] = "開啟動畫";
 L["Open Animation Desc"] = "對話視窗開啟所需的時間。0 秒表示立即顯示。\n\n預設：0.25 秒";
 L["Font Size"] = "字型大小";

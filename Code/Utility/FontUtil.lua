@@ -154,14 +154,14 @@ function FontUtil:GetFontChoices()
     return choices
 end
 
--- Font size setting ("FontSizeBase" 0..3, retail's FONT_SIZE_INDEX / FONT_OBJECT_HEIGHT). The paragraph font is the
--- base: 11, 12, 13, 14. Each font below has its own heights per choice; fonts not listed keep the height they were
+-- Font size setting ("FontSizeBase" 0..7, retail's FONT_SIZE_INDEX / FONT_OBJECT_HEIGHT, extended). The paragraph font is the
+-- base: 11 to 18. Each font below has its own heights per choice; fonts not listed keep the height they were
 -- created with. Font objects are created by name, so a listed name gets its height from here.
 --   "FontSizeChanged"   (baseFontSize, id)   after the font objects were resized (and once at load)
-local BASE_SIZES = { [0] = 11, [1] = 12, [2] = 13, [3] = 14 };
+local BASE_SIZES = { [0] = 11, 12, 13, 14, 15, 16, 17, 18 };
 local DEFAULT_SIZE_ID = 1;
-local HEIGHT_1 = { [0] = 11, 12, 13, 14 };                  -- same as the base
-local HEIGHT_2 = { [0] = 9, 10, 11, 12 };                   -- secondary text (items, hotkeys, tooltip body)
+local HEIGHT_1 = { [0] = 11, 12, 13, 14, 15, 16, 17, 18 };                  -- same as the base
+local HEIGHT_2 = { [0] = 9, 10, 11, 12, 13, 14, 15, 16 };                   -- secondary text (items, hotkeys, tooltip body)
 
 local FONT_HEIGHT = {
     DUI335_Quest_Paragraph = HEIGHT_1,
@@ -178,7 +178,7 @@ local FONT_HEIGHT = {
     DUI335_QuestType = HEIGHT_2,
     DUI335_QuickSlot_Text = HEIGHT_2,       -- Valuable Reward Popup: retail's ButtonText uses DUIFont_Item
 
-    DUI335_ItemCount = { [0] = 9, 10, 11, 12 },
+    DUI335_ItemCount = { [0] = 9, 10, 11, 12, 13, 14, 15, 16 },
 };
 
 local sizeID = DEFAULT_SIZE_ID;

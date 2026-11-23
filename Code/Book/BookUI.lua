@@ -37,7 +37,7 @@ local frame;        -- main frame, created on first use (Book:Init)
 -- Settings ------------------------------------------------------------------------------------------------
 -- Defaults are in Initialization.lua. They apply the next time a book opens.
 --   BookUISize              frame size 0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
---   BookFontSize            paragraph font size (8..24); headings follow
+--   FontSizeBase            paragraph font size (the UI tab's Font Size, 11 to 18); headings follow
 --   BookDarkenScreen        dark vignette at the left of the screen
 --   BookShowLocation        zone and coordinates for books standing in the world
 --   BookUIItemDescription   item icon and flavor text above the book
@@ -98,8 +98,7 @@ local cs = {};          -- converted sizes (frame units)
 local Metrics = {};     -- font dependent spacing
 
 local function CalculateSizeData()
-    local base = GetDBValue("BookFontSize");
-    base = Clamp(tonumber(base) or 12, 8, 24);
+    local base = FontUtil:GetBaseFontSize();        -- the UI tab's Font Size, same as the parchment
 
     local a = PIXEL_SCALE * (SIZE_SCALES[GetDBValue("BookUISize")] or 1.0);
     for k, v in pairs(RawSize) do
@@ -927,7 +926,10 @@ function Book:LayoutFrame(contentHeight, maxPage)
     local scrollFrame = self.scrollFrame;
     scrollFrame:ClearAllPoints();
     scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -cs.PADDING_V - headerHeight);
-    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, cs.PADDING_V);
+    -- The view ends exactly at the last line, so the tail of a "g" on it was clipped. The measured text height has
+    -- no room for descenders, and a larger font makes it show. A little extra clip room below the view (the padding
+    -- under it is empty paper anyway).
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, cs.PADDING_V - 0.5 * Metrics.FONT_SIZE);
     self.header:SetHeight(headerHeight);
 
     local scrollRange = 0;
@@ -1285,6 +1287,10 @@ function Book:ShowSource(icon, text)
     local width = min(f.text:GetStringWidth(), maxTextWidth);
     f.text:SetWidth(width);
     local height = f.text:GetStringHeight();
+    -- The client clips glyphs that stick out of the FontString, and the height it reports is too small for the
+    -- line (the "g" lost its tail at larger sizes). Room for 1.6 lines of the font size, centered by the anchor below.
+    height = max(height, Metrics.FONT_SIZE) + 0.6 * Metrics.FONT_SIZE;
+    f.text:SetHeight(height);
     f.text:ClearAllPoints();
     f.text:SetPoint("LEFT", f.border, "RIGHT", gap, 0);
 
@@ -1358,7 +1364,7 @@ local function RebuildOpenBook()
     end
 end
 addon.CallbackRegistry:Register("SettingChanged.BookUISize", RebuildOpenBook);
-addon.CallbackRegistry:Register("SettingChanged.BookFontSize", RebuildOpenBook);
+addon.CallbackRegistry:Register("FontSizeChanged", RebuildOpenBook);
 
 -- The vignette needs its own live update.
 addon.CallbackRegistry:Register("SettingChanged.BookDarkenScreen", function(state)

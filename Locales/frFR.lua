@@ -62,6 +62,7 @@ L["Size Extra Small"] = "Très petite";
 L["Size Small"] = "Petite";
 L["Size Medium"] = "Moyenne";
 L["Size Large"] = "Grande";
+L["Size Extra Large"] = "Très grande";
 L["Open Animation"] = "Animation d'ouverture";
 L["Open Animation Desc"] = "Durée d'ouverture de la fenêtre de dialogue. 0 s l'affiche immédiatement.\n\nPar défaut : 0,25 s";
 L["Font Size"] = "Taille de la police";

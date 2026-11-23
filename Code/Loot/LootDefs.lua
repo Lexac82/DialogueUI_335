@@ -198,7 +198,7 @@ local OUTLINE_MAX_OPACITY = 0.75;    -- Dark theme: outline at or below 0.7 (the
 local textFlags = "OUTLINE";
 local bgOpacity = 0.5;                  -- Def.BG_OPACITY, set below
 
--- Font size ("LootUI_FontSize" 0..3, the same choices as the UI tab's "FontSizeBase" but a setting of its own).
+-- Font size ("LootUI_FontSize" 0..7, the same choices as the UI tab's "FontSizeBase" but a setting of its own).
 -- Every font object of the loot window is made with its height for choice 1 (the default); each choice is
 -- FONT_SIZE_STEP more or less.
 local FONT_SIZE_STEP = 1;
@@ -218,7 +218,7 @@ function LootUI.GetSizedFont(name, height, color)
 end
 
 local function ApplyFontSize(id)
-    if type(id) ~= "number" or id < 0 or id > 3 or id == sizeID then
+    if type(id) ~= "number" or id < 0 or id > 7 or id == sizeID then
         return
     end
     sizeID = id;
