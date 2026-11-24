@@ -203,6 +203,7 @@ addon.CallbackRegistry:Register("SettingChanged.ShowCopyTextButton", function(va
             local frame = MainFrame.frame;
             CopyTextButton = addon.CreateCopyTextButton(frame, CopyTextButton_OnClick, addon.ThemeUtil:GetThemeID());
             CopyTextButton:SetFrameLevel(frame:GetFrameLevel() + 20);
+            frame.CopyTextButton = CopyTextButton;      -- Spoken moves it beside its own buttons (SpokenSupport.lua)
         end
         MainFrame:AnchorCornerWidget(CopyTextButton);
         CopyTextButton:Show();

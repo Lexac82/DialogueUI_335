@@ -94,6 +94,7 @@ Books, notes and other readable objects open in their own window. Choose its siz
 - **Auctionator**
 - **Retail Auction House** (mod-retail-ah): AH bot prices in the item tooltip. Choose Auctionator or Retail Auction House under **Other Addons**.
 - **Journal: Gear (JournalGearBIS)**: "On your gear list" line in the item tooltip
+- **[Spoken](https://github.com/PatchFoundry335/spoken-wow)** (the voice player, the 3.3.5 version is available there): Spoken's **Play** and **Skip** buttons on the quest and gossip window and on the book view. Spoken draws its buttons in the game's UI, which DialogueUI hides, so a small file has to be copied into the Spoken folder. The steps are in `SupportedAddons\Spoken\README.md`. It is switched on under **Other Addons** and stays greyed out until Spoken has the file.
 
 ## Installation
 

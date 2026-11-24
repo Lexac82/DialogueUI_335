@@ -456,6 +456,22 @@ local function AuctionHouseAddOn_Tooltip(addonName, displayName, descKey)
 end
 local Auctionator_Tooltip = AuctionHouseAddOn_Tooltip("Auctionator", "Auctionator", "Auction House Auctionator Desc");
 local RetailAH_Tooltip = AuctionHouseAddOn_Tooltip("RetailAH", "Retail Auction House", "Auction House RetailAH Desc");
+-- Spoken (Other Addons tab): its side is a file copied into the Spoken folder (SupportedAddons\Spoken). The description
+-- says how; the tooltip adds what is missing right now.
+local function Spoken_Tooltip(descKey)
+    return function()
+        local text = L[descKey];
+        if not addon.IsSupportedAddOnActive("Spoken") then
+            text = text .. "\n\n" .. L["Addon Not Installed"]:format("Spoken");
+        elseif not _G.DialogueUI_SpokenBridge then
+            text = text .. "\n\n" .. L["Spoken Bridge Missing"];
+        end
+        return text
+    end
+end
+local function Spoken_IsDisabled()
+    return not (addon.IsSupportedAddOnActive("Spoken") and _G.DialogueUI_SpokenBridge)
+end
 -- Greyed out and unchecked while the addon is not running (the saved choice is kept for when it is).
 -- Journal: Gear is not released yet, so its row only exists for those who have it.
 local function JournalGear_IsAvailable()
@@ -740,6 +756,9 @@ local Schematic = {
             {type = "Checkbox", name = L["Show Transmog Status"], description = L["Show Transmog Status Desc"], tooltip = TransmogStatus_Tooltip, isDisabledFunc = TransmogStatus_IsDisabled, dbKey = "ShowTransmogStatus", preview = "Transmog", ratio = 511 / 484},     -- picture is 511 x 484 stretched to 512 x 512,
             {type = "Checkbox", name = L["Use Transmog Plus"], description = L["Use Transmog Plus Desc"], tooltip = TransmogPlus_Tooltip, dbKey = "UseTransmogPlus",
                 requiredParentValueAnd = {ShowTransmogStatus = true}},
+            {type = "Subheader", name = "Spoken", extraWidth = 15},
+            {type = "Checkbox", name = L["Spoken Buttons"], description = L["Spoken Buttons Desc"], tooltip = Spoken_Tooltip("Spoken Buttons Desc"),
+                dbKey = "SpokenButtons", isDisabledFunc = Spoken_IsDisabled},
         },
     },
     {   -- Loot UI

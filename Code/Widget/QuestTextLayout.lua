@@ -529,10 +529,10 @@ end
 -- The sizes that follow the frame size. width: parchment width. scale: frame size multiplier.
 -- fullHeight: parchment height once its intro animation is done. inset: text box margin on each side
 -- (the text box lines up with the header divider). Does not lay out the page again.
-function QuestTextLayout:SetSize(width, scale, fullHeight, inset)
+function QuestTextLayout:SetSize(width, scale, fullHeight, inset, room)
     self.fullHeight = fullHeight;
-    self.questScrollTop = (28 + 40) * scale;        -- retail UseQuestLayout topOffset
-    self.listScrollTop = 42 * scale;                -- retail UseQuestLayout(false): the Header is hidden
+    self.questScrollTop = (28 + 40) * scale + (room or 0);        -- retail UseQuestLayout topOffset
+    self.listScrollTop = 42 * scale + (room or 0);                -- retail UseQuestLayout(false): the Header is hidden
     self.scrollTop = self.isListPage and self.listScrollTop or self.questScrollTop;
     self.paddingLeft = inset;
     self.paddingRight = inset;

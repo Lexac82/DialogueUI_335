@@ -49,6 +49,8 @@ end
 
 -- Every size and offset of the parchment for one frame size multiplier m. Atlas pieces are scaled by width / 1024,
 -- retail's own sizes (paddings, offsets) by m. Medium (1.1) is the look the layout was made for.
+local topRoom = 0;     -- extra room under the top edge, set by SetTopRoom (Spoken's controls row, SpokenSupport.lua)
+
 local function ComputeMetrics(m)
     local width = BASE_WIDTH * m;
     local scale = width / ATLAS_WIDTH;
@@ -63,7 +65,7 @@ local function ComputeMetrics(m)
 
     M.dividerW = (DIVIDER_COLS[2] - DIVIDER_COLS[1]) * scale;
     M.dividerH = (DIVIDER_ROWS[2] - DIVIDER_ROWS[1]) * scale;
-    M.headerOffsetY = -28 * m;
+    M.headerOffsetY = -28 * m - topRoom;
     M.paddingH = 26 * m;
     M.paddingBottom = 36 * m;           -- retail PADDING_BOTTOM: buttons sit this far above the frame bottom
 
@@ -76,7 +78,7 @@ local function ComputeMetrics(m)
 
     M.gossipDividerW = (GOSSIP_DIVIDER_COLS[2] - GOSSIP_DIVIDER_COLS[1]) * scale;
     M.gossipDividerH = (GOSSIP_DIVIDER_ROWS[2] - GOSSIP_DIVIDER_ROWS[1]) * scale;
-    M.gossipDividerY = -42 * m;
+    M.gossipDividerY = -42 * m - topRoom;
     M.topLightW = (TOPLIGHT_COLS[2] - TOPLIGHT_COLS[1]) * scale;
     M.topLightH = (TOPLIGHT_ROWS[2] - TOPLIGHT_ROWS[1]) * scale;
     M.topLightY = -2 * m;
@@ -290,6 +292,21 @@ function ParchmentBackground:CycleRewardChoice(delta)
     return self.QuestText.rewards:CycleChoice(delta)
 end
 
+-- Moves the header and the text down by `room` UIParent units (an addon's row of buttons along the top edge) and
+-- lays the open page out again. 0 puts them back.
+function ParchmentBackground:SetTopRoom(room)
+    room = room or 0;
+    if room == topRoom then
+        return
+    end
+    topRoom = room;
+    CallbackRegistry:Trigger("FrameSizeChanged", addon.FrameSize:GetMultiplier());
+end
+
+function ParchmentBackground:GetTopRoom()
+    return topRoom
+end
+
 -- Puts the frame back where the player left it (UIParent offsets), else the default CENTER.
 -- FrameOrientation: 1 Left, 2 Right, 3 Custom. Left / Right put the frame centered at 1/4 of the screen width from
 -- the middle (retail FRAME_OFFSET_RATIO = 3/4); Custom uses the dragged position (ParchmentPosition).
@@ -454,7 +471,7 @@ function ParchmentBackground:ApplySize()
 
     -- Footer first: its button height and padding decide the footer offset the text box needs.
     self.Footer:SetSize(M.width, M.footerInset, M.paddingBottom);
-    self.QuestText:SetSize(M.width, M.multiplier, M.fullH, M.footerInset);
+    self.QuestText:SetSize(M.width, M.multiplier, M.fullH, M.footerInset, topRoom);
     self:SetFooterOffset(self.Footer:GetFooterOffset());
 end
 
