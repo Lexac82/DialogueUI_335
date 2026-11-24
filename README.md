@@ -94,12 +94,15 @@ Books, notes and other readable objects open in their own window. Choose its siz
 - **Auctionator**
 - **Retail Auction House** (mod-retail-ah): AH bot prices in the item tooltip. Choose Auctionator or Retail Auction House under **Other Addons**.
 - **Journal: Gear (JournalGearBIS)**: "On your gear list" line in the item tooltip
-- **[Spoken](https://github.com/PatchFoundry335/spoken-wow)** (the voice player, the 3.3.5 version is available there): Spoken's **Play** and **Skip** buttons on the quest and gossip window and on the book view. Spoken draws its buttons in the game's UI, which DialogueUI hides, so a small file has to be copied into the Spoken folder:
-  1. Copy `SupportedAddons\Spoken\SpokenDialogueUI.lua` from the DialogueUI folder into `Interface\AddOns\Spoken\`.
-  2. Add the line `SpokenDialogueUI.lua` at the end of `Interface\AddOns\Spoken\Spoken.toc`, then restart the game (a `.toc` change needs a restart, not only `/reload`).
-  3. Check **Spoken Buttons** under **Other Addons**. It is off by default and greyed out until Spoken has the file.
+- **[Spoken](https://github.com/PatchFoundry335/spoken-wow)** (the voice player, the 3.3.5 version is available there): Spoken's **Play** and **Skip** buttons on the quest and gossip window and on the book view. Spoken draws its buttons in the game's UI, which DialogueUI hides, so a small file has to be copied into the Spoken folder (steps below).
 
-  Play on a quest or gossip page needs Spoken Quests, and Play on a book needs Spoken Readables. A Spoken update usually replaces its `.toc`, so add the line again after updating.
+To switch on the Spoken support:
+
+1. Copy `SupportedAddons\Spoken\SpokenDialogueUI.lua` from the DialogueUI folder into `Interface\AddOns\Spoken\`.
+2. Add the line `SpokenDialogueUI.lua` at the end of `Interface\AddOns\Spoken\Spoken.toc`, then restart the game (a `.toc` change needs a restart, not only `/reload`).
+3. Check **Spoken Buttons** under **Other Addons**. It is off by default and greyed out until Spoken has the file.
+
+Play on a quest or gossip page needs Spoken Quests, and Play on a book needs Spoken Readables. A Spoken update usually replaces its `.toc`, so add the line again after updating.
 
 ## Installation
 
