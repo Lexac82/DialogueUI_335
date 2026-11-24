@@ -36,7 +36,7 @@ local frame;        -- main frame, created on first use (Book:Init)
 
 -- Settings ------------------------------------------------------------------------------------------------
 -- Defaults are in Initialization.lua. They apply the next time a book opens.
---   BookUISize              frame size 0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
+--   BookUISize              frame size 0..5 = 0.9, 1.0, 1.1, 1.25, 1.4, 1.6
 --   FontSizeBase            paragraph font size (the UI tab's Font Size, 11 to 18); headings follow
 --   BookDarkenScreen        dark vignette at the left of the screen
 --   BookShowLocation        zone and coordinates for books standing in the world
@@ -44,7 +44,7 @@ local frame;        -- main frame, created on first use (Book:Init)
 --   BookKeepUIOpen          keep the book open when the game closes the readable (walking away)
 --   BookPosition            saved frame position (left-drag)
 
-local SIZE_SCALES = { [0] = 0.9, [1] = 1.0, [2] = 1.1, [3] = 1.25, [4] = 1.4 };
+local SIZE_SCALES = { [0] = 0.9, [1] = 1.0, [2] = 1.1, [3] = 1.25, [4] = 1.4, [5] = 1.6 };
 
 
 -- Sizes ---------------------------------------------------------------------------------------------------

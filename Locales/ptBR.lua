@@ -59,6 +59,7 @@ L["Size Extra Small"] = "Extra Pequeno";
 L["Size Small"] = "Pequeno";
 L["Size Medium"] = "Médio";
 L["Size Large"] = "Grande";
+L["Size Very Large"] = "Muito Grande";
 L["Size Extra Large"] = "Extra Grande";
 L["Open Animation"] = "Animação de abertura";
 L["Open Animation Desc"] = "Quanto tempo a janela de diálogo leva para abrir. 0s a mostra de uma vez.\n\nPadrão: 0,25s";

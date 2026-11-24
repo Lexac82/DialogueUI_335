@@ -1,4 +1,4 @@
-local VERSION_TEXT = "1.2.0";
+local VERSION_TEXT = "1.3.0";
 
 
 local addonName, addon = ...;
@@ -23,7 +23,7 @@ addon.VERSION_TEXT = VERSION_TEXT;
 local DefaultValues = {
     --Appearance
     Theme = 1,                                  --1 Brown, 2 Dark
-    FrameSize = 2,                              --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4 (retail default 2, see FrameSize.lua)
+    FrameSize = 2,                              --0..5 = 0.9, 1.0, 1.1, 1.25, 1.4, 1.6 (retail default 2, see FrameSize.lua)
     FontSizeBase = 1,                           --0..7 = 11 to 18 (see FontUtil.lua)
     FontText = "default",                       --"default" Friz Quadrata, "system" the client font, or the file of a LibSharedMedia font (see FontUtil.lua)
     OpenAnimationDuration = 0.25,               --Seconds the parchment takes to open, 0..2 in steps of 0.25 (not in retail, see ParchmentBackground.lua)
@@ -73,7 +73,7 @@ local DefaultValues = {
     --Book Settings
     BookUIEnabled = true,
         BookPositionMode = 1,                   --1 Default (left edge), 2 Custom (not in retail: drag the frame, BookPosition)
-        BookUISize = 1,                         --0..4 = 0.9, 1.0, 1.1, 1.25, 1.4
+        BookUISize = 1,                         --0..5 = 0.9, 1.0, 1.1, 1.25, 1.4, 1.6
         BookHideUI = false,                     --Fade out the game UI while a readable is open (not in retail, see HideUI.lua)
         BookKeepUIOpen = false,
         BookShowLocation = true,                --Retail: false

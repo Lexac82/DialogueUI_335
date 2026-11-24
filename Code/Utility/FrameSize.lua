@@ -1,7 +1,7 @@
 local _, addon = ...;
 
 -- Size of the dialogue frame: the one place that knows the multiplier for the "FrameSize" setting.
--- Same multipliers as retail's FrameSizeIndexScale; [4] = 1.4 (retail: Mobile Device Mode only) is the Extra Large choice. Parts that scale read GetMultiplier() when built and listen to "FrameSizeChanged".
+-- Same multipliers as retail's FrameSizeIndexScale; [4] = 1.4 (retail: Mobile Device Mode only) is the Very Large choice, [5] = 1.6 the Extra Large choice. Parts that scale read GetMultiplier() when built and listen to "FrameSizeChanged".
 --   "FrameSizeChanged"   (multiplier)   after the setting changed (and once at load with the saved value)
 
 local CallbackRegistry = addon.CallbackRegistry;
@@ -16,7 +16,8 @@ local MULTIPLIERS = {
     [1] = 1.0,      -- Small
     [2] = DEFAULT_MULTIPLIER,
     [3] = 1.25,     -- Large
-    [4] = 1.4,      -- Extra Large (retail only uses it for Mobile Device Mode)
+    [4] = 1.4,      -- Very Large (retail only uses it for Mobile Device Mode)
+    [5] = 1.6,      -- Extra Large
 };
 
 local multiplier = DEFAULT_MULTIPLIER;
