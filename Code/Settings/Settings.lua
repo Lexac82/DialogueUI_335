@@ -2191,6 +2191,31 @@ function SettingsUI:MoveToBestPosition(force)
         return
     end
 
+    -- Readables: the window goes to the side of the book that has the room (the book is on the left by default).
+    local book = addon.Book;
+    local bookFrame = book and book:IsShown() and book:GetFrame();
+    if bookFrame and bookFrame:GetLeft() and bookFrame:GetRight() and not (parchment and parchment:IsShown()) then
+        local screenWidth = UIParent:GetWidth();
+        local width = f:GetWidth();
+        local gap = 16;
+        local scale = bookFrame:GetEffectiveScale() / UIParent:GetEffectiveScale();
+        local bookLeft, bookRight = bookFrame:GetLeft() * scale, bookFrame:GetRight() * scale;
+        local centerX;
+        if screenWidth - bookRight - gap >= width then
+            centerX = bookRight + gap + (screenWidth - bookRight - gap) / 2;
+        elseif bookLeft - gap >= width then
+            centerX = (bookLeft - gap) / 2;
+        elseif screenWidth - bookRight >= bookLeft then
+            centerX = screenWidth - width / 2;
+        else
+            centerX = width / 2;
+        end
+        centerX = max(width / 2, min(screenWidth - width / 2, centerX));
+        f:ClearAllPoints();
+        f:SetPoint("CENTER", UIParent, "CENTER", centerX - screenWidth / 2, 0);
+        return
+    end
+
     f:ClearAllPoints();
 
     if parchment and parchment:IsShown() then

@@ -1436,7 +1436,19 @@ function Book:UpdateKeys()
     ClearOverrideBindings(frame);
     if frame:IsShown() then
         SetOverrideBindingClick(frame, true, "ESCAPE", "DUI335BookCloseButton", "LeftButton");
+        -- F1 (or the player's key) opens the settings, as on a quest page. While the window is open it binds
+        -- the key itself (to close), so it is left alone then.
+        local settings = addon.SettingsUI;
+        local settingsKey = addon.BindingUtil:GetActiveActionKey("Settings");
+        if settingsKey and not (settings and settings:IsShown()) then
+            SetOverrideBindingClick(frame, true, settingsKey, "DialogueUI335SettingsToggle", "LeftButton");
+        end
     end
+end
+
+-- Used by the Settings window to sit beside the book.
+function Book:GetFrame()
+    return frame
 end
 
 function Book:OnShow()
@@ -1549,6 +1561,15 @@ local function LeaveEditMode()
     end
 end
 addon.CallbackRegistry:Register("SettingsUI.Hide", LeaveEditMode);
+-- The settings key changes hands between the book and the Settings window.
+local function RefreshBookKeys()
+    if frame and frame:IsShown() then
+        Book:UpdateKeys();
+    end
+end
+addon.CallbackRegistry:Register("SettingsUI.Show", RefreshBookKeys);
+addon.CallbackRegistry:Register("SettingsUI.Hide", RefreshBookKeys);
+addon.CallbackRegistry:Register("CustomBindingChanged", RefreshBookKeys);
 addon.CallbackRegistry:Register("SettingsUI.TabChanged", function(tabID)
     if tabID ~= 1 then
         LeaveEditMode();
