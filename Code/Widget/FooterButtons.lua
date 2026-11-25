@@ -17,7 +17,7 @@ local CompleteQuest = CompleteQuest;
 local GetQuestReward = GetQuestReward;
 local max = math.max;
 
-local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP
+local BUTTON_GAP = 8;               -- retail BUTTON_HORIZONTAL_GAP, at frame size multiplier 1
 local ACCEPT_NAME = "DialogueUI335AcceptButton";
 local EXIT_NAME = "DialogueUI335ExitButton";
 local SETTINGS_TOGGLE_NAME = "DialogueUI335SettingsToggle";     -- created in Settings.lua
@@ -280,7 +280,8 @@ end
 -- The sizes that follow the frame size. width: parchment width. paddingH / paddingBottom: already scaled by
 -- the frame size multiplier. Buttons that already show a label are laid out again for the new width.
 function Footer:SetSize(width, paddingH, paddingBottom)
-    local buttonWidth = Round(0.5 * (width - 2 * paddingH - BUTTON_GAP));
+    local gap = addon.FrameSize:Scale(BUTTON_GAP);
+    local buttonWidth = Round(0.5 * (width - 2 * paddingH - gap));
     local parent = self.parent;
 
     local accept, exit = self.accept, self.exit;
@@ -302,7 +303,7 @@ function Footer:SetSize(width, paddingH, paddingBottom)
     if not exit.text then
         self:ApplyExit();
     end
-    self.footerOffset = Round(exit:GetHeight() + paddingBottom + BUTTON_GAP * 2);
+    self.footerOffset = Round(exit:GetHeight() + paddingBottom + gap * 2);
 end
 
 -- parent: parchment frame. owner: ParchmentBackground (RequestClose, GetRewardChoice, FlashRewardChoices).

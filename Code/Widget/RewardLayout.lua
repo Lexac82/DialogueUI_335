@@ -5,6 +5,7 @@ local _, addon = ...;
 -- HighlightRewardChoice / SelectRewardChoice (2149-2214) and RequestSellPrice (2257-2300).
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
+local FrameSize = addon.FrameSize;
 
 local CreateFrame = CreateFrame;
 local GetItemInfo = GetItemInfo;
@@ -15,7 +16,7 @@ local SetCursor = SetCursor;
 local floor = math.floor;
 local max = math.max;
 
-local GAP = 8;                            -- ITEM_BUTTON_SPACING
+local GAP = 8;                            -- ITEM_BUTTON_SPACING, at frame size multiplier 1
 local CHOICE_COLUMNS = 2;
 local DIM_ALPHA = 0.25;
 local PRICE_RETRY_DELAY = 0.8;
@@ -88,28 +89,27 @@ end
 function RewardLayout:PlaceRows(offsetY, entries, itemWidth, gridWidth)
     local host = self.host;
     local textWidth = host.textWidth;
+    local gap = FrameSize:Scale(GAP);
     local cursorX, rowY, rowHeight, lastSmall = 0, offsetY, 0, nil;
     local items = host.revealItems;
 
     for i = 1, #entries do
         local entry = entries[i];
         local small = entry.small and true or false;
-        local button, width, height;
+        local button, width;
 
         if small then
             button = self:AcquireSmall();
             button:SetEntry(entry);
             width = button:FitWidth(gridWidth);
-            height = addon.REWARD_SMALL_HEIGHT;
         else
             button = self:AcquireBig();
             button:SetEntry(entry);
-            width = button:Fit(itemWidth, gridWidth + GAP, 2);
-            height = addon.REWARD_BUTTON_HEIGHT;
+            width = button:Fit(itemWidth, gridWidth + gap, 2);
         end
 
         if cursorX > 0 and (lastSmall ~= small or cursorX + width > textWidth + 0.5) then
-            rowY = rowY + rowHeight + GAP;
+            rowY = rowY + rowHeight + gap;
             cursorX = 0;
             rowHeight = 0;
         end
@@ -127,8 +127,8 @@ function RewardLayout:PlaceRows(offsetY, entries, itemWidth, gridWidth)
             end);
         end
 
-        cursorX = cursorX + width + GAP;
-        rowHeight = max(rowHeight, height);
+        cursorX = cursorX + width + gap;
+        rowHeight = max(rowHeight, frame:GetHeight());
         lastSmall = small;
     end
 
@@ -140,6 +140,8 @@ function RewardLayout:PlaceChoices(offsetY, choices, itemWidth)
     local host = self.host;
     local items = host.revealItems;
     local rows = 0;
+    local gap = FrameSize:Scale(GAP);
+    local height = 0;                   -- the same for every big button
 
     for i = 1, #choices do
         local entry = choices[i];
@@ -155,8 +157,9 @@ function RewardLayout:PlaceChoices(offsetY, choices, itemWidth)
 
         local frame = button.frame;
         frame:ClearAllPoints();
-        frame:SetPoint("TOPLEFT", host.ContentFrame, "TOPLEFT", column * (itemWidth + GAP),
-            -(offsetY + row * (addon.REWARD_BUTTON_HEIGHT + GAP)));
+        height = frame:GetHeight();
+        frame:SetPoint("TOPLEFT", host.ContentFrame, "TOPLEFT", column * (itemWidth + gap),
+            -(offsetY + row * (height + gap)));
         frame:Show();
         items[#items + 1] = {region = frame, length = 0};
 
@@ -167,7 +170,7 @@ function RewardLayout:PlaceChoices(offsetY, choices, itemWidth)
         self.choiceButtons[#self.choiceButtons + 1] = button;
     end
 
-    return offsetY + rows * (addon.REWARD_BUTTON_HEIGHT + GAP) - GAP
+    return offsetY + rows * (height + gap) - gap
 end
 
 -- Adds the costs, requirements and rewards below `offsetY`. Returns the new offset.
@@ -177,8 +180,9 @@ function RewardLayout:Layout(offsetY, page)
 
     local host = self.host;
     local spacing = host.paragraphSpacing;
-    local gridWidth = floor((host.textWidth - 3 * GAP) / 4);    -- retail quarterFrameWidth
-    local itemWidth = 2 * gridWidth + GAP;
+    local gap = FrameSize:Scale(GAP);
+    local gridWidth = floor((host.textWidth - 3 * gap) / 4);    -- retail quarterFrameWidth
+    local itemWidth = 2 * gridWidth + gap;
 
     if page.moneyToGet then
         offsetY = offsetY + spacing;
@@ -201,11 +205,11 @@ function RewardLayout:Layout(offsetY, page)
 
         if #choices > 0 then
             local header = page.canChoose and L["Reward Choose"] or L["Reward Choices"];
-            offsetY = host:FormatParagraph(offsetY, header) + GAP;
+            offsetY = host:FormatParagraph(offsetY, header) + gap;
             offsetY = self:PlaceChoices(offsetY, choices, itemWidth);
             if #rewards > 0 then
                 offsetY = offsetY + spacing;
-                offsetY = host:FormatParagraph(offsetY, L["Reward Items"]) + GAP;
+                offsetY = host:FormatParagraph(offsetY, L["Reward Items"]) + gap;
             end
         end
 

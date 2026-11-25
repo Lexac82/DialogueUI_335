@@ -7,14 +7,17 @@ local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
 local MoneyUtil = addon.MoneyUtil;
+local FrameSize = addon.FrameSize;
 
 local CreateFrame = CreateFrame;
 local UnitXPMax = UnitXPMax;
 local GetMoney = GetMoney;
 local GetCoinText = GetCoinText;
 local floor = math.floor;
+local ceil = math.ceil;
 local max = math.max;
 
+-- Sizes are for frame size multiplier 1 and are scaled when applied.
 local ROW_HEIGHT = 15;
 local ICON_SIZE = 15;
 local TEXT_LEFT = 18;
@@ -34,9 +37,21 @@ local function ClientFile(file)
     return ThemeUtil:GetTextureFile(file)
 end
 
+-- Sizes the row for the current frame size. Never lower than its text: the font size is a setting of its own.
+function RewardSmallButton:ApplySize()
+    local _, fontHeight = self.font:GetFont();
+    local frame = self.frame;
+    frame:SetHeight(max(FrameSize:Scale(ROW_HEIGHT), ceil(fontHeight + 4)));
+    local iconSize = FrameSize:Scale(ICON_SIZE);
+    self.icon:SetWidth(iconSize);
+    self.icon:SetHeight(iconSize);
+    self.text:SetPoint("LEFT", frame, "LEFT", FrameSize:Scale(TEXT_LEFT), 0);
+end
+
 -- Fills the row from a QuestData entry. Returns the text width so the layout can size the row.
 function RewardSmallButton:SetEntry(entry)
     self.entry = entry;
+    self:ApplySize();
     local kind = entry.kind;
     local icon, text, red;
 
@@ -80,7 +95,8 @@ end
 
 -- Width that fits the text, at least minWidth.
 function RewardSmallButton:FitWidth(minWidth)
-    local width = max(minWidth, TEXT_LEFT + self.text:GetStringWidth() + TEXT_RIGHT);
+    local padding = FrameSize:Scale(TEXT_LEFT) + FrameSize:Scale(TEXT_RIGHT);
+    local width = max(minWidth, padding + self.text:GetStringWidth());
     self.frame:SetWidth(width);
     return width
 end
@@ -96,7 +112,6 @@ local function CreateRewardSmallButton(parent, host)
     self.host = host;
 
     local frame = CreateFrame("Button", nil, parent);
-    frame:SetHeight(ROW_HEIGHT);
     frame:Hide();
     self.frame = frame;
 
@@ -105,8 +120,6 @@ local function CreateRewardSmallButton(parent, host)
     ThemeUtil:BindSlice(background, BACKGROUND_FILE);
 
     local icon = frame:CreateTexture(nil, "ARTWORK");
-    icon:SetWidth(ICON_SIZE);
-    icon:SetHeight(ICON_SIZE);
     icon:SetPoint("LEFT", frame, "LEFT", 0, 0);
     self.icon = icon;
 
@@ -116,8 +129,8 @@ local function CreateRewardSmallButton(parent, host)
     text:SetJustifyH("LEFT");
     text:SetJustifyV("MIDDLE");
     text:SetWordWrap(false);
-    text:SetPoint("LEFT", frame, "LEFT", TEXT_LEFT, 0);
     self.text = text;
+    self:ApplySize();
 
     -- Tooltips for these rows: XP, honor, talents and arena only (money has none, as retail).
     frame:SetScript("OnEnter", function()
@@ -138,4 +151,3 @@ local function CreateRewardSmallButton(parent, host)
 end
 
 addon.CreateRewardSmallButton = CreateRewardSmallButton;
-addon.REWARD_SMALL_HEIGHT = ROW_HEIGHT;

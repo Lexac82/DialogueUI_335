@@ -409,6 +409,14 @@ function addon.CreateCopyTextButton(parent, onClickFunc, themeID, tooltipText)
     icon:SetAlpha(ALPHA_UNFOCUSED);
     button.icon = icon;
 
+    -- The button on the dialogue frame follows the frame size; others keep the size they were made with.
+    function button:SetSizeMultiplier(multiplier)
+        self:SetWidth(BUTTON_SIZE * multiplier);
+        self:SetHeight(BUTTON_SIZE * multiplier);
+        self.icon:SetWidth(ICON_SIZE * multiplier);
+        self.icon:SetHeight(ICON_SIZE * multiplier);
+    end
+
     function button:SetTheme(id)
         SetButtonTheme(self, id);
     end

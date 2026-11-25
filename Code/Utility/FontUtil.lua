@@ -311,6 +311,12 @@ addon.CallbackRegistry:Register("PLAYER_ENTERING_WORLD", function()
     ApplyUserFont();
 end);
 
+-- For fonts that follow the frame size and not the font size setting: new height, same file and flags.
+function FontUtil:SetFontHeight(fontObject, height)
+    local file, _, flags = fontObject:GetFont();
+    fontObject:SetFont(file, height, flags);
+end
+
 -- The title follows the frame size: set the new height on the existing font object (its FontStrings follow).
 function FontUtil:SetQuestTitleFontHeight(height)
     local fontObject = self:GetQuestTitleFont(height);

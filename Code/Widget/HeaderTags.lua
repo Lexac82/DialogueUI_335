@@ -3,7 +3,9 @@ local _, addon = ...;
 -- Quest type pills above the header title (port of retail's QuestHeaderWidget, non-clickable pills:
 -- an optional icon and a small label, no background). Left to right, starting at the title's top left.
 local FontUtil = addon.FontUtil;
+local FrameSize = addon.FrameSize;
 
+-- Sizes are for frame size multiplier 1 and are scaled when applied.
 local ICON_SIZE = 14;
 local ICON_TEXT_GAP = 0;
 local SPACING = 8;
@@ -13,7 +15,18 @@ local TEXT_COLOR = {"MutedBrown", "DarkModeGrey70"};      -- muted brown on the 
 local HeaderTags = {};
 HeaderTags.__index = HeaderTags;
 
+local function GetPillFont()
+    return FontUtil:GetColoredFont("DUI335HeaderTag", FrameSize:Scale(FONT_HEIGHT), TEXT_COLOR)
+end
+
 function HeaderTags:SetTags(tags)
+    self.tags = tags;       -- kept for a frame size change
+    local iconSize = FrameSize:Scale(ICON_SIZE);
+    local iconSpace = iconSize + FrameSize:Scale(ICON_TEXT_GAP);
+    local spacing = FrameSize:Scale(SPACING);
+    -- Before the text, so the widths below are measured at this height.
+    FontUtil:SetFontHeight(GetPillFont(), FrameSize:Scale(FONT_HEIGHT));
+
     for _, pill in ipairs(self.pills) do
         pill:Hide();
     end
@@ -21,6 +34,9 @@ function HeaderTags:SetTags(tags)
     local previous;
     for i, tag in ipairs(tags or {}) do
         local pill = self.pills[i] or self:CreatePill(i);
+        pill:SetHeight(iconSize);
+        pill.Icon:SetWidth(iconSize);
+        pill.Icon:SetHeight(iconSize);
         pill.Text:SetText(tag.text);
 
         local width = pill.Text:GetStringWidth();
@@ -28,8 +44,8 @@ function HeaderTags:SetTags(tags)
         if tag.icon then
             pill.Icon:SetTexture(tag.icon);
             pill.Icon:Show();
-            pill.Text:SetPoint("LEFT", pill, "LEFT", ICON_SIZE + ICON_TEXT_GAP, 0);
-            width = width + ICON_SIZE + ICON_TEXT_GAP;
+            pill.Text:SetPoint("LEFT", pill, "LEFT", iconSpace, 0);
+            width = width + iconSpace;
         else
             pill.Icon:Hide();
             pill.Text:SetPoint("LEFT", pill, "LEFT", 0, 0);
@@ -38,7 +54,7 @@ function HeaderTags:SetTags(tags)
 
         pill:ClearAllPoints();
         if previous then
-            pill:SetPoint("LEFT", previous, "RIGHT", SPACING, 0);
+            pill:SetPoint("LEFT", previous, "RIGHT", spacing, 0);
         else
             pill:SetPoint("BOTTOMLEFT", self.anchorTo, "TOPLEFT", 0, 0);
         end
@@ -49,16 +65,13 @@ end
 
 function HeaderTags:CreatePill(index)
     local pill = CreateFrame("Frame", nil, self.parent);
-    pill:SetHeight(ICON_SIZE);
 
     local icon = pill:CreateTexture(nil, "ARTWORK");
-    icon:SetWidth(ICON_SIZE);
-    icon:SetHeight(ICON_SIZE);
     icon:SetPoint("LEFT", pill, "LEFT", 0, 0);
     pill.Icon = icon;
 
     local text = pill:CreateFontString(nil, "OVERLAY");
-    text:SetFontObject(FontUtil:GetColoredFont("DUI335HeaderTag", FONT_HEIGHT, TEXT_COLOR));
+    text:SetFontObject(GetPillFont());
     text:SetJustifyH("LEFT");
     pill.Text = text;
 
@@ -72,5 +85,8 @@ function addon.CreateHeaderTags(parent, anchorTo)
     self.parent = parent;
     self.anchorTo = anchorTo;
     self.pills = {};
+    addon.CallbackRegistry:Register("FrameSizeChanged", function()
+        self:SetTags(self.tags);
+    end);
     return self
 end

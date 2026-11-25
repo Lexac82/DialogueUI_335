@@ -37,7 +37,8 @@ local TOPLIGHT_ALPHA = 0.06;
 local CHECK_COLS = { 736, 832 };
 local CHECK_ROWS = { 1160, 1256 };
 
-local CORNER_BUTTON_MARGIN = 10;    -- gap between the paper edge and the Copy Text button
+local CORNER_BUTTON_MARGIN = 10;    -- gap between the paper edge and the Copy Text button, at multiplier 1
+local MOVE_MARK_SIZE = 48;          -- at multiplier 1; the Settings Move icon is 24, shown at double size
 
 local function RowsToTexCoord(rows)
     return 0, 1, rows[1] / ATLAS_HEIGHT, rows[2] / ATLAS_HEIGHT;
@@ -99,8 +100,9 @@ local function ComputeMetrics(m)
 
     -- Top right corner of the visible paper, as an offset from the frame's TOPRIGHT (for the Copy Text button). The
     -- paper ends 135 texels in from the atlas edge and starts 7 texels below the frame top (measured on Parchment).
-    M.cornerButtonX = -(135 * scale + CORNER_BUTTON_MARGIN);
-    M.cornerButtonY = -(7 * scale + CORNER_BUTTON_MARGIN);
+    M.cornerButtonX = -(135 * scale + CORNER_BUTTON_MARGIN * m);
+    M.cornerButtonY = -(7 * scale + CORNER_BUTTON_MARGIN * m);
+    M.moveMarkSize = MOVE_MARK_SIZE * m;
     return M
 end
 
@@ -312,7 +314,6 @@ end
 -- the middle (retail FRAME_OFFSET_RATIO = 3/4); Custom uses the dragged position (ParchmentPosition).
 local ORIENTATION_LEFT, ORIENTATION_RIGHT, ORIENTATION_CUSTOM = 1, 2, 3;
 local FRAME_OFFSET_RATIO = 3/4;
-local MOVE_MARK_SIZE = 48;          -- the Settings Move icon is 24, shown at double size
 
 local function GetCustomPosition()
     local pos = GetDBValue("ParchmentPosition");
@@ -469,6 +470,9 @@ function ParchmentBackground:ApplySize()
     footerDivider:SetWidth(M.footerW);
     footerDivider:SetHeight(M.footerH);
 
+    self.moveMark:SetWidth(M.moveMarkSize);
+    self.moveMark:SetHeight(M.moveMarkSize);
+
     -- Footer first: its button height and padding decide the footer offset the text box needs.
     self.Footer:SetSize(M.width, M.footerInset, M.paddingBottom);
     self.QuestText:SetSize(M.width, M.multiplier, M.fullH, M.footerInset, topRoom);
@@ -549,8 +553,7 @@ local function CreateParchmentBackground(parent)
     -- No mouse on it, so a drag through it still moves the parchment.
     local moveMark = CreateFrame("Frame", nil, frame);
     moveMark:SetFrameLevel(frame:GetFrameLevel() + 20);
-    moveMark:SetWidth(MOVE_MARK_SIZE);
-    moveMark:SetHeight(MOVE_MARK_SIZE);
+    self.moveMark = moveMark;                   -- sized by ApplySize
     moveMark:SetPoint("CENTER", frame, "CENTER", 0, 0);
     local moveIcon = moveMark:CreateTexture(nil, "OVERLAY");
     moveIcon:SetAllPoints(moveMark);

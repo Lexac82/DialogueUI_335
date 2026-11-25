@@ -21,9 +21,15 @@ local MULTIPLIERS = {
 };
 
 local multiplier = DEFAULT_MULTIPLIER;
+local floor = math.floor;
 
 function FrameSize:GetMultiplier()
     return multiplier
+end
+
+-- A size given for multiplier 1, scaled to the current frame size and rounded to a whole unit.
+function FrameSize:Scale(value)
+    return floor(value * multiplier + 0.5)
 end
 
 -- Registered here, before the parts that listen to "FrameSizeChanged", so the value is already updated for them.

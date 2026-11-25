@@ -205,6 +205,7 @@ addon.CallbackRegistry:Register("SettingChanged.ShowCopyTextButton", function(va
             CopyTextButton:SetFrameLevel(frame:GetFrameLevel() + 20);
             frame.CopyTextButton = CopyTextButton;      -- Spoken moves it beside its own buttons (SpokenSupport.lua)
         end
+        CopyTextButton:SetSizeMultiplier(addon.FrameSize:GetMultiplier());
         MainFrame:AnchorCornerWidget(CopyTextButton);
         CopyTextButton:Show();
     else
@@ -216,8 +217,9 @@ addon.CallbackRegistry:Register("SettingChanged.ShowCopyTextButton", function(va
 end);
 
 -- ParchmentBackground has already re-measured itself (it registered first).
-addon.CallbackRegistry:Register("FrameSizeChanged", function()
+addon.CallbackRegistry:Register("FrameSizeChanged", function(multiplier)
     if CopyTextButton then
+        CopyTextButton:SetSizeMultiplier(multiplier);
         MainFrame:AnchorCornerWidget(CopyTextButton);
     end
 end);

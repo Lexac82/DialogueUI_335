@@ -7,19 +7,23 @@ local FontUtil = addon.FontUtil;
 local ThemeUtil = addon.ThemeUtil;
 local NineSlice = addon.NineSlice;
 local Clamp = addon.API.Clamp;
+local FrameSize = addon.FrameSize;
 
 local CreateFrame = CreateFrame;
 local GetItemCount = GetItemCount;
 local GetItemInfo = GetItemInfo;
 local ceil = math.ceil;
 local min = math.min;
+local max = math.max;
 
+-- Sizes are for frame size multiplier 1 and are scaled when applied.
 local BUTTON_HEIGHT = 36;
 local BORDER_SIZE = 36;
 local ICON_SIZE = 24;                     -- retail: 36 px border cell minus a 6 px inset on each side (UpdatePixel)
 local ICON_TEXCOORD = {0.0625, 0.9275, 0.0625, 0.9275};
 local NAME_LEFT = 40;
 local NAME_RIGHT = 8;
+local NAME_SPACING = 2;
 local TWO_LINE_MAX_HEIGHT = 32;           -- 10 pt font: two lines ~ 27, three ~ 39 (3.2 x the font height, see below)
 
 -- The item font follows the font size (HEIGHT_2 in FontUtil: base - 2): the limit scales with it.
@@ -34,11 +38,14 @@ local BORDER_CHOOSE = "RewardChoice-ItemBorder.blp";
 local SHEEN_FILE = "RewardChoice-Sheen.blp";
 local COIN_FILE = "Coin-Gold.blp";
 local UPGRADE_FILE = "Interface\\AddOns\\DialogueUI\\Textures\\Shared\\ItemIsUpgrade.blp";    -- 64x64, same for both themes
-local UPGRADE_SIZE = ICON_SIZE;           -- retail: 32; here the same as the item icon
 -- Retail IconAnimation_FlyUp: starts 0.5 s late, rises 12 px over 0.5 s (outSine), fades in at 4 per second.
 local UPGRADE_DELAY = 0.5;
 local UPGRADE_DURATION = 0.5;
 local UPGRADE_RISE = 12;
+local UPGRADE_X = 2;                      -- arrow center, from the icon's bottom left
+local UPGRADE_Y = 5;
+local COIN_SIZE = 15;
+local COIN_INSET = 3;                     -- coin center, in from the icon's top left
 
 local OVERLAY_ALERT_INDEX = 10;           -- red "!" used for unusable items
 local OVERLAY_TRANSMOG_INDEX = 8;        -- retail's "cosmetic" cell: magenta corner, here for an appearance not collected yet
@@ -63,6 +70,63 @@ RewardItemButton.__index = RewardItemButton;
 
 local function SetOverlay(texture, index, mirror)
     ThemeUtil:SetItemOverlay(texture, index, mirror);
+end
+
+local function SetSquare(region, size)
+    region:SetWidth(size);
+    region:SetHeight(size);
+end
+
+-- Sizes and anchors every part for the current frame size. Called from SetEntry, so a pooled button follows a
+-- changed setting when the page is laid out again.
+function RewardItemButton:ApplySize()
+    local border = FrameSize:Scale(BORDER_SIZE);
+    local nameLeft = FrameSize:Scale(NAME_LEFT);
+    self.iconSize = FrameSize:Scale(ICON_SIZE);
+    self.nameInset = nameLeft + FrameSize:Scale(NAME_RIGHT);
+
+    -- Never lower than two lines of the name: the font size is a setting of its own.
+    local _, fontHeight = self.fontNormal:GetFont();
+    local frame = self.frame;
+    frame:SetHeight(max(FrameSize:Scale(BUTTON_HEIGHT), ceil(2 * fontHeight + 4)));
+
+    local icon = self.icon;
+    SetSquare(icon, self.iconSize);
+    icon:SetPoint("CENTER", frame, "LEFT", border / 2, 0);
+    SetSquare(self.border, border);
+    SetSquare(self.overlay, border);
+    SetSquare(self.transmogOverlay, border + FrameSize:Scale(TRANSMOG_GROW));
+    SetSquare(self.sheen, border);
+
+    local name = self.name;
+    name:SetSpacing(FrameSize:Scale(NAME_SPACING));
+    name:SetPoint("TOPLEFT", frame, "TOPLEFT", nameLeft, 0);
+    name:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", nameLeft, 0);
+
+    local countInset = FrameSize:Scale(1);
+    self.count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -countInset, countInset);
+
+    self:ApplyCoinSize();
+    self:ApplyUpgradeSize();
+end
+
+function RewardItemButton:ApplyCoinSize()
+    local coin = self.coin;
+    if coin then
+        local inset = FrameSize:Scale(COIN_INSET);
+        SetSquare(coin, FrameSize:Scale(COIN_SIZE));
+        coin:SetPoint("CENTER", self.icon, "TOPLEFT", inset, -inset);
+    end
+end
+
+-- The arrow is the size of the item icon (retail: 32).
+function RewardItemButton:ApplyUpgradeSize()
+    local marker = self.upgradeFrame;
+    if marker then
+        SetSquare(marker, self.iconSize);
+        SetSquare(marker.texture, self.iconSize);
+        marker:SetPoint("CENTER", self.icon, "BOTTOMLEFT", FrameSize:Scale(UPGRADE_X), FrameSize:Scale(UPGRADE_Y));
+    end
 end
 
 function RewardItemButton:SetStyle(style)
@@ -119,24 +183,25 @@ function RewardItemButton:Fit(baseWidth, cellStep, maxExtra)
     local name = self.name;
     for extra = 0, maxExtra or 0 do
         width = baseWidth + extra * cellStep;
-        name:SetWidth(width - NAME_LEFT - NAME_RIGHT);
+        name:SetWidth(width - self.nameInset);
         if name:GetStringHeight() <= TWO_LINE_MAX_HEIGHT then
             break
         end
     end
     self.frame:SetWidth(width);
-    name:SetWidth(width - NAME_LEFT - NAME_RIGHT);
+    name:SetWidth(width - self.nameInset);
     return width
 end
 
 function RewardItemButton:SetWidth(width)
     self.frame:SetWidth(width);
-    self.name:SetWidth(width - NAME_LEFT - NAME_RIGHT);
+    self.name:SetWidth(width - self.nameInset);
 end
 
 -- Fills the button from a QuestData entry.
 function RewardItemButton:SetEntry(entry)
     self.entry = entry;
+    self:ApplySize();
     local overlay, count;
     local texture, name = ICON_UNKNOWN, "";
 
@@ -185,10 +250,8 @@ function RewardItemButton:SetSellMarker(shown)
         if not self.coin then
             local coin = self.topFrame:CreateTexture(nil, "OVERLAY");
             ThemeUtil:BindTexture(coin, COIN_FILE);
-            coin:SetWidth(15);
-            coin:SetHeight(15);
-            coin:SetPoint("CENTER", self.icon, "TOPLEFT", 3, -3);
             self.coin = coin;
+            self:ApplyCoinSize();
         end
         self.coin:Show();
     elseif self.coin then
@@ -211,15 +274,11 @@ function RewardItemButton:SetUpgradeMarker(shown, animate)
     if not marker then
         marker = CreateFrame("Frame", nil, self.frame);
         marker:SetFrameLevel(self.frame:GetFrameLevel() + 4);
-        marker:SetWidth(UPGRADE_SIZE);
-        marker:SetHeight(UPGRADE_SIZE);
-        marker:SetPoint("CENTER", self.icon, "BOTTOMLEFT", 2, 5);
         marker.texture = marker:CreateTexture(nil, "OVERLAY");
-        marker.texture:SetWidth(UPGRADE_SIZE);
-        marker.texture:SetHeight(UPGRADE_SIZE);
         marker.texture:SetTexture(UPGRADE_FILE);
         marker.texture:SetPoint("CENTER", marker, "CENTER", 0, 0);
         self.upgradeFrame = marker;
+        self:ApplyUpgradeSize();
     end
     if marker:IsShown() then
         return                  -- already up (a refresh must not replay the animation)
@@ -232,6 +291,7 @@ function RewardItemButton:SetUpgradeMarker(shown, animate)
 
     if animate then
         local t, alpha = -UPGRADE_DELAY, 0;
+        local rise = FrameSize:Scale(UPGRADE_RISE);
         marker:SetAlpha(0);
         marker:SetScript("OnUpdate", function(f, elapsed)
             t = t + elapsed;
@@ -242,7 +302,7 @@ function RewardItemButton:SetUpgradeMarker(shown, animate)
             f:SetAlpha(alpha);
             local progress = min(1, t / UPGRADE_DURATION);
             f.texture:ClearAllPoints();
-            f.texture:SetPoint("CENTER", f, "CENTER", 0, -UPGRADE_RISE * (1 - math.sin(progress * math.pi / 2)));
+            f.texture:SetPoint("CENTER", f, "CENTER", 0, -rise * (1 - math.sin(progress * math.pi / 2)));
             if progress >= 1 and alpha >= 1 then
                 f:SetScript("OnUpdate", nil);
             end
@@ -283,6 +343,7 @@ function RewardItemButton:PlaySheen()
     local sheen = self.sheen;
     local host = self.sheenFrame;
     local elapsed = 0;
+    local travel = FrameSize:Scale(SHEEN_TRAVEL);
     sheen:Show();
     sheen:SetAlpha(0);
     host:SetScript("OnUpdate", function(f, dt)
@@ -302,7 +363,7 @@ function RewardItemButton:PlaySheen()
         local progress = Clamp(t / SHEEN_TRAVEL_TIME, 0, 1);
         local eased = 1 - (1 - progress) * (1 - progress);      -- smoothing "OUT"
         sheen:ClearAllPoints();
-        sheen:SetPoint("LEFT", self.frame, "LEFT", SHEEN_TRAVEL * eased, 0);
+        sheen:SetPoint("LEFT", self.frame, "LEFT", travel * eased, 0);
     end);
 end
 
@@ -326,7 +387,6 @@ local function CreateRewardItemButton(parent, host)
     self.fontChoose = FontUtil:GetColoredFont("DUI335_ItemSelect", 10, COLOR_CHOOSE);
 
     local frame = CreateFrame("Button", nil, parent);
-    frame:SetHeight(BUTTON_HEIGHT);
     frame:RegisterForClicks("LeftButtonUp", "RightButtonUp");
     frame:Hide();
     self.frame = frame;
@@ -337,15 +397,10 @@ local function CreateRewardItemButton(parent, host)
     ThemeUtil:BindSlice(self.backgroundChoose, BACKGROUND_CHOOSE);
 
     local icon = frame:CreateTexture(nil, "ARTWORK");
-    icon:SetWidth(ICON_SIZE);
-    icon:SetHeight(ICON_SIZE);
-    icon:SetPoint("CENTER", frame, "LEFT", BORDER_SIZE / 2, 0);
     icon:SetTexCoord(ICON_TEXCOORD[1], ICON_TEXCOORD[2], ICON_TEXCOORD[3], ICON_TEXCOORD[4]);
     self.icon = icon;
 
     local border = frame:CreateTexture(nil, "OVERLAY");
-    border:SetWidth(BORDER_SIZE);
-    border:SetHeight(BORDER_SIZE);
     border:SetPoint("CENTER", icon, "CENTER", 0, 0);
     self.border = border;
 
@@ -358,8 +413,6 @@ local function CreateRewardItemButton(parent, host)
     self.topFrame = topFrame;
 
     local overlay = topFrame:CreateTexture(nil, "OVERLAY");
-    overlay:SetWidth(BORDER_SIZE);
-    overlay:SetHeight(BORDER_SIZE);
     overlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
     overlay:Hide();
     self.overlay = overlay;
@@ -368,8 +421,6 @@ local function CreateRewardItemButton(parent, host)
     -- move its bottom and left edges off the border too). It is in the ARTWORK layer of the top frame, so the
     -- quality / alert corner (OVERLAY) always draws over it.
     local transmogOverlay = topFrame:CreateTexture(nil, "ARTWORK");
-    transmogOverlay:SetWidth(BORDER_SIZE + TRANSMOG_GROW);
-    transmogOverlay:SetHeight(BORDER_SIZE + TRANSMOG_GROW);
     transmogOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0);
     transmogOverlay:Hide();
     self.transmogOverlay = transmogOverlay;
@@ -378,15 +429,11 @@ local function CreateRewardItemButton(parent, host)
     name:SetJustifyH("LEFT");
     name:SetJustifyV("MIDDLE");
     name:SetWordWrap(true);
-    name:SetSpacing(2);
-    name:SetPoint("TOPLEFT", frame, "TOPLEFT", NAME_LEFT, 0);
-    name:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", NAME_LEFT, 0);
     self.name = name;
 
     local count = topFrame:CreateFontString(nil, "OVERLAY");
     count:SetFontObject(FontUtil:GetCountFont());
     count:SetJustifyH("RIGHT");
-    count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 1);
     self.count = count;
 
     -- Sheen lives on its own frame so its OnUpdate never collides with the fade's.
@@ -395,8 +442,6 @@ local function CreateRewardItemButton(parent, host)
     local sheen = sheenFrame:CreateTexture(nil, "OVERLAY");
     ThemeUtil:BindTexture(sheen, SHEEN_FILE);
     sheen:SetBlendMode("ADD");
-    sheen:SetWidth(BORDER_SIZE);
-    sheen:SetHeight(BORDER_SIZE);
     sheen:SetPoint("LEFT", frame, "LEFT", 0, 0);
     sheen:Hide();
     self.sheen = sheen;
@@ -412,6 +457,7 @@ local function CreateRewardItemButton(parent, host)
         host:OnButtonClick(self, mouseButton);
     end);
 
+    self:ApplySize();
     self:SetStyle(1);
 
     -- The border file and the name color depend on the style.
@@ -430,4 +476,3 @@ local function CreateRewardItemButton(parent, host)
 end
 
 addon.CreateRewardItemButton = CreateRewardItemButton;
-addon.REWARD_BUTTON_HEIGHT = BUTTON_HEIGHT;
