@@ -1,9 +1,7 @@
 -- SpokenDialogueUI.lua: Spoken's side of the DialogueUI support.
 --
--- NOT loaded by DialogueUI. It is meant to be copied into the Spoken addon's folder:
---   1. Copy this file to  Interface\AddOns\Spoken\SpokenDialogueUI.lua
---   2. Add a line  SpokenDialogueUI.lua  at the end of Interface\AddOns\Spoken\Spoken.toc
---   3. /reload
+-- NOT loaded by DialogueUI. It is meant to be copied into the Spoken addon's folder, with the
+-- Spoken.toc beside it that lists it: see the README.md of DialogueUI.
 -- DialogueUI's settings, Other Addons tab, switch it on and off (Spoken Buttons).
 --
 -- What it adds, with the stock Spoken addons and nothing else changed:
@@ -277,7 +275,10 @@ end
 function book:Draw()
     local view = _G.DUIBookFrame
     if type(view) ~= "table" then return end
-    local show = Ready() and not SomeoneElseDraws() and view:IsShown()
+    -- Spoken Readables draws its own row on the book view (UI\DialogueUIBook.lua); two rows
+    -- on the same spot overlap and the one underneath cannot be clicked.
+    local readablesDraws = type(_G.SpokenBooks) == "table" and _G.SpokenBooks.SetupDialogueUIBook ~= nil
+    local show = Ready() and not SomeoneElseDraws() and not readablesDraws and view:IsShown()
     if not show then
         if self.row and self.row.frame:IsShown() then
             self.row.frame:Hide()

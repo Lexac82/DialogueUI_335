@@ -456,7 +456,7 @@ local function AuctionHouseAddOn_Tooltip(addonName, displayName, descKey)
 end
 local Auctionator_Tooltip = AuctionHouseAddOn_Tooltip("Auctionator", "Auctionator", "Auction House Auctionator Desc");
 local RetailAH_Tooltip = AuctionHouseAddOn_Tooltip("RetailAH", "Retail Auction House", "Auction House RetailAH Desc");
--- Spoken (Other Addons tab): its side is a file copied into the Spoken folder (SupportedAddons\Spoken). The description
+-- Spoken (Other Addons tab): its side is files copied into the Spoken folders (from SupportedAddons). The description
 -- says how; the tooltip adds what is missing right now.
 local function Spoken_Tooltip(descKey)
     return function()

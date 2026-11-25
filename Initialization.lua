@@ -1,4 +1,4 @@
-local VERSION_TEXT = "1.5.0";
+local VERSION_TEXT = "1.5.1";
 
 
 local addonName, addon = ...;
@@ -80,7 +80,7 @@ local DefaultValues = {
         BookUIItemDescription = true,           --Retail: false
         BookDarkenScreen = false,
 
-    --Other addons: Spoken (SupportedAddons\Spoken\SpokenDialogueUI.lua is copied into the Spoken folder, see Code\SpokenSupport.lua)
+    --Other addons: Spoken (the folders in SupportedAddons are copied into Interface\AddOns, see Code\SpokenSupport.lua)
     SpokenButtons = false,                      --Spoken's Play and Skip buttons on the quest window and the book view
 
     --Compatibility

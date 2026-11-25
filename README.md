@@ -94,15 +94,26 @@ Books, notes and other readable objects open in their own window. Choose its siz
 - **Auctionator**
 - **Retail Auction House** (mod-retail-ah): AH bot prices in the item tooltip. Choose Auctionator or Retail Auction House under **Other Addons**.
 - **Journal: Gear (JournalGearBIS)**: "On your gear list" line in the item tooltip
-- **[Spoken](https://github.com/PatchFoundry335/spoken-wow)** (the voice player, the 3.3.5 version is available there): Spoken's **Play** and **Skip** buttons on the quest and gossip window and on the book view. Spoken draws its buttons in the game's UI, which DialogueUI hides, so a small file has to be copied into the Spoken folder (steps below).
+- **[Spoken](https://github.com/PatchFoundry335/spoken-wow)** (the voice player, the 3.3.5 version is available there): Spoken's **Play** and **Skip** buttons on the quest and gossip window and on the book view. Spoken draws its buttons in the game's UI, which DialogueUI hides, so a few changed files have to be copied into the Spoken folders (steps below).
 
 To switch on the Spoken support:
 
-1. Copy `SupportedAddons\Spoken\SpokenDialogueUI.lua` from the DialogueUI folder into `Interface\AddOns\Spoken\`.
-2. Add the line `SpokenDialogueUI.lua` at the end of `Interface\AddOns\Spoken\Spoken.toc`, then restart the game (a `.toc` change needs a restart, not only `/reload`).
-3. Check **Spoken Buttons** under **Other Addons**. It is off by default and greyed out until Spoken has the file.
+1. Install Spoken and Spoken Readables, both version **3.5.1**.
+2. Close the game.
+3. Open `Interface\AddOns\DialogueUI\SupportedAddons\`. Select the folders `Spoken` and `Spoken_Readables` and copy them into `Interface\AddOns\`. When asked, replace the existing files.
+4. Start the game and check **Spoken Buttons** under **Other Addons**. It is off by default and greyed out until Spoken has the files.
 
-Play on a quest or gossip page needs Spoken Quests, and Play on a book needs Spoken Readables. A Spoken update usually replaces its `.toc`, so add the line again after updating.
+The folders hold only the files that change, at the same paths as in `Interface\AddOns\`:
+
+| File | What it does |
+|---|---|
+| `Spoken\SpokenDialogueUI.lua` | Adds Spoken's buttons to DialogueUI's windows |
+| `Spoken\Spoken.toc` | Loads the file above |
+| `Spoken_Readables\Audio.lua` | Finds the readables voice pack under either of its names |
+| `Spoken_Readables\Events.lua` | Keeps the open page while DialogueUI's book view is up |
+| `Spoken_Readables\UI\DialogueUIBook.lua` | Fixes the greyed out Play button on the book view |
+
+Play on a quest or gossip page needs Spoken Quests, and Play on a book needs Spoken Readables. These files are made for version 3.5.1 of both: do not copy them over another version. A Spoken update replaces them.
 
 ## Installation
 
