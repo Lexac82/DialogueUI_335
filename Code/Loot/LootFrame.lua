@@ -99,20 +99,91 @@ local function GetSavedPosition()
     end
 end
 
-function MainFrame:LoadPosition()
+-- Room kept between the window and the parchment (the window's art and page dots reach past its edges).
+local PARCHMENT_GAP = 24;
+
+-- "Home" is where the window belongs: point = TOPLEFT or BOTTOMLEFT, x / y from relativePoint of UIParent.
+function MainFrame:SetHomePosition(point, relativePoint, x, y)
+    self.home = { point = point, relativePoint = relativePoint, x = x, y = y };
+    self:ApplyPosition();
+end
+
+-- The x offset from home that keeps the window beside the quest parchment, or nil when home does not cover it.
+local function GetOffsetBesideParchment(self, home)
+    -- Only in normal play: while the Settings are open the player is placing the frames, so both stay where they are put.
+    local settingsUI = addon.SettingsUI;
+    if settingsUI and settingsUI:IsShown() then
+        return
+    end
+    local parchment = addon.DialogueUI;
+    if not parchment then
+        return
+    end
+    local paperLeft, paperRight, paperBottom, paperTop = parchment:GetPaperRect();
+    if not paperLeft then
+        return
+    end
+
+    local screenWidth, screenHeight = UIParent:GetWidth(), UIParent:GetHeight();
+    local width, height = self:GetWidth(), self:GetHeight();
+    local originX, originY = 0, 0;
+    if home.relativePoint == "CENTER" then
+        originX, originY = screenWidth / 2, screenHeight / 2;
+    end
+    -- Where home really puts it: the window is clamped to the screen.
+    local left = max(0, min(originX + home.x, screenWidth - width));
+    local bottom = originY + home.y;
+    if home.point == "TOPLEFT" then
+        bottom = bottom - height;
+    end
+    bottom = max(0, min(bottom, screenHeight - height));
+
+    if left >= paperRight or left + width <= paperLeft or bottom >= paperTop or bottom + height <= paperBottom then
+        return
+    end
+
+    local leftSide = paperLeft - PARCHMENT_GAP - width;         -- window's left edge on either side
+    local rightSide = paperRight + PARCHMENT_GAP;
+    local fitsLeft, fitsRight = leftSide >= 0, rightSide + width <= screenWidth;
+    local target;
+    if fitsLeft and fitsRight then
+        target = (left - leftSide <= rightSide - left) and leftSide or rightSide;       -- the shorter way
+    elseif fitsLeft then
+        target = leftSide;
+    elseif fitsRight then
+        target = rightSide;
+    elseif paperLeft >= screenWidth - paperRight then
+        target = 0;                                             -- no room: the screen edge of the wider side
+    else
+        target = screenWidth - width;
+    end
+    return target - originX
+end
+
+-- Anchors the window at home, or beside the parchment while home is covered by it. Nothing is saved.
+function MainFrame:ApplyPosition()
+    local home = self.home;
+    if not home or self.isDragging then
+        return
+    end
+    local x = GetOffsetBesideParchment(self, home) or home.x;
     self:ClearAllPoints();
+    self:SetPoint(home.point, UIParent, home.relativePoint, x, home.y);
+end
+
+function MainFrame:LoadPosition()
     -- Grow Upwards: the bottom left is the fixed corner, so the window gets taller towards the top.
     local point = addon.GetDBBool("LootUI_GrowUpwards") and "BOTTOMLEFT" or "TOPLEFT";
     local pos = GetSavedPosition();
     if pos then
-        self:SetPoint(point, UIParent, "BOTTOMLEFT", pos[1], pos[2]);
+        self:SetHomePosition(point, "BOTTOMLEFT", pos[1], pos[2]);
     else
         -- Plumber's default (MainFrame:LoadPosition): the left edge a third of the viewport right of the centre line,
         -- vertically centered. The viewport is never wider than 16:9, so an ultrawide screen does not push it far out.
         local viewportWidth, viewportHeight = WorldFrame:GetWidth(), WorldFrame:GetHeight();
         viewportWidth = min(viewportWidth, viewportHeight * 16 / 9);
         local scale = UIParent:GetEffectiveScale();
-        self:SetPoint(point, UIParent, "CENTER", math.floor((0.5 - 0.3333) * viewportWidth / scale), 0);
+        self:SetHomePosition(point, "CENTER", math.floor((0.5 - 0.3333) * viewportWidth / scale), 0);
     end
 end
 
@@ -186,8 +257,7 @@ function MainFrame:StopDrag()
         return
     end
     if self.manualMode and Def.LOOT_UNDER_MOUSE then
-        self:ClearAllPoints();
-        self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top);
+        self:SetHomePosition("TOPLEFT", "BOTTOMLEFT", left, top);
         return
     end
     local y = addon.GetDBBool("LootUI_GrowUpwards") and bottom or top;
@@ -227,10 +297,22 @@ function MainFrame:PositionUnderMouse()
     local scale = self:GetEffectiveScale();
     x = x / scale - Def.ROW_WIDTH / 2;
     y = max(y / scale + 24, 350);
-    self:ClearAllPoints();
-    self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y);
+    self:SetHomePosition("TOPLEFT", "BOTTOMLEFT", x, y);
     self:Raise();
 end
+
+-- The parchment opened or changed place or size under a window that is up (a closed parchment leaves the window
+-- where it is, so it does not jump; the next loot goes home again).
+local function AvoidParchmentIfShown()
+    if MainFrame:IsShown() then
+        MainFrame:ApplyPosition();
+    end
+end
+addon.CallbackRegistry:Register("ParchmentShown", AvoidParchmentIfShown);
+addon.CallbackRegistry:Register("FrameSizeChanged", AvoidParchmentIfShown);
+addon.CallbackRegistry:Register("SettingChanged.FrameOrientation", AvoidParchmentIfShown);
+addon.CallbackRegistry:Register("SettingsUI.Show", AvoidParchmentIfShown);      -- back home
+addon.CallbackRegistry:Register("SettingsUI.Hide", AvoidParchmentIfShown);
 
 
 ---------------------------------------------------------------------------
@@ -296,6 +378,7 @@ function MainFrame:LayoutActiveFrames()
     local height = RowsHeight(#frames) + 2 * P;
     self:SetWidth(width);
     self:SetHeight(height);
+    self:ApplyPosition();               -- the new size may reach the parchment, or no longer
     self:SetBackgroundSize(width, height);
 end
 

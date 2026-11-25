@@ -212,6 +212,23 @@ function ParchmentBackground:Hide()
     self.frame:Hide();
 end
 
+-- Where the visible paper is on screen (left, right, bottom, top in UIParent units), nil while it is not shown.
+-- The art has transparent margins at the sides. The height is the open one, also while the intro still grows to it.
+function ParchmentBackground:GetPaperRect()
+    local frame = self.frame;
+    if not frame:IsShown() then
+        return
+    end
+    local left, right, bottom, top = frame:GetLeft(), frame:GetRight(), frame:GetBottom(), frame:GetTop();
+    if not (left and right and bottom and top) then
+        return
+    end
+    local M = self.metrics;
+    local inset = M.width / 1024 * 135;
+    local centerY, halfHeight = (top + bottom) / 2, M.fullH / 2;
+    return left + inset, right - inset, centerY - halfHeight, centerY + halfHeight
+end
+
 -- fn() is called when the player closes the conversation (Goodbye, Cancel, Esc, right click). It should close
 -- the game side (CloseQuest / CloseGossip). The parchment hides itself afterwards.
 function ParchmentBackground:SetCloseHandler(fn)
